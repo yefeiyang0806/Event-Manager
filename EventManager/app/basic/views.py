@@ -69,16 +69,19 @@ def activate_user():
     fetched_user = db.session.query(User).filter(User.active_code == active_code).first()
     fetched_uuid = fetched_user.uuid
     result = 'Succeeded'
-    if fetched_user.status != 0:
-        msg = 'You account has already been activated.'
-    elif user_uuid == fetched_uuid:
-        fetched_user.status = 1
-        db.session.commit()
-        msg = 'Thank you. Your account has been activated successfully.'
+    if user_uuid == fetched_uuid:
+        if fetched_user.status != 0:
+            msg = 'You account has already been activated.'
+        else:
+            fetched_user.status = 1
+            db.session.commit()
+            g.user = fetched_user
+            msg = 'Thank you. Your account has been activated successfully.'
     else:
         msg = "Sorry, your activation code is invalid. Please try again. You can receive a new activation code by the following link."
         result = 'Failed'
-    return render_template('activate_result.html', msg=msg, result=result, first_name= first_name)
+    status = g.user.status
+    return render_template('activate_result.html', msg=msg, result=result, first_name= first_name, status=status)
 
 
 @basic.route('/logout')
