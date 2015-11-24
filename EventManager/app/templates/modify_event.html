@@ -1,0 +1,43 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %}Event Modification{% endblock %}
+{% block body %}
+  {{super()}}
+  <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <style>
+  	.form-group {width:50%;}
+  </style>
+  <!--link href="{{url_for('static', filename='css/register.css')}}" rel="stylesheet"-->
+  {% include 'navbar.html' %}
+  <div class="container-fluid">
+  	<div class="row">
+  	  {% include 'side_bar.html' %}
+  	  <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+  	  	{{ wtf.quick_form(form, action='/modify_event', method='post', extra_classes='form-reg', id='reg_form') }}
+  	  		<!--div class="date_pick_display"><input type="text" id="start_date" name="start_date" /></div-->
+      <button type="button" class="btn btn-primary btn-login" id="submit" name='{{ event_id }}'>Modify</button>
+      </div>
+
+  	</div>
+  </div>
+
+  <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>
+  <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  <script>
+    $(document).ready(function() {
+	    
+      $("#submit").click(function(){
+        var event_id = $("#submit").attr('name');
+        var id_input = "<input type='hidden' name='event_id' id='event_id' value='" + event_id + "' />";
+        $("#reg_form").append(id_input);
+		    $("#reg_form").submit();
+	    });
+  	  
+	    $( "#start_date" ).datepicker({ minDate: "0", maxDate: "+2M", dateFormat: "yy-mm-dd"});
+	  });
+    </script>
+	
+    });
+  </script>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "bootstrap/base.html" %}
+{% block title %}{{ first_name }}'s Home Page{% endblock %}
+{% block body %}
+  {{super()}}
+  <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
+  <!--link href="{{url_for('static', filename='css/register.css')}}" rel="stylesheet"-->
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+
+  {% include 'navbar.html' %}
+  <div class="container-fluid">
+  	<div class="row">
+  		{% include 'side_bar.html' %}
+    	<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+        <h1 class="page-header">Activation Result</h1>
+        <br />
+			  <div class="panel panel-info">
+          <div class="panel-heading">
+            <h2 class="panel-title">{{ result }}</h2>
+          </div>
+          <div class="panel-body">
+            {{ msg }}
+          </div>
+        </div> 
+      </div>
+    </div>
+  </div>
+{% endblock %}
