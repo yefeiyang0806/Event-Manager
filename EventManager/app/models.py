@@ -2,7 +2,7 @@ from app import db
 import time, uuid
 
 class User(db.Model):
-    uuid = db.Column(db.String(32), primary_key = True)
+    uuid = db.Column(db.String(40), primary_key = True)
     email = db.Column(db.String(120), index = True, unique = True)
     password = db.Column(db.String(120))
     first_name = db.Column(db.String(10))
