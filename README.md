@@ -7,6 +7,7 @@
 * Flask-login/mail/SQLAlchemy/wtf/bootstrap
 
 ##Instructions:
+*(Please remove the flask folder and rebuild the whole virtual environment to make sure the application can run properly. The new environment folder should be named as "flask" and then install flask, flask-mail, flask-sqlalchemy, flask-login, flask-wtf, flask-bootstrap and sqlalchemy-migrate)
 * 1. Activate virtualenv from EventManager/flask/Scripts/activate
 * 2. Create an empty database in MySQL named event_manager, and add user with the provided username and password.
 * 3. Create the database by python EventManager/db_create.py
