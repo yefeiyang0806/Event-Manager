@@ -24,20 +24,20 @@
   <ul class="nav nav-sidebar">
     {% if sidebar == 'personal' %}
       <li class="active"><a href="/index">Personal Events</a></li>
-      <li><a href="/available_events">Available Events</a></li>
-      <li><a href="/create_event">Register Event</a></li>
+      <li><a href="/event/available">Available Events</a></li>
+      <li><a href="/event/create">Register Event</a></li>
     {% elif sidebar == 'public' %}
       <li><a href="/index">Personal Events</a></li>
-      <li class="active"><a href="/available_events">Available Events</a></li>
-      <li><a href="/create_event">Register Event</a></li>
+      <li class="active"><a href="/event/available">Available Events</a></li>
+      <li><a href="/event/create">Register Event</a></li>
     {% elif sidebar == null %}
       <li><a href="/index">Personal Events</a></li>
-      <li><a href="/available_events">Available Events</a></li>
-      <li><a href="/create_event">Register Event</a></li>
+      <li><a href="/event/available">Available Events</a></li>
+      <li><a href="/event/create">Register Event</a></li>
     {% else %}
       <li><a href="/index">Personal Events</a></li>
-      <li><a href="/available_events">Available Events</a></li>
-      <li  class="active"><a href="/create_event">Register Event</a></li>
+      <li><a href="/event/available">Available Events</a></li>
+      <li  class="active"><a href="/event/create">Register Event</a></li>
     {% endif %}
   </ul>
 </div>

@@ -3,7 +3,7 @@ from flask.ext.wtf import Form
 from wtforms import StringField, BooleanField, PasswordField, IntegerField, DateTimeField, DateField
 from wtforms.validators import InputRequired, Length, Email, EqualTo, ValidationError
 from werkzeug.security import check_password_hash
-from .models import User
+from app.models import User
 
 def login_info_check(form, field):
 	saved_hash_pwd = db.session.query(User.password).filter(User.email == field.data).first()

@@ -24,7 +24,7 @@
   	  		{{ wtf.form_field(form.duration) }}
   	  		{{ wtf.form_field(form.start_date) }}
   	  	</form-->
-  	  	{{ wtf.quick_form(form, action='/create_event', method='post', extra_classes='form-reg', id='reg_form') }}
+  	  	{{ wtf.quick_form(form, action='/event/create', method='post', extra_classes='form-reg', id='reg_form') }}
   	  		<!--div class="date_pick_display"><input type="text" id="start_date" name="start_date" /></div-->
     	<button type="button" class="btn btn-primary btn-login" id="submit">Register</button>
       </div>

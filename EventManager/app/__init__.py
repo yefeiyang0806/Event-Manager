@@ -15,4 +15,9 @@ app.config.from_object('config')
 db = SQLAlchemy(app)
 mail = Mail(app)
 
-from app import views, models
+from app import models
+from .basic.views import basic
+from .event.views import event
+
+app.register_blueprint(basic, url_prefix='')
+app.register_blueprint(event, url_prefix='/event')
