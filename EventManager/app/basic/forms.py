@@ -43,5 +43,10 @@ class JoinForm(Form):
 	last_name = StringField('Last Name', validators=[InputRequired(), Length(max=10)])
 
 
-class PwdResetForm(Form):
+class RetrievePwdForm(Form):
 	email = StringField('Email', validators=[InputRequired(), email_check, Email(message="Please input a valid Email address")])
+
+
+class PwdResetForm(Form):
+	password = PasswordField('New password', validators=[InputRequired(), EqualTo('confirm_password', message='Two passwords must match')])
+	confirm_password = PasswordField('Confirm new password', validators=[InputRequired()])

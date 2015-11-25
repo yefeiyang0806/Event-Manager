@@ -14,7 +14,7 @@
   	<div class="row">
   	  {% include 'side_bar.html' %}
   	  <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-  	  	{{ wtf.quick_form(form, action='/event/modify', method='post', extra_classes='form-reg', id='reg_form') }}
+  	  	{{ wtf.quick_form(form, action='/event/modify/'+event_id, method='post', extra_classes='form-reg', id='reg_form') }}
   	  		<!--div class="date_pick_display"><input type="text" id="start_date" name="start_date" /></div-->
       <button type="button" class="btn btn-primary btn-login" id="submit" name='{{ event_id }}'>Modify</button>
       </div>
@@ -28,9 +28,6 @@
     $(document).ready(function() {
 	    
       $("#submit").click(function(){
-        var event_id = $("#submit").attr('name');
-        var id_input = "<input type='hidden' name='event_id' id='event_id' value='" + event_id + "' />";
-        $("#reg_form").append(id_input);
 		    $("#reg_form").submit();
 	    });
   	  

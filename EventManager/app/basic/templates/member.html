@@ -35,7 +35,7 @@
           	      	<td>Start at: {{ event.start_date }}</td>
           	      	<td>Event Duration: {{ event.duration }}</td>
           	      	<!--c:if test="${ diet_tasks[i-1].state != 'Not Started'}"-->
-          	      	  <td><a class="btn btn-info" role="button" href="/event/modify?event_id={{ event.id }}">Modify</a></td>
+          	      	  <td><a class="btn btn-info" role="button" href="/event/modify/{{ event.id }}">Modify</a></td>
           	      	<!--/c:if-->
           	      	<!--c:if test="${ diet_tasks[i-1].state == 'Not Started'}">
           	      	<td><a class="btn btn-info disabled" role="button" href="/project/food/modify_diet_task?id=${ diet_tasks[i-1].id }">Performance</a></td>

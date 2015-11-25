@@ -3,7 +3,7 @@ from config import ADMINS
 from flask import render_template, flash, redirect, session, url_for, request, g, request, Blueprint
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from flask.ext.mail import Message
-from .forms import LoginForm, JoinForm
+from .forms import LoginForm, JoinForm, RetrievePwdForm, PwdResetForm
 from ..models import User, Event
 from ..emails import send_email
 from werkzeug.security import generate_password_hash
@@ -67,7 +67,10 @@ def activate_user():
     user_uuid = g.user.uuid
     active_code = request.args.get("active_code")
     fetched_user = db.session.query(User).filter(User.active_code == active_code).first()
-    fetched_uuid = fetched_user.uuid
+    if fetched_user != null:
+        fetched_uuid = fetched_user.uuid
+    else:
+        fetched_uuid = '0'
     result = 'Succeeded'
     if user_uuid == fetched_uuid:
         if fetched_user.status != 0:
@@ -85,10 +88,60 @@ def activate_user():
 
 
 @basic.route('/logout')
-@login_required
 def logout():
-    logout_user()
+    if g.user is not None and g.user.is_authenticated:
+        logout_user()
     return redirect(url_for("basic.index"))
+
+
+@basic.route('/password_reset', methods=['GET', 'POST'])
+def password_reset():
+    form = PwdResetForm()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            uuid = request.form.get('uuid')
+            hash_password = generate_password_hash(form.password.data)
+            active_code = generate_active_code()
+            temp = db.session.query(User).get(uuid)
+            temp.password = hash_password
+            temp.active_code = active_code
+            db.session.commit()
+            return redirect(url_for('basic.index'))
+
+        else:
+            flash("Two passwords must match")
+            active_code = request.form.get('active_code')
+            email = request.form.get('email')
+            auth_info = '?email='+email+'&active_code='+active_code
+            return redirect(url_for("basic.password_reset") + auth_info)
+    
+    active_code = request.args.get('active_code')
+    email = request.args.get('email')
+    fetched_user = db.session.query(User).filter(User.email == email).first()
+    error_msg = ""
+    uuid = ""
+    if fetched_user == None:
+        error_msg = 'Invalid Active Code.'
+    else:
+        print(fetched_user.active_code)
+        if fetched_user.active_code != active_code:
+            error_msg = 'Invalid Active Code.'
+        else:
+            uuid = fetched_user.uuid
+
+    return render_template('reset_pwd.html', uuid=uuid, error_msg=error_msg, form=form, email=email, active_code=active_code)
+
+
+@basic.route('/pwd_reset', methods=['GET', 'POST'])
+def pwd_reset():
+    uuid = request.form.get('uuid')
+    hash_password = generate_password_hash(request.form.get('password'))
+    active_code = generate_active_code()
+    temp = db.session.query(User).get(uuid)
+    temp.password = hash_password
+    temp.active_code = active_code
+    db.session.commit()
+    return redirect(url_for('basic.index'))
 
 
 @basic.route('/login')
@@ -113,4 +166,4 @@ def generate_active_code():
     candidate = random.sample(pool, 4)
     active_code = candidate[0] + candidate[1] + candidate[2] + candidate[3]
     print ("active code: " + active_code)
-    return active_code
+    return str(active_code)
