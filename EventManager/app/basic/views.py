@@ -12,6 +12,10 @@ import random
 
 basic = Blueprint('basic', __name__, template_folder='templates')
 
+
+#Home page of the website, ask for login
+#Also provide link to register and forgot password
+#Remember me is used to keep the login status
 @basic.route('/')
 @basic.route('/index', methods = ['GET', 'POST'])
 def index():
@@ -31,6 +35,8 @@ def index():
     return render_template("index.html", form=form)
 
 
+#The home page of logged in users.
+#List all the events created by the logged-in user
 @basic.route('/member', methods = ['GET', 'POST'])
 @login_required
 def logged_in():
@@ -42,6 +48,8 @@ def logged_in():
     return render_template('member.html', first_name=first_name, events=events, sidebar=sidebar, status=status)
 
 
+#Register a new account
+#Validators implemented in basic.forms.py are applied
 @basic.route('/register', methods = ['GET', 'POST'])
 def register():
     form = JoinForm()
@@ -60,6 +68,10 @@ def register():
     return render_template("register.html", form=form)
 
 
+#Activate user's account and then redirect to the result page.
+#Activation is based on the activation code provied in the link in activation email
+#ATTENTION: email template has not been implemented yet.
+#Testing is based on manual inputing the URL
 @basic.route('/activate_user')
 @login_required
 def activate_user():
@@ -87,6 +99,7 @@ def activate_user():
     return render_template('activate_result.html', msg=msg, result=result, first_name= first_name, status=status)
 
 
+#Logout user
 @basic.route('/logout')
 def logout():
     if g.user is not None and g.user.is_authenticated:
@@ -94,6 +107,11 @@ def logout():
     return redirect(url_for("basic.index"))
 
 
+#Used to reset user's password.
+#This page is reached by the password-reset link in the email.
+#The authentication is based on the email address and active code in the link URL.
+#ATTENTION: email template of 'password forgot' has not been implemented.
+#Testing is based on manual inputing the URL
 @basic.route('/password_reset', methods=['GET', 'POST'])
 def password_reset():
     form = PwdResetForm()
@@ -132,35 +150,29 @@ def password_reset():
     return render_template('reset_pwd.html', uuid=uuid, error_msg=error_msg, form=form, email=email, active_code=active_code)
 
 
-@basic.route('/pwd_reset', methods=['GET', 'POST'])
-def pwd_reset():
-    uuid = request.form.get('uuid')
-    hash_password = generate_password_hash(request.form.get('password'))
-    active_code = generate_active_code()
-    temp = db.session.query(User).get(uuid)
-    temp.password = hash_password
-    temp.active_code = active_code
-    db.session.commit()
-    return redirect(url_for('basic.index'))
-
-
+#Only for testing purpose
+#Test the feature of sending emails
 @basic.route('/login')
 def login():
-    first_name = g.user.first_name
+    #first_name = g.user.first_name
     send_email('test subject', ADMINS[0], ['85230316@qq.com'], "Hello just for testing", render_template('email/registration_confirm.html', first_name=first_name))
     return render_template('member.html', first_name='test', status=0)
 
 
+#Required by LoginManager
 @lm.user_loader
 def load_user(id):
     return User.query.get(str(id))
 
 
+#Refresh global variable before the request
 @basic.before_request
 def before_request():
     g.user = current_user
 
 
+#Generate the active code.
+#Active code has length of 4, containing upper and lower case of letters only.
 def generate_active_code():
     pool = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
     candidate = random.sample(pool, 4)

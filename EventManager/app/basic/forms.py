@@ -5,6 +5,8 @@ from wtforms.validators import InputRequired, Length, Email, EqualTo, Validation
 from werkzeug.security import check_password_hash
 from app.models import User
 
+
+#Check if the login information is right.
 def login_info_check(form, field):
 	saved_hash_pwd = db.session.query(User.password).filter(User.email == field.data).first()
 	if saved_hash_pwd is None:
@@ -17,12 +19,14 @@ def login_info_check(form, field):
 		raise ValidationError('Invalid Email or password')
 
 
+#make sure the email address is unique before registering
 def unique_email(form, field):
 	exist_email = db.session.query(User).filter(User.email == form.email.data).first()
 	if exist_email is not None:
 		raise ValidationError('Email address already exists')
 
 
+#When retrieve the forgot password, check if the given email address existed in the database
 def email_check(form, field):
 	fetched_email = db.session.query(User.email).filter(User.email == field.data).first()
 	if fetched_email is None:
@@ -35,6 +39,7 @@ class LoginForm(Form):
     remember_me = BooleanField('Remember me', default=False)
 
 
+#registering form
 class JoinForm(Form):
 	email = StringField('Email', validators=[InputRequired(), unique_email, Email(message="Please input a valid Email address")])
 	password = PasswordField('Password', validators=[InputRequired(), EqualTo('confirm_password', message='Two passwords must match')])

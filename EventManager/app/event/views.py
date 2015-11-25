@@ -13,6 +13,7 @@ import random
 event = Blueprint('event', __name__, template_folder='templates')
 
 
+# Responsible for creating events.
 @event.route('/create', methods = ['GET', 'POST'])
 @login_required
 def create_event():
@@ -30,6 +31,8 @@ def create_event():
     return render_template("create_event.html", form=form, first_name=first_name, sidebar=sidebar, status=status)
 
 
+#Responsible for deleting existing events.
+#Called by jquery in event.view_event.html and basic.member.html
 @event.route('/delete')
 @login_required
 def delete_event():
@@ -43,6 +46,10 @@ def delete_event():
     return redirect(url_for("basic.index"))
 
 
+#Render to the events modification page.
+#If method is GET, show the event info on the form for the user to modify
+#If method is POST, do the validation and update the event 
+#ATTENTION: The validation is not working currently
 @event.route('/modify/<event_id>', methods = ['GET', 'POST'])
 @login_required
 def modify_event(event_id):
@@ -81,6 +88,8 @@ def modify_event(event_id):
     return redirect(url_for("basic.index"))
 
 
+
+#Reached by the link on the events' topics. Show details of the selected event
 @event.route('/view')
 @login_required
 def view_event():
@@ -97,6 +106,8 @@ def view_event():
     return render_template('view_event.html', event=event, mode=mode, first_name=first_name, status=status, sidebar=sidebar)
 
 
+#Show all the available events in the website.
+#Once finished, should only show approved events
 @event.route('/available')
 @login_required
 def available_events():
@@ -107,11 +118,13 @@ def available_events():
     return render_template('available_events.html', events=events, first_name=first_name, status=status, sidebar=sidebar)
 
 
+#Required by the LoginManager
 @lm.user_loader
 def load_user(id):
     return User.query.get(str(id))
 
 
+#Refresh the global variable before every request
 @event.before_request
 def before_request():
     g.user = current_user
