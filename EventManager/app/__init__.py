@@ -8,7 +8,7 @@ from flask.ext.mail import Mail
 app = Flask(__name__)
 lm = LoginManager()
 lm.init_app(app)
-lm.login_view = 'index'
+lm.login_view = 'basic.index'
 Bootstrap(app)
 CsrfProtect(app)
 app.config.from_object('config')

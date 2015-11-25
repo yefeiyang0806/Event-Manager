@@ -12,13 +12,15 @@
   	  	  <table align='center' border='1' cellpading="0" cellspacing="0" width="700" style="border-collapse: collapse;">
   	  	  	<tr>
   	  	  	  <td>
-  	  	  	  	Dear {{ username }},
+  	  	  	  	Dear {{ first_name }},
   	  	  	  </td>
   	  	  	</tr>
   	  	  	<tr>
   	  	  	  <td>
 				<br>Thanks for your registration in Event Manager. Your account has been successfully created now and you are able to join any interested events or create your own events.
 				<br><br>
+        Please activate your account through the following link to get full access.<br>
+        Link: {{ activate_link }}
 				<b>NOTE:</b> This email was sent automatically. Please don't reply to it.
 				<br><br>
 				Best Regards,<br>

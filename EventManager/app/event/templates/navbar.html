@@ -32,13 +32,40 @@
 
           <ul class="nav navbar-nav navbar-right">
             {% if status == 0 %}
-              <li><p class="navbar-text" style="color:white;">Hello,&nbsp;&nbsp;<b>{{ first_name }}</b>&nbsp;&nbsp;(<font color='#FF0000'>not activated</font>)</p></li>
+              <li><p class="navbar-text" style="color:white;">Hello,&nbsp;&nbsp;<b>{{ first_name }}</b>&nbsp;&nbsp;(<a href="javascript:void(0);" id="a_confirm"><font color='#FF0000'>not activated</font></a>)</p></li>
             {% else %}
               <li><p class="navbar-text" style="color:white;">Hello,&nbsp;&nbsp;<b>{{ first_name }}</b></p></li>
             {% endif %}
             <li><a href="/logout" style="color:white;">Logout</a></li>
           </ul>
+          <div style="display:none" id="activate_confirm" title="Do you want to activate?">
+            <p>Do you want to receieve an Email to activate your account now?</p>
+          </div>
 
         </div>
       </div>
     </nav>
+
+    <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>
+    <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+    <script>
+      $(document).ready(function() {
+      
+        $("#a_confirm").click(function(){
+          $( "#activate_confirm" ).dialog({
+            height:200,
+            modal: true,
+            buttons: {
+              Send: function() {
+                $( this ).dialog( "close" );
+                $(window.location).attr('href', '/send_activate');
+              },
+              Cancel: function() {
+                $( this ).dialog( "close" );
+              }
+            }
+          });
+        });
+  
+      });
+    </script>

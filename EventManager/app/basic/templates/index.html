@@ -4,6 +4,7 @@
 {% block body %}
   {{super()}}
   <link href="{{url_for('static', filename='css/signin.css')}}" rel="stylesheet">
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
   {% include 'index_navbar.html' %}
 
   <div class="container">
@@ -19,13 +20,20 @@
     {% endwith %}
     <button type="button" class="btn btn-primary btn-login" id="submit">Login</button>
     <div id='forgot_pwd' style='width:100%;text-align:center;padding:10px;'>
-      <a onclick='pwd_reset()' id='reset_pwd'>Forgot password?</a>
+      <a href="javascript:void(0);" id='reset_pwd'>Forgot password?</a>
     </div>
     <div id="register_link"><a href="/register" class="btn btn-info">New User</a></div>
 
   </div> <!-- /container -->
+  <div style="display:none;" id="reset_email" title='Password Retrieve'>
+    {{wtf.quick_form(email_form, action='/send_pwd_reset', method='post', id='pwd_form')}}<br>
+    <p>Please enter your registration email address.<br><br>
+      A password-reset link would be sent to your email address. The link can only be used once.
+    </p>
+  <div/>
 
   <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>
+  <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
   <script>
     $(document).ready(function() {
 	    
@@ -33,6 +41,25 @@
 		    $("#login_form").submit();
         //alert("Hello Im here");
 	    });
+
+      $("#reset_pwd").click(function(){
+        $( "#reset_email" ).dialog({
+          width:400,
+          height:360,
+          modal: true,
+          buttons: {
+            Send: function() {
+              $( this ).dialog( "close" );
+              $("#pwd_form").submit();
+              //$(window.location).attr('href', '/event/delete?event_id='+event_id);
+            },
+            Cancel: function() {
+              $( this ).dialog( "close" );
+            }
+          }
+        });
+        console.log("opened");
+      });
 	
     });
 

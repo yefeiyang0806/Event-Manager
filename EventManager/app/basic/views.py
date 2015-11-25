@@ -23,6 +23,7 @@ def index():
         return redirect(url_for('basic.logged_in'))
 
     form = LoginForm()
+    email_form = RetrievePwdForm()
     if form.validate_on_submit():
         flash('Login requested for email = ' + form.email.data)
         remember_me = form.remember_me.data
@@ -32,7 +33,7 @@ def index():
         next = request.args.get('next')
         return redirect(next or url_for('basic.logged_in'))
 
-    return render_template("index.html", form=form)
+    return render_template("index.html", form=form, email_form=email_form)
 
 
 #The home page of logged in users.
@@ -60,12 +61,28 @@ def register():
         temp = User(form.email.data, hash_password, form.first_name.data, form.last_name.data, active_code)
         db.session.add(temp)
         db.session.commit()
-        send_email('Event Manager Registration', ADMINS[0], [form.email.data], "Hello just for testing", render_template('email/registration_confirm.html', first_name=form.first_name.data))
+        basic_url = 'http://localhost:5000'
+        activate_link = basic_url + url_for('basic.activate_user') + '?active_code=' + active_code
+        send_email('Event Manager Registration', ADMINS[0], [form.email.data], "Hello just for testing", \
+            render_template('email/registration_confirm.html', first_name=form.first_name.data, activate_link=activate_link))
 
         temp_user = db.session.query(User).filter(User.email == form.email.data)[0]
         login_user(temp_user)
         return redirect(url_for('basic.index'))
     return render_template("register.html", form=form)
+
+
+#Send password reset link to the provided email address
+@basic.route('/send_activate')
+@login_required
+def send_activate_link():
+    first_name = g.user.first_name
+    email = g.user.email
+    active_code = refresh_active_code(email)
+    basic_url = 'http://localhost:5000'
+    activate_link = basic_url + url_for('basic.activate_user') + '?active_code=' + active_code
+    send_email('Account activate Link', ADMINS[0], [g.user.email], "", render_template('email/activate_user.html', first_name=first_name, activate_link=activate_link))
+    return redirect(url_for('basic.index'))
 
 
 #Activate user's account and then redirect to the result page.
@@ -79,7 +96,7 @@ def activate_user():
     user_uuid = g.user.uuid
     active_code = request.args.get("active_code")
     fetched_user = db.session.query(User).filter(User.active_code == active_code).first()
-    if fetched_user != null:
+    if fetched_user != None:
         fetched_uuid = fetched_user.uuid
     else:
         fetched_uuid = '0'
@@ -92,6 +109,8 @@ def activate_user():
             db.session.commit()
             g.user = fetched_user
             msg = 'Thank you. Your account has been activated successfully.'
+        new_active_code = refresh_active_code(fetched_user.email)
+        
     else:
         msg = "Sorry, your activation code is invalid. Please try again. You can receive a new activation code by the following link."
         result = 'Failed'
@@ -107,22 +126,37 @@ def logout():
     return redirect(url_for("basic.index"))
 
 
+#Send password reset link to the provided email address
+@basic.route('/send_pwd_reset', methods=['GET', 'POST'])
+def send_password_reset_link():
+    form = RetrievePwdForm()
+    basic_url = 'http://localhost:5000'
+    if form.validate_on_submit():
+        locked_user = db.session.query(User).filter(User.email == form.email.data).first()
+        active_code = refresh_active_code(locked_user.email)
+        first_name = locked_user.first_name
+        last_name = locked_user.last_name
+        name = str(first_name+" "+last_name)
+        reset_link = basic_url + url_for('basic.password_reset') + '?email=' + form.email.data + '&active_code=' + active_code
+        send_email('Password Reset Link', ADMINS[0], [form.email.data], "", render_template('email/forgot_password.html', name=name, reset_link=reset_link))
+    else:
+        flash("Invalid Email Address")
+    return redirect(url_for('basic.index'))
+
+
 #Used to reset user's password.
 #This page is reached by the password-reset link in the email.
 #The authentication is based on the email address and active code in the link URL.
-#ATTENTION: email template of 'password forgot' has not been implemented.
-#Testing is based on manual inputing the URL
 @basic.route('/password_reset', methods=['GET', 'POST'])
 def password_reset():
     form = PwdResetForm()
     if request.method == 'POST':
         if form.validate_on_submit():
             uuid = request.form.get('uuid')
-            hash_password = generate_password_hash(form.password.data)
-            active_code = generate_active_code()
+            hash_password = generate_password_hash(form.password.data) 
             temp = db.session.query(User).get(uuid)
             temp.password = hash_password
-            temp.active_code = active_code
+            new_active_code = refresh_active_code(temp.email)
             db.session.commit()
             return redirect(url_for('basic.index'))
 
@@ -179,3 +213,12 @@ def generate_active_code():
     active_code = candidate[0] + candidate[1] + candidate[2] + candidate[3]
     print ("active code: " + active_code)
     return str(active_code)
+
+
+#Refresh the active code of the given email account and return the new active code
+def refresh_active_code(email):
+    user = db.session.query(User).filter(User.email == email).first()
+    new_active_code = generate_active_code()
+    user.active_code = new_active_code
+    db.session.commit()
+    return new_active_code
