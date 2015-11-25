@@ -23,7 +23,6 @@ def create_event():
     user_uuid = g.user.uuid
     form = CreateEventForm()
     if form.validate_on_submit():
-        flash("Event Validated")
         temp = Event(form.topic.data, form.description.data, form.min_attendance.data, form.max_attendance.data, form.location.data, form.host.data, form.start_date.data, form.duration.data, user_uuid)
         db.session.add(temp)
         db.session.commit()
@@ -60,10 +59,12 @@ def modify_event(event_id):
     event = Event.query.get(event_id)
     if request.method == 'POST':
         print("POST received")
-        if form.validate_on_submit:
+        if form.validate_on_submit():
             #event_id = request.form.get('event_id')
             event.topic = form.topic.data
             event.description = form.description.data
+            print (form.start_date.data == None)
+            print (form.start_date.data == '')
             event.min_attendance = form.min_attendance.data
             event.max_attendance = form.max_attendance.data
             event.location = form.location.data
@@ -72,7 +73,8 @@ def modify_event(event_id):
             event.duration = form.duration.data
             db.session.commit()
             return redirect(url_for("basic.index"))
-        else: 
+        else:
+            print ("Not validated") 
             return render_template("modify_event.html", form=form, sidebar=sidebar, first_name=first_name, status=status, event_id=event_id)
 
     if event.is_created_by(g.user.uuid):
