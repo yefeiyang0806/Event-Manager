@@ -104,3 +104,22 @@ class Menu(db.Model):
         self.menu_path = menu_path
 
 
+class Role(db.Model):
+    uuid = db.Column(db.String(40), primary_key = True)
+    rolename = db.Column(db.String(20), index = True, unique = True)
+    description = db.Column(db.String(40))
+    create_date = db.Column(db.Date)
+    create_time = db.Column(db.Time) 
+    create_by = db.Column(db.String(40))
+
+    
+    def __repr__(self):
+        return '<Role %r>' %(self.rolename)
+
+
+    def __init__(self, rolename, description,create_by):
+        self.uuid = str(uuid.uuid1())
+        self.description = description
+        self.create_time = time.strftime("%H:%M:%S")
+        self.create_date = time.strftime("%Y/%m/%d")
+        self.create_by = create_by
