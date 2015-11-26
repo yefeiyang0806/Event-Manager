@@ -60,7 +60,7 @@ class Event(db.Model):
     status = db.Column(db.String(30), default="unapproved")
     start_date = db.Column(db.Date, default='1970-01-01')
     duration = db.Column(db.Integer)
-    user_id = db.Column(db.String(128), db.ForeignKey('user.uuid'))
+    user_id = db.Column(db.String(40), db.ForeignKey('user.uuid'))
 
     
     def __repr__(self):
