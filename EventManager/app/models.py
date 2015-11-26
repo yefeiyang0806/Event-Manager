@@ -12,6 +12,7 @@ class User(db.Model):
     events = db.relationship('Event', backref='author', lazy='dynamic')
     status = db.Column(db.Integer, default=0)
     active_code = db.Column(db.String(4))
+    role_id = db.Column(db.String(40), db.ForeignKey('role.uuid'))
 
 
     def is_authenticated(self):
@@ -47,6 +48,8 @@ class User(db.Model):
         self.create_date = time.strftime("%Y/%m/%d")
         self.active_code = active_code
         self.status = 0
+        role = db.session.query(Role.uuid).filter(Role.rolename == "normal").first()
+        self.role_id = str(role.uuid)
 
 
 class Event(db.Model):
@@ -88,6 +91,16 @@ class Event(db.Model):
             return False
 
 
+class Role_menu(db.Model):
+    uuid = db.Column(db.String(40), primary_key = True)
+    role_id = db.Column(db.String(40), db.ForeignKey('role.uuid'), primary_key = True)
+    menu_id = db.Column(db.String(40), db.ForeignKey('menu.uuid'), primary_key = True)
+    menu = db.relationship("Menu", backref="role_assoc")
+
+    def __repr__(self):
+        return '<Role_Menu %r>' % (self.uuid)
+
+
 class Menu(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
     menu = db.Column(db.String(40), index = True, unique = True)
@@ -111,6 +124,7 @@ class Role(db.Model):
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time) 
     create_by = db.Column(db.String(40))
+    menus = db.relationship("Role_menu", backref='role')
 
     
     def __repr__(self):
@@ -119,6 +133,7 @@ class Role(db.Model):
 
     def __init__(self, rolename, description,create_by):
         self.uuid = str(uuid.uuid1())
+        self.rolename = rolename
         self.description = description
         self.create_time = time.strftime("%H:%M:%S")
         self.create_date = time.strftime("%Y/%m/%d")

@@ -5,15 +5,15 @@ from migrate import *
 from migrate.changeset import schema
 pre_meta = MetaData()
 post_meta = MetaData()
-user = Table('user', post_meta,
-    Column('id', Integer, primary_key=True, nullable=False),
-    Column('email', String(length=120)),
-    Column('password', String(length=120)),
-    Column('first_name', String(length=10)),
-    Column('last_name', String(length=10)),
-    Column('create_date', Date),
-    Column('create_time', Time),
-    Column('status', Integer, default=ColumnDefault(0)),
+roles_menus = Table('roles_menus', pre_meta,
+    Column('role_id', VARCHAR(length=40)),
+    Column('menu_id', VARCHAR(length=40)),
+)
+
+role_menu = Table('role_menu', post_meta,
+    Column('uuid', String(length=40), primary_key=True, nullable=False),
+    Column('role_id', String(length=40), primary_key=True, nullable=False),
+    Column('menu_id', String(length=40), primary_key=True, nullable=False),
 )
 
 
@@ -22,11 +22,13 @@ def upgrade(migrate_engine):
     # migrate_engine to your metadata
     pre_meta.bind = migrate_engine
     post_meta.bind = migrate_engine
-    post_meta.tables['user'].columns['status'].create()
+    pre_meta.tables['roles_menus'].drop()
+    post_meta.tables['role_menu'].create()
 
 
 def downgrade(migrate_engine):
     # Operations to reverse the above upgrade go here.
     pre_meta.bind = migrate_engine
     post_meta.bind = migrate_engine
-    post_meta.tables['user'].columns['status'].drop()
+    pre_meta.tables['roles_menus'].create()
+    post_meta.tables['role_menu'].drop()
