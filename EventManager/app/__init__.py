@@ -18,8 +18,10 @@ mail = Mail(app)
 from app import models
 from .basic.views import basic
 from .event.views import event
+from .role.views import role
 
 # Register blueprint basic and event.
 # Basic contains the functions of normal users, while event contains actions related to events.
 app.register_blueprint(basic, url_prefix='')
 app.register_blueprint(event, url_prefix='/event')
+app.register_blueprint(role, url_prefix='/role')
