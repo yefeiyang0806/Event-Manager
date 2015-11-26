@@ -86,3 +86,21 @@ class Event(db.Model):
 
         else:
             return False
+
+
+class Menu(db.Model):
+    uuid = db.Column(db.String(40), primary_key = True)
+    menu = db.Column(db.String(40), index = True, unique = True)
+    menu_path = db.Column(db.String(40))
+
+
+    def __repr__(self):
+        return '<User %r>' % (self.menu)
+
+
+    def __init__(self, menu, menu_path):
+        self.uuid = str(uuid.uuid1())
+        self.menu = menu
+        self.menu_path = menu_path
+
+
