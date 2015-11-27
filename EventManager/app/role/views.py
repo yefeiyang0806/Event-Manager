@@ -27,7 +27,7 @@ def create_role():
         temp = Role(form.rolename.data, form.description.data, create_by)
         db.session.add(temp)
         db.session.commit()
-        return redirect(url_for('basic.logged_in'))
+        return redirect(url_for('role.manage_roles'))
     return render_template("create_role.html", form=form, first_name=first_name, sidebar=sidebar, status=status)
 
 #Responsible for deleting existing roles.
@@ -41,7 +41,7 @@ def delete_role():
     print ("ready to remove the role!")
     db.session.delete(role)
     db.session.commit()
-    return redirect(url_for("basic.index"))
+    return redirect(url_for("role.manage_roles"))
 
 #Render to the events modification page.
 #If method is GET, show the event info on the form for the user to modify
@@ -53,39 +53,29 @@ def modify_role(role_uuid):
     first_name = g.user.first_name
     status = g.user.status
     sidebar = 'personal'
-    form = CreateEventForm()
-    role = Event.query.get(role_uuid)
+    form = CreateRoleForm()
+    role = Role.query.get(role_uuid)
     if request.method == 'POST':
         print("POST received")
         if form.validate_on_submit():
             #event_id = request.form.get('event_id')
-            event.topic = form.topic.data
-            event.description = form.description.data
-            print (form.start_date.data == None)
-            print (form.start_date.data == '')
-            event.min_attendance = form.min_attendance.data
-            event.max_attendance = form.max_attendance.data
-            event.location = form.location.data
-            event.host = form.host.data
-            event.start_date = form.start_date.data
-            event.duration = form.duration.data
+            role.rolename = form.rolename.data
+            role.description = form.description.data
+            # first_name = g.user.first_name
+            # last_name = g.user.last_name
+            # role.create_by = last_name + ' ' + first_name
             db.session.commit()
-            return redirect(url_for("basic.index"))
+            return redirect(url_for("role.manage_roles"))
         else:
             print ("Not validated") 
-            return render_template("modify_role.html", form=form, sidebar=sidebar, first_name=first_name, status=status, event_id=event_id)
+            return render_template("modify_role.html", form=form, sidebar=sidebar, first_name=first_name, status=status, role_uuid=role_uuid)
 
-    if event.is_created_by(g.user.uuid):
-        form.topic.data = event.topic
-        form.description.data = event.description
-        form.location.data = event.location
-        form.min_attendance.data = event.min_attendance
-        form.max_attendance.data = event.max_attendance
-        form.host.data = event.host
-        form.duration.data = event.duration
-        form.start_date.data = event.start_date
-        return render_template("modify_role.html", form=form, sidebar=sidebar, first_name=first_name, status=status, event_id=event_id)
-    return redirect(url_for("basic.index"))
+    # if role.is_created_by(g.user.uuid):
+    else:
+        form.rolename.data = role.rolename
+        form.description.data = role.description         
+        return render_template("modify_role.html", form=form, sidebar=sidebar, first_name=first_name, status=status, role_uuid=role_uuid)
+    return redirect(url_for("role.manage_roles"))
 
 
 #Show all the available events in the website.
