@@ -5,7 +5,7 @@
   {{super()}}
   <link href="{{url_for('static', filename='css/signin.css')}}" rel="stylesheet">
   <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-  {% include 'index_navbar.html' %}
+  {% include 'basic/index_navbar.html' %}
 
   <div class="container">
     {{wtf.quick_form(form, action="/index", method="post", extra_classes="form-signin", button_map="primary", id="login_form")}}

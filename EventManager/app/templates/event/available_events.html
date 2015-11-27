@@ -1,15 +1,15 @@
 {% extends "bootstrap/base.html" %}
-{% block title %}{{ username }}'s Home Page{% endblock %}
+{% block title %}All Available Events{% endblock %}
 {% block body %}
   {{super()}}
   <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
   <!--link href="{{url_for('static', filename='css/register.css')}}" rel="stylesheet"-->
   <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
 
-  {% include 'navbar.html' %}
+  {% include 'public/navbar.html' %}
   <div class="container-fluid">
   	<div class="row">
-  		{% include 'side_bar.html' %}
+  		{% include 'public/side_bar.html' %}
     	<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
         <h1 class="page-header">Available Events</h1>
         <br />
@@ -20,7 +20,7 @@
               	<h2 class="panel-title">No event records yet.</h2>
               </div>
               <div class="panel-body">
-              	You can <a href="/create_event">register new events here</a>.<br />
+              	You can <a href="/event/create">register new events here</a>.<br />
               	More actions are available on the left-hand side navigator bar.
               </div>
           	</div>
@@ -59,4 +59,6 @@
       </div>
     </div>
   </div>
+  <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>
+  <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
 {% endblock %}

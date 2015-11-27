@@ -4,7 +4,7 @@
 {% block body %}
   {{super()}}
   <link href="{{url_for('static', filename='css/register.css')}}" rel="stylesheet">
-  {% include 'index_navbar.html' %}
+  {% include 'basic/index_navbar.html' %}
   <div class="container">
     {{wtf.quick_form(form, action="/register", method="post", extra_classes="form-reg", button_map="primary", id="reg_form")}}
     <button type="button" class="btn btn-primary btn-login" id="submit">Register</button>
@@ -21,4 +21,5 @@
 	
     });
   </script>
+  
 {% endblock %}

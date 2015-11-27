@@ -141,7 +141,10 @@ body {
 .table tbody>tr>td button {
   width: 100%;
 }
+.collapsed-title > a {
+  margin-top: 15px;
+}
 .collapsed-menu > li{
-  padding-top: 10px;
+  margin-top: 10px;
 }
 

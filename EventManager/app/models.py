@@ -101,6 +101,12 @@ class Role_menu(db.Model):
         return '<Role_Menu %r>' % (self.uuid)
 
 
+    def __init__(self, role_id, menu_id):
+        self.role_id = role_id
+        self.menu_id = menu_id
+        self.uuid = str(uuid.uuid1())
+
+
 class Menu(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
     menu = db.Column(db.String(40), index = True, unique = True)
