@@ -1,0 +1,69 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %}Event Registration{% endblock %}
+{% block body %}
+  {{super()}}
+  <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <style>
+  	.form-group {width:50%;}
+  </style>
+  <!--link href="{{url_for('static', filename='css/register.css')}}" rel="stylesheet"-->
+  {% include 'navbar.html' %}
+  <div class="container-fluid">
+  	<div class="row">
+  	  {% include 'side_bar.html' %}
+  	  <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+  	  	<h1 class="page-header">{{ event.topic }}</h1>
+        <h4>Description: {{ event.description }}</h4>
+        <h4>Host: {{ event.host }}</h4>
+        <h4>Start Date: {{ event.start_date }}</h4>
+        <h4>Duration: {{ event.duration }}</h4>
+        <h4>Location: {{ event.location }}</h4>
+        <h4>Attendance: {{ event.min_attendance }} - {{ event.max_attendance }}</h4>
+        <h4>Status: {{ event.status }}</h4>
+        {% if mode == 'viewer' %}
+    	    <a type="button" class="btn btn-primary btn-login" id="register">Register</a>
+        {% elif mode == 'creator' %}
+          <a href='/event/modify/{{ event.id }}' type="button" class="btn btn-primary btn-login" id="modify">Modify</a>
+          <button class="btn btn-info btn-login delete" role="button" name="{{ event.id }}">Delete</button>
+        {% endif %}
+
+        <div style="display:none" id='confirm' title='Delete the selected event?'>
+          <p>Do you want to delete the selected event?</p>
+        </div>
+
+      </div>
+
+  	</div>
+  </div>
+
+  <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>
+  <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  <script>
+    $(document).ready(function() {
+      
+      $(".delete").click(function(){
+        var event_id = $(this).attr('name');
+        console.log("hello");
+        $( "#confirm" ).dialog({
+          resizable: false,
+          height:200,
+          modal: true,
+          buttons: {
+            Delete: function() {
+              $( this ).dialog( "close" );
+              console.log("event id is :" + event_id);
+              $(window.location).attr('href', '/event/delete?event_id='+event_id);
+            },
+            Cancel: function() {
+              $( this ).dialog( "close" );
+            }
+          }
+        });
+        console.log("opened");
+      });
+  
+    });
+  </script>
+{% endblock %}

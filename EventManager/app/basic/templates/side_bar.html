@@ -22,17 +22,33 @@
     </li>
   </ul-->
   <ul class="nav nav-sidebar">
-    <li class="active"><a href="/index">Personal Events</a></li>
-    <li><a href="/event/available">Available Events</a></li>
-    <li><a href="/event/create">Register Event</a></li>
 
-    <li class="collapse" style="background-color:#B6B6B4;"><a href="#EM_menu" data-toggle="collapse"><strong>Event management</strong><span class="sr-only">(current)</span></a></li>
-    <li>
-      <ul class="list-unstyled collapse collapsed-menu" style="margin-left:15%;" id='EM_menu'>
-        <li><a href="">Manage Event</a></li>
-        <li><a href="">Arrange Event</a></li>
-      </ul>
-    </li>
+    {% if sidebar == 'personal' %}
+      <li class="active"><a href="/index">Personal Events</a></li>
+      <li><a href="/event/available">Available Events</a></li>
+      <li><a href="/event/create">Register Event</a></li>
+      <li><a href="/role/create">Create Role</a></li>
+      <li><a href="/role/manage">Manage Roles</a></li>
+    {% elif sidebar == 'public' %}
+      <li><a href="/index">Personal Events</a></li>
+      <li class="active"><a href="/event/available">Available Events</a></li>
+      <li><a href="/event/create">Register Event</a></li>
+      <li><a href="/role/create">Create Role</a></li>
+      <li><a href="/role/manage">Manage Roles</a></li>
+    {% elif sidebar == null %}
+      <li><a href="/index">Personal Events</a></li>
+      <li><a href="/event/available">Available Events</a></li>
+      <li><a href="/event/create">Register Event</a></li>
+      <li><a href="/role/create">Create Role</a></li>
+      <li><a href="/role/manage">Manage Roles</a></li>
+    {% else %}
+      <li><a href="/index">Personal Events</a></li>
+      <li><a href="/event/available">Available Events</a></li>
+      <li  class="active"><a href="/event/create">Register Event</a></li>
+      <li><a href="/role/create">Create Role</a></li>
+      <li><a href="/role/manage">Manage Roles</a></li>
+    {% endif %}
+
   </ul>
   <div id='sidebar_title' style="display:none;">{{ side_bar }}</div>
 </div>

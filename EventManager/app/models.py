@@ -133,7 +133,7 @@ class Role(db.Model):
 
     def __init__(self, rolename, description,create_by):
         self.uuid = str(uuid.uuid1())
-        self.rolename = rolename
+        self.rolename=rolename
         self.description = description
         self.create_time = time.strftime("%H:%M:%S")
         self.create_date = time.strftime("%Y/%m/%d")
