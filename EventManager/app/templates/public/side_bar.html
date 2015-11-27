@@ -23,11 +23,21 @@
   </ul-->
   <!-- This is the side bar of the logged in pages -->
   <ul class="nav nav-sidebar">
-    <li class="active"><a href="/index">Personal Events</a></li>
-    <li><a href="/event/available">Available Events</a></li>
-    <li><a href="/event/create">Register Event</a></li>
+    <li id='personal_events'><a href="/index">Personal Events</a></li>
+    <li id='available_events'><a href="/event/available">Available Events</a></li>
+    <li id='register_events'><a href="/event/create">Register Event</a></li>
     {% for m in menus %}
       {% include m.menu_path + '/side_bar.html' %}
     {% endfor %}
   </ul>
 </div>
+<input type="hidden" id='temp_list_name' value='{{ active_list }}' />
+<script>
+  $(document).ready(function() {
+    var active_name = $("#temp_list_name").val();
+    $(document.getElementById(active_name)).addClass('active');
+    if ($(document.getElementById(active_name)).parent().hasClass('collapse')){
+      $(document.getElementById(active_name)).parent().removeClass('collapse').addClass('collapse in');
+    }
+  });
+</script>
