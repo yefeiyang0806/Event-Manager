@@ -26,16 +26,16 @@
           	</div>
 		  	 {% else %}
           	{% for event in events %}
-          	  <h3 class="event_title text-muted"><a href="/event/view?id={{ event.id }}">{{ event.topic }}</a></h3>
-          	  <h4 class="task_title text-success">&nbsp;&nbsp;Host by <strong>{{event.host}}</strong></h4>
+          	  <h3 class="event_title text-muted"><a href="/event/view?uuid={{ event.uuid }}">{{ event.topic }}</a></h3>
+          	  <h4 class="task_title text-success">&nbsp;&nbsp;Host by <strong>{{event.speaker}}</strong></h4>
           	  <table class="table">
           	    <tbody>
           	      <tr>
           	      	<td>Attendance Number: {{ event.min_attendance }} - {{ event.max_attendance }}</td>
-          	      	<td>Start at: {{ event.start_date }}</td>
-          	      	<td>Event Duration: {{ event.duration }}</td>
+                    <td>Content: {{ event.content_type.name }}</td>
+                    <td>Created Date: {{ event.create_date }}</td>
           	      	<!--c:if test="${ diet_tasks[i-1].state != 'Not Started'}"-->
-          	      	  <td><a class="btn btn-info" role="button" href="/event/modify?event_id={{ event.id }}">Join</a></td>
+          	      	  <td><a class="btn btn-info" role="button" href="/event/modify/{{ event.uuid }}">Join</a></td>
           	      	<!--/c:if-->
           	      	<!--c:if test="${ diet_tasks[i-1].state == 'Not Started'}">
           	      	<td><a class="btn btn-info disabled" role="button" href="/project/food/modify_diet_task?id=${ diet_tasks[i-1].id }">Performance</a></td>
@@ -43,8 +43,8 @@
           	      </tr>
           	      <tr>
           	      	<td>Event Status: {{ event.status }}</td>
-          	      	<td colspan="2">Event Locatin: {{ event.location }}</td>
-          	      	<td><button class="btn btn-info delete" role="button" name="{{ event.id }}">Interested</button></td>
+          	      	<td colspan="2">Event format: {{ event.format_type.name }}</td>
+          	      	<td><button class="btn btn-info delete" role="button" name="{{ event.uuid }}">Interested</button></td>
           	      </tr>
           	    </tbody>
           	  </table>

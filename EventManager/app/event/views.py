@@ -4,7 +4,7 @@ from flask import render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from flask.ext.mail import Message
 from .forms import CreateEventForm
-from ..models import User, Event, Role, Menu, Role_menu
+from ..models import User, Event, Role, Menu, Role_menu, Content, Format
 from ..emails import send_email
 from werkzeug.security import generate_password_hash
 import random
@@ -23,9 +23,11 @@ def create_event():
     menus = menus_of_role()
     form = CreateEventForm()
     if form.validate_on_submit():
-        temp = Event(form.topic.data, form.description.data, form.min_attendance.data, form.max_attendance.data, form.location.data, form.host.data, form.start_date.data, form.duration.data, user_uuid)
+        #print (db.session.query(Content).filter(Content.name == form.content.data).first().events.count())
+        temp = Event(form.topic.data, form.description.data, form.min_attendance.data, form.max_attendance.data, form.speaker.data, user_uuid, form.content.data, form.format.data)
         db.session.add(temp)
         db.session.commit()
+        #print (db.session.query(Content).filter(Content.name == form.content.data).first().events.count())
         return redirect(url_for('basic.logged_in'))
     return render_template("event/create_event.html", form=form, first_name=first_name, status=status, menus=menus)
 
@@ -35,8 +37,8 @@ def create_event():
 @event.route('/delete')
 @login_required
 def delete_event():
-    event_id = request.args.get('event_id')
-    event = db.session.query(Event).filter(Event.id == event_id).first()
+    event_uuid = request.args.get('event_uuid')
+    event = db.session.query(Event).filter(Event.uuid == event_uuid).first()
     if event.is_created_by(g.user.uuid):
         print ("delete!!!")
         print ("ready to remove the event!")
@@ -49,47 +51,43 @@ def delete_event():
 #If method is GET, show the event info on the form for the user to modify
 #If method is POST, do the validation and update the event 
 #ATTENTION: The validation is not working currently
-@event.route('/modify/<event_id>', methods = ['GET', 'POST'])
+@event.route('/modify/<event_uuid>', methods = ['GET', 'POST'])
 @login_required
-def modify_event(event_id):
+def modify_event(event_uuid):
     first_name = g.user.first_name
     status = g.user.status
     form = CreateEventForm()
-    event = Event.query.get(event_id)
+    event = Event.query.get(event_uuid)
     if request.method == 'POST':
         print("POST received")
         if form.validate_on_submit():
             #event_id = request.form.get('event_id')
             event.topic = form.topic.data
             event.description = form.description.data
-            print (form.start_date.data == None)
-            print (form.start_date.data == '')
             event.min_attendance = form.min_attendance.data
             event.max_attendance = form.max_attendance.data
-            event.location = form.location.data
-            event.host = form.host.data
-            event.start_date = form.start_date.data
-            event.duration = form.duration.data
+            event.speaker = form.speaker.data
+            event.format = form.format.data
+            event.content = form.content.data
             db.session.commit()
             return redirect(url_for("basic.index"))
         else:
             print ("Not validated")
             menus = menus_of_role()
             return render_template("event/modify_event.html", form=form,\
-                first_name=first_name, status=status, event_id=event_id, menus=menus)
+                first_name=first_name, status=status, event_uuid=event_uuid, menus=menus)
 
     if event.is_created_by(g.user.uuid):
         form.topic.data = event.topic
         form.description.data = event.description
-        form.location.data = event.location
         form.min_attendance.data = event.min_attendance
         form.max_attendance.data = event.max_attendance
-        form.host.data = event.host
-        form.duration.data = event.duration
-        form.start_date.data = event.start_date
+        form.speaker.data = event.speaker
+        form.content.data = event.content
+        form.format.data = event.format
         menus = menus_of_role()
         return render_template("event/modify_event.html", form=form,\
-            first_name=first_name, status=status, event_id=event_id, menus=menus)
+            first_name=first_name, status=status, event_uuid=event_uuid, menus=menus)
     return redirect(url_for("basic.index"))
 
 
@@ -101,8 +99,10 @@ def view_event():
     first_name = g.user.first_name
     status = g.user.status
     menus = menus_of_role()
-    event_id = request.args.get('id')
-    event = db.session.query(Event).filter(Event.id == event_id).first()
+    event_uuid = request.args.get('uuid')
+    print (event_uuid)
+    print("-----------------------------")
+    event = db.session.query(Event).filter(Event.uuid == event_uuid).first()
     if event.is_created_by(g.user.uuid):
         mode = 'creator'
     else:

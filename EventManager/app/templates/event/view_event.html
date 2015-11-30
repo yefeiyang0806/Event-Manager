@@ -16,17 +16,18 @@
   	  <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
   	  	<h1 class="page-header">{{ event.topic }}</h1>
         <h4>Description: {{ event.description }}</h4>
-        <h4>Host: {{ event.host }}</h4>
-        <h4>Start Date: {{ event.start_date }}</h4>
-        <h4>Duration: {{ event.duration }}</h4>
-        <h4>Location: {{ event.location }}</h4>
+        <h4>Host: {{ event.speaker }}</h4>
+        <h4>Event Content: {{ event.content_type.name }}</h4>
+        <h4>Event Format: {{ event.format_type.name }}</h4>
+        <h4>Created Date: {{ event.create_date }}</h4>
+        <h4>Created Time: {{ event.create_time }}</h4>
         <h4>Attendance: {{ event.min_attendance }} - {{ event.max_attendance }}</h4>
         <h4>Status: {{ event.status }}</h4>
         {% if mode == 'viewer' %}
     	    <a type="button" class="btn btn-primary btn-login" id="register">Register</a>
         {% elif mode == 'creator' %}
-          <a href='/event/modify/{{ event.id }}' type="button" class="btn btn-primary btn-login" id="modify">Modify</a>
-          <button class="btn btn-info btn-login delete" role="button" name="{{ event.id }}">Delete</button>
+          <a href='/event/modify/{{ event.uuid }}' type="button" class="btn btn-primary btn-login" id="modify">Modify</a>
+          <button class="btn btn-info btn-login delete" role="button" name="{{ event.uuid }}">Delete</button>
         {% endif %}
 
         <div style="display:none" id='confirm' title='Delete the selected event?'>
@@ -44,7 +45,7 @@
     $(document).ready(function() {
       
       $(".delete").click(function(){
-        var event_id = $(this).attr('name');
+        var event_uuid = $(this).attr('name');
         console.log("hello");
         $( "#confirm" ).dialog({
           resizable: false,
@@ -53,8 +54,8 @@
           buttons: {
             Delete: function() {
               $( this ).dialog( "close" );
-              console.log("event id is :" + event_id);
-              $(window.location).attr('href', '/event/delete?event_id='+event_id);
+              console.log("event uuid is :" + event_uuid);
+              $(window.location).attr('href', '/event/delete?event_uuid='+event_uuid);
             },
             Cancel: function() {
               $( this ).dialog( "close" );

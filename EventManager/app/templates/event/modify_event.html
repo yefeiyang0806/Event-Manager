@@ -14,9 +14,9 @@
   	<div class="row">
   	  {% include 'public/side_bar.html' %}
   	  <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-  	  	{{ wtf.quick_form(form, action='/event/modify/'+event_id, method='post', extra_classes='form-reg', id='reg_form') }}
+  	  	{{ wtf.quick_form(form, action='/event/modify/'+event_uuid, method='post', extra_classes='form-reg', id='reg_form') }}
   	  		<!--div class="date_pick_display"><input type="text" id="start_date" name="start_date" /></div-->
-      <button type="button" class="btn btn-primary btn-login" id="submit" name='{{ event_id }}'>Modify</button>
+      <button type="button" class="btn btn-primary btn-login" id="submit" name='{{ event_uuid }}'>Modify</button>
       </div>
 
   	</div>
