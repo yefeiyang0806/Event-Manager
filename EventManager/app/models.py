@@ -86,11 +86,11 @@ class Event(db.Model):
         #self.content = content
         #self.format = format
         self.schedule = schedule
-        input_content = db.session.query(Content).filter(Content.name == content).first()
-        input_format = db.session.query(Format).filter(Format.name == format).first()
+        input_content = db.session.query(Content).get(content)
+        input_format = db.session.query(Format).get(format)
         input_content.events.append(self)
         input_format.events.append(self)
-        
+
 
     def is_created_by(self, user_uuid):
         if self.create_by == user_uuid:
