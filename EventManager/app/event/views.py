@@ -123,6 +123,30 @@ def available_events():
     return render_template('event/available_events.html', events=events, first_name=first_name, status=status, menus=menus)
 
 
+#Show the page of scheduling all the approved events. The page is reached by the "Arrange Event link in the event management side bar"
+@event.route('/arrange')
+@login_required
+def arrange_events():
+    first_name = g.user.first_name
+    status = g.user.status
+    menus = menus_of_role()
+    content_filter = request.args.get('content', None)
+    format_filter = request.args.get('format', None)
+
+    if content_filter != None and format_filter != None:
+        events_content = db.session.query(Content).filter(Content.name == content_filter).first().events.all()
+        events_format = db.session.query(Format).filter(Format.name == format_filter).first().events.all()
+        events = set(events_format).intersection(events_content)
+    elif content_filter != None and format_filter == None:
+        events = db.session.query(Content).filter(Content.name == content_filter).first().events.all()
+    elif content_filter == None and format_filter != None:
+        events = db.session.query(Format).filter(Format.name == format_filter).first().events.all()
+    else:
+        events = db.session.query(Event).all()
+    #print (events)
+    return render_template('event/arrange_events.html', events=events, first_name=first_name, status=status, menus=menus)
+
+
 #Required by the LoginManager
 @lm.user_loader
 def load_user(id):
