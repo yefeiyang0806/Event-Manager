@@ -5,5 +5,5 @@ from wtforms.validators import InputRequired, Length, Email, EqualTo, Validation
 
 
 class CreateRoleForm(Form):
-	rolename = StringField('Rolename', validators=[InputRequired()])
+	rolename = StringField('Rolename', validators=[InputRequired(), Length(min=4, max=20)])
 	description = StringField('Description', validators=[InputRequired()])
