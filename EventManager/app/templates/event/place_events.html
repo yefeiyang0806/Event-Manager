@@ -1,38 +1,35 @@
 {% extends "bootstrap/base.html" %}
-{% block title %}Arrange Events{% endblock %}
+{% block title %}Place Events{% endblock %}
 {% block body %}
   {{super()}}
   <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
   <link href="{{url_for('static', filename='jquery-timepicker/jquery.timepicker.css')}}" rel="stylesheet">
   <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-  {% set active_list = 'arrange_events' %}
+  {% set active_list = 'place_events' %}
   {% include 'public/navbar.html' %}
   <div class="container-fluid">
   	<div class="row">
   		{% include 'public/side_bar.html' %}
     	<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-        <h1 class="page-header">Arrange Events</h1>
+        <h1 class="page-header">Place Events</h1>
         <br />
 
         <div class='row' style='width:90%;text-align:center;'>
           <table class='filter-table' width="90%">
             <tr>
               <td align='right'>
-                <label class='control-label' for='content-filter'>Content: </label>
+                <label class='control-label' for='content-filter'>Resource Type: </label>
                 <select id='content-filter'>
                     <option selected>----Any----</option>
-                  {% for c_name in content_names %}
-                    <option>{{ c_name }}</option>
+                  {% for t_name in r_type_names %}
+                    <option>{{ t_name }}</option>
                   {% endfor %}
                 </select>
               </td>
               <td>
-                <label class='control-label' for='format-filter'>Format: </label>
+                <label class='control-label' for='format-filter'>Resource: </label>
                 <select id='format-filter'>
-                  <option selected>--------Any--------</option>
-                  {% for f_name in format_names %}
-                    <option>{{ f_name }}</option>
-                  {% endfor %}
+                  <option selected>------Any------</option>
                 </select>
               </td>
               <td align='left'>

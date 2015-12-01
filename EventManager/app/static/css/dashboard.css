@@ -147,4 +147,9 @@ body {
 .collapsed-menu > li{
   margin-top: 10px;
 }
-
+.table-arrange {
+  width: 100%;
+}
+.table-arrange tr>td {
+  min-width: 25%;
+}

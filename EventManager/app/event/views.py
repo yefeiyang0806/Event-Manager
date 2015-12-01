@@ -160,6 +160,17 @@ def arrange_events():
         menus=menus, content_names=content_names, format_names=format_names)
 
 
+#Show the page of scheduling all the approved events. The page is reached by the "Place Event link in the event management side bar"
+@event.route('/place')
+@login_required
+def place_events():
+    first_name = g.user.first_name
+    status = g.user.status
+    menus = menus_of_role()
+    return render_template('event/place_events.html', first_name=first_name, status=status, \
+        menus=menus)
+
+
 #Required by the LoginManager
 @lm.user_loader
 def load_user(id):
