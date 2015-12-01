@@ -3,7 +3,7 @@
 {% block body %}
   {{super()}}
   <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
-  <!--link href="{{url_for('static', filename='css/register.css')}}" rel="stylesheet"-->
+  <link href="{{url_for('static', filename='jquery-timepicker/jquery.timepicker.css')}}" rel="stylesheet">
   <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
   {% set active_list = 'arrange_events' %}
   {% include 'public/navbar.html' %}
@@ -13,6 +13,36 @@
     	<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
         <h1 class="page-header">Arrange Events</h1>
         <br />
+
+        <div class='row' style='width:90%;text-align:center;'>
+          <table class='filter-table' width="90%">
+            <tr>
+              <td align='right'>
+                <label class='control-label' for='content-filter'>Content: </label>
+                <select id='content-filter'>
+                    <option selected>----Any----</option>
+                  {% for c_name in content_names %}
+                    <option>{{ c_name }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td>
+                <label class='control-label' for='format-filter'>Format: </label>
+                <select id='format-filter'>
+                  <option selected>--------Any--------</option>
+                  {% for f_name in format_names %}
+                    <option>{{ f_name }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td align='left'>
+                <button class='btn btn-primary' id='set_filter'>Search</button>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <br>
+
         <div class="table-responsive">
           {% if not events %}
 			      <div class="panel panel-warning">
@@ -24,27 +54,26 @@
               	More actions are available on the left-hand side navigator bar.
               </div>
           	</div>
-		  	 {% else %}
+		  	  {% else %}
           	{% for event in events %}
-          	  <h3 class="event_title text-muted"><a href="/event/view?uuid={{ event.uuid }}">{{ event.topic }}</a></h3>
-          	  <h4 class="task_title text-success">&nbsp;&nbsp;Host by <strong>{{event.speaker}}</strong></h4>
+          	  <!--h3 class="event_title text-muted"><a href="/event/view?uuid={{ event.uuid }}">{{ event.topic }}</a></h3>
+          	  <h4 class="task_title text-success">&nbsp;&nbsp;Host by <strong>{{event.speaker}}</strong></h4-->
           	  <table class="table">
           	    <tbody>
           	      <tr>
-          	      	<td>Attendance Number: {{ event.min_attendance }} - {{ event.max_attendance }}</td>
-                    <td>Content: {{ event.content_type.name }}</td>
-                    <td>Created Date: {{ event.create_date }}</td>
+          	      	<td><strong>{{ event.topic }}</strong></td>
+                    <td>Speaker: {{ event.speaker }}</td>
+                    <td>Format: {{event.format_type.name }}</td>
           	      	<!--c:if test="${ diet_tasks[i-1].state != 'Not Started'}"-->
-          	      	  <td><a class="btn btn-info" role="button" href="/event/modify/{{ event.uuid }}">Join</a></td>
-          	      	<!--/c:if-->
-          	      	<!--c:if test="${ diet_tasks[i-1].state == 'Not Started'}">
-          	      	<td><a class="btn btn-info disabled" role="button" href="/project/food/modify_diet_task?id=${ diet_tasks[i-1].id }">Performance</a></td>
-          	      	</c:if-->
+          	      	<td>Content: {{event.content_type.name}}</td>
           	      </tr>
+                  <form id='schedule_info' method='POST' action='/event/set_arrangement'>
           	      <tr>
-          	      	<td>Event Status: {{ event.status }}</td>
-          	      	<td colspan="2">Event format: {{ event.format_type.name }}</td>
-          	      	<td><button class="btn btn-info delete" role="button" name="{{ event.uuid }}">Interested</button></td>
+          	      	<td>Audience: {{ event.min_attendance }} - {{ event.max_attendance }}</td>
+          	      	<td>Time From: <input class='time-from' id='{{ event.uuid }}'></td>
+                    <td>Time From: <input class='time-to' id='{{ event.uuid }}'></td>
+                    <td>Resource: <input class='assign-resource' id='{{ event.uuid }}'></td>
+          	      	<!--td>Interested</td-->
           	      </tr>
           	    </tbody>
           	  </table>
@@ -59,6 +88,27 @@
       </div>
     </div>
   </div>
+
   <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>
   <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  <script src="{{url_for('static', filename='jquery-timepicker/jquery.timepicker.js')}}"></script>
+  <script>
+    $(document).ready(function() {
+      $("#set_filter").click(function(){
+        var suffix = "";
+        var content_name = $("#content-filter").find(":selected").text();
+        var format_name = $("#format-filter").find(":selected").text();
+        if (content_name != "----Any----" && format_name != "--------Any--------"){
+          suffix += "?content=" + content_name + "&format=" + format_name;
+        }
+        else if (content_name != "----Any----"){
+          suffix += "?content=" + content_name;
+        }
+        else if (format_name != "--------Any--------"){
+          suffix += "?format=" + format_name;
+        }
+        $(window.location).attr('href', '/event/arrange'+suffix);
+      });
+    });
+  </script>
 {% endblock %}
