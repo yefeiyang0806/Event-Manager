@@ -5,4 +5,4 @@ flask-mail
 flask-sqlalchemy
 sqlalchemy-migrate
 flask-wtf
-pymysql
+pymysql3

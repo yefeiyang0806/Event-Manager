@@ -24,6 +24,6 @@ class CreateEventForm(Form):
 		radio_list2.append(tup2)
 	format = SelectField('Format', choices=radio_list2)
 
-	#format = StringField("Format", validators=[InputRequired()])
+	format = StringField("Format", validators=[InputRequired()])
 	min_attendance = IntegerField('Minimal attendance', default=10)
 	max_attendance = IntegerField('Maximal attendance', default=200)

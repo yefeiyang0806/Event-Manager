@@ -233,3 +233,42 @@ def refresh_active_code(email):
     user.active_code = new_active_code
     db.session.commit()
     return new_active_code
+
+#
+@basic.upload('/upload_file', methods=['GET', 'POST'])
+def upload_file():
+    UPLOAD_FOLDER = '/path/to/the/uploads'
+    ALLOWED_EXTENSIONS = set(['txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif'])
+    form = PwdResetForm()
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            uuid = request.form.get('uuid')
+            hash_password = generate_password_hash(form.password.data) 
+            temp = db.session.query(User).get(uuid)
+            temp.password = hash_password
+            new_active_code = refresh_active_code(temp.email)
+            db.session.commit()
+            return redirect(url_for('basic.index'))
+
+        else:
+            flash("Two passwords must match")
+            active_code = request.form.get('active_code')
+            email = request.form.get('email')
+            auth_info = '?email='+email+'&active_code='+active_code
+            return redirect(url_for("basic.password_reset") + auth_info)
+    
+    active_code = request.args.get('active_code')
+    email = request.args.get('email')
+    fetched_user = db.session.query(User).filter(User.email == email).first()
+    error_msg = ""
+    uuid = ""
+    if fetched_user == None:
+        error_msg = 'Invalid Active Code.'
+    else:
+        print(fetched_user.active_code)
+        if fetched_user.active_code != active_code:
+            error_msg = 'Invalid Active Code.'
+        else:
+            uuid = fetched_user.uuid
+
+    return render_template('basic/reset_pwd.html', uuid=uuid, error_msg=error_msg, form=form, email=email, active_code=active_code)
