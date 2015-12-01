@@ -4,13 +4,13 @@ from flask import render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from flask.ext.mail import Message
 from .forms import CreateRoleForm
-from ..models import User, Role
+from ..models import User, Role, Role_menu, Menu
 from ..emails import send_email
 from werkzeug.security import generate_password_hash
 import random
 
 
-role = Blueprint('role', __name__, template_folder='templates')
+role = Blueprint('role', __name__)
 
 
 # Responsible for creating Roles.
@@ -21,14 +21,14 @@ def create_role():
     last_name = g.user.last_name
     create_by = last_name + ' ' + first_name
     status = g.user.status
-    sidebar = "create_role"
+    menus = menus_of_role()
     form = CreateRoleForm()
     if form.validate_on_submit():
         temp = Role(form.rolename.data, form.description.data, create_by)
         db.session.add(temp)
         db.session.commit()
         return redirect(url_for('role.manage_roles'))
-    return render_template("create_role.html", form=form, first_name=first_name, sidebar=sidebar, status=status)
+    return render_template("role/create_role.html", form=form, first_name=first_name, menus=menus, status=status)
 
 #Responsible for deleting existing roles.
 #Called by jquery in role.view_event.html and basic.member.html
@@ -52,7 +52,7 @@ def delete_role():
 def modify_role(role_uuid):
     first_name = g.user.first_name
     status = g.user.status
-    sidebar = 'personal'
+    menus = menus_of_role()
     form = CreateRoleForm()
     role = Role.query.get(role_uuid)
     if request.method == 'POST':
@@ -68,13 +68,13 @@ def modify_role(role_uuid):
             return redirect(url_for("role.manage_roles"))
         else:
             print ("Not validated") 
-            return render_template("modify_role.html", form=form, sidebar=sidebar, first_name=first_name, status=status, role_uuid=role_uuid)
+            return render_template("role/modify_role.html", form=form, menus=menus, first_name=first_name, status=status, role_uuid=role_uuid)
 
     # if role.is_created_by(g.user.uuid):
     else:
         form.rolename.data = role.rolename
         form.description.data = role.description         
-        return render_template("modify_role.html", form=form, sidebar=sidebar, first_name=first_name, status=status, role_uuid=role_uuid)
+        return render_template("role/modify_role.html", form=form, menus=menus, first_name=first_name, status=status, role_uuid=role_uuid)
     return redirect(url_for("role.manage_roles"))
 
 
@@ -85,11 +85,9 @@ def modify_role(role_uuid):
 def manage_roles():
     first_name = g.user.first_name
     status = g.user.status
-    sidebar = 'public'
+    menus = menus_of_role()
     roles = db.session.query(Role).all()
-
-
-    return render_template('manage_roles.html', roles=roles, first_name=first_name, status=status, sidebar=sidebar)
+    return render_template('role/manage_roles.html', roles=roles, first_name=first_name, status=status, menus=menus)
 
 
 #Required by the LoginManager
@@ -102,3 +100,14 @@ def load_user(id):
 @role.before_request
 def before_request():
     g.user = current_user
+
+
+#Return the corresponding menus of a certain user's role
+def menus_of_role():
+    middles = db.session.query(Role_menu).filter(Role_menu.role_id == g.user.role_id).all()
+    menus = list()
+    for m in middles:
+        menu = db.session.query(Menu).get(m.menu_id)
+        menus.append(menu)
+    print (menus)
+    return menus

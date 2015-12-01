@@ -5,11 +5,11 @@
   <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
   <!--link href="{{url_for('static', filename='css/register.css')}}" rel="stylesheet"-->
   <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-
-  {% include 'navbar.html' %}
+  {% set active_list = 'manage_role' %}
+  {% include 'public/navbar.html' %}
   <div class="container-fluid">
     <div class="row">
-      {% include 'side_bar.html' %}
+      {% include 'public/side_bar.html' %}
       <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
         <h1 class="page-header">Manage Roles</h1>
         <br />
@@ -27,30 +27,23 @@
          {% else %}
             {% for role in roles %}
               <h3 class="event_title text-muted">{{ role.rolename }}</h3>
-              <h4 class="task_title text-success">&nbsp;&nbsp;Create by <strong>{{role.create_by}}</strong></h4>
-              <table class="table">
+              <h4 class="task_title text-success">&nbsp;&nbsp;Created by <strong>{{role.create_by}}</strong></h4>
+              <table class="table role-table">
                 <tbody>
                   <tr>
-                    <td>Description: {{role.description}}</td>
-                    <td>                                 </td>
-                  
-                    <!--c:if test="${ diet_tasks[i-1].state != 'Not Started'}"-->
-                      <td><a class="btn btn-info" role="button" href="/role/modify/{{ role.uuid }}">Modify</a></td>
-                    <!--/c:if-->
-                    <!--c:if test="${ diet_tasks[i-1].state == 'Not Started'}">
-                    <td><a class="btn btn-info disabled" role="button" href="/project/food/modify_diet_task?id=${ diet_tasks[i-1].id }">Performance</a></td>
-                    </c:if-->
+                    <td colspan='2'>Description: {{role.description}}</td>
+                    <td align='center'><a class="btn btn-info" role="button" href="/role/modify/{{ role.uuid }}" style="width:30%;">Modify</a></td>
                   </tr>
                   <tr>
-                    <td>Create Date: {{ role.create_date }}</td>
+                    <td>Created Date: {{ role.create_date }}</td>
                     <!--c:if test="${ diet_tasks[i-1].state != 'Expired'}"-->
-                    <td colspan="2">Create Time: {{ role.create_time }}</td>
+                    <td>Created Time: {{ role.create_time }}</td>
                     <!--/c:if>
                     <c:if test="${ diet_tasks[i-1].state == 'Expired'}">
                       <td>Finished at: ${ diet_tasks[i-1].finish }</td>
                       <td>Total Calorie: ${ totalCalories[i-1] }</td>
                     </c:if-->
-                    <td><button class="btn btn-info delete" role="button" name="{{ role.uuid }}">Delete</button></td>
+                    <td align='center'><button class="btn btn-info delete" role="button" name="{{ role.uuid }}" style="width:30%;">Delete</button></td>
                   </tr>
                 </tbody>
               </table>

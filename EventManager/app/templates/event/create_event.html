@@ -1,6 +1,6 @@
 {% extends "bootstrap/base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
-{% block title %}Role Modification{% endblock %}
+{% block title %}Event Registration{% endblock %}
 {% block body %}
   {{super()}}
   <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
@@ -9,14 +9,16 @@
   	.form-group {width:50%;}
   </style>
   <!--link href="{{url_for('static', filename='css/register.css')}}" rel="stylesheet"-->
-  {% include 'navbar.html' %}
+  {% set active_list = 'register_events' %}
+  {% include 'public/navbar.html' %}
   <div class="container-fluid">
   	<div class="row">
-  	  {% include 'side_bar.html' %}
+  	  {% include 'public/side_bar.html' %}
   	  <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-  	  	{{ wtf.quick_form(form, action='/role/modify/'+role_uuid, method='post', extra_classes='form-reg', id='reg_form') }}
-  	  		<!--div class="date_pick_display"><input type="text" id="start_date" name="start_date" /></div-->
-      <button type="button" class="btn btn-primary btn-login" id="submit" name='{{ role_uuid }}'>Modify</button>
+  	  	
+  	  	{{ wtf.quick_form(form, action='/event/create', method='post', extra_classes='form-reg', id='reg_form') }}
+
+    	<button type="button" class="btn btn-primary btn-login" id="submit">Register</button>
       </div>
 
   	</div>
@@ -28,10 +30,12 @@
     $(document).ready(function() {
 	    
       $("#submit").click(function(){
-		    $("#reg_form").submit();
-	    });
+		$("#reg_form").submit();
+        //alert("Hello Im here");
+	  });
   	  
-	    $( "#start_date" ).datepicker({ minDate: "0", maxDate: "+2M", dateFormat: "yy-mm-dd"});
+	  $( "#start_date" ).datepicker({ minDate: "0", maxDate: "+2M", dateFormat: "yy-mm-dd"});
+	    
 	  });
     </script>
 	

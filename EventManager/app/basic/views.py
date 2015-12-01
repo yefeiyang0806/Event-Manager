@@ -4,13 +4,13 @@ from flask import render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from flask.ext.mail import Message
 from .forms import LoginForm, JoinForm, RetrievePwdForm, PwdResetForm
-from ..models import User, Event
+from ..models import User, Event, Menu, Role, Role_menu
 from ..emails import send_email
 from werkzeug.security import generate_password_hash
 import random
 
 
-basic = Blueprint('basic', __name__, template_folder='templates')
+basic = Blueprint('basic', __name__)
 
 
 #Home page of the website, ask for login
@@ -29,11 +29,10 @@ def index():
         remember_me = form.remember_me.data
         temp_user = db.session.query(User).filter(User.email == form.email.data)[0]
         login_user(temp_user, remember=remember_me)
-
         next = request.args.get('next')
         return redirect(next or url_for('basic.logged_in'))
 
-    return render_template("index.html", form=form, email_form=email_form)
+    return render_template("basic/index.html", form=form, email_form=email_form)
 
 
 #The home page of logged in users.
@@ -45,8 +44,9 @@ def logged_in():
     status = g.user.status
     sidebar = 'personal'
     events = g.user.events.all()
+    menus = menus_of_role()
     # print(events)
-    return render_template('member.html', first_name=first_name, events=events, sidebar=sidebar, status=status)
+    return render_template('basic/member.html', first_name=first_name, events=events, status=status, menus=menus)
 
 
 #Register a new account
@@ -64,12 +64,12 @@ def register():
         basic_url = 'http://localhost:5000'
         activate_link = basic_url + url_for('basic.activate_user') + '?active_code=' + active_code
         send_email('Event Manager Registration', ADMINS[0], [form.email.data], "Hello just for testing", \
-            render_template('email/registration_confirm.html', first_name=form.first_name.data, activate_link=activate_link))
+            render_template('basic/email/registration_confirm.html', first_name=form.first_name.data, activate_link=activate_link))
 
         temp_user = db.session.query(User).filter(User.email == form.email.data)[0]
         login_user(temp_user)
         return redirect(url_for('basic.index'))
-    return render_template("register.html", form=form)
+    return render_template("basic/register.html", form=form)
 
 
 #Send password reset link to the provided email address
@@ -81,7 +81,7 @@ def send_activate_link():
     active_code = refresh_active_code(email)
     basic_url = 'http://localhost:5000'
     activate_link = basic_url + url_for('basic.activate_user') + '?active_code=' + active_code
-    send_email('Account activate Link', ADMINS[0], [g.user.email], "", render_template('email/activate_user.html', first_name=first_name, activate_link=activate_link))
+    send_email('Account activate Link', ADMINS[0], [g.user.email], "", render_template('basic/email/activate_user.html', first_name=first_name, activate_link=activate_link))
     return redirect(url_for('basic.index'))
 
 
@@ -94,6 +94,7 @@ def send_activate_link():
 def activate_user():
     first_name = g.user.first_name
     user_uuid = g.user.uuid
+    menus = menus_of_role()
     active_code = request.args.get("active_code")
     fetched_user = db.session.query(User).filter(User.active_code == active_code).first()
     if fetched_user != None:
@@ -115,7 +116,7 @@ def activate_user():
         msg = "Sorry, your activation code is invalid. Please try again. You can receive a new activation code by the following link."
         result = 'Failed'
     status = g.user.status
-    return render_template('activate_result.html', msg=msg, result=result, first_name= first_name, status=status)
+    return render_template('basic/activate_result.html', msg=msg, result=result, first_name= first_name, status=status, menus=menus)
 
 
 #Logout user
@@ -138,7 +139,7 @@ def send_password_reset_link():
         last_name = locked_user.last_name
         name = str(first_name+" "+last_name)
         reset_link = basic_url + url_for('basic.password_reset') + '?email=' + form.email.data + '&active_code=' + active_code
-        send_email('Password Reset Link', ADMINS[0], [form.email.data], "", render_template('email/forgot_password.html', name=name, reset_link=reset_link))
+        send_email('Password Reset Link', ADMINS[0], [form.email.data], "", render_template('basic/email/forgot_password.html', name=name, reset_link=reset_link))
     else:
         flash("Invalid Email Address")
     return redirect(url_for('basic.index'))
@@ -181,7 +182,7 @@ def password_reset():
         else:
             uuid = fetched_user.uuid
 
-    return render_template('reset_pwd.html', uuid=uuid, error_msg=error_msg, form=form, email=email, active_code=active_code)
+    return render_template('basic/reset_pwd.html', uuid=uuid, error_msg=error_msg, form=form, email=email, active_code=active_code)
 
 
 #Only for testing purpose
@@ -190,7 +191,7 @@ def password_reset():
 def login():
     #first_name = g.user.first_name
     send_email('test subject', ADMINS[0], ['85230316@qq.com'], "Hello just for testing", render_template('email/registration_confirm.html', first_name=first_name))
-    return render_template('member.html', first_name='test', status=0)
+    return render_template('basic/member.html', first_name='test', status=0)
 
 
 #Required by LoginManager
@@ -205,13 +206,23 @@ def before_request():
     g.user = current_user
 
 
+#Return the corresponding menus of a certain user's role
+def menus_of_role():
+    middles = db.session.query(Role_menu).filter(Role_menu.role_id == g.user.role_id).all()
+    menus = list()
+    for m in middles:
+        menu = db.session.query(Menu).get(m.menu_id)
+        menus.append(menu)
+    print (menus)
+    return menus
+
+
 #Generate the active code.
 #Active code has length of 4, containing upper and lower case of letters only.
 def generate_active_code():
     pool = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
     candidate = random.sample(pool, 4)
     active_code = candidate[0] + candidate[1] + candidate[2] + candidate[3]
-    print ("active code: " + active_code)
     return str(active_code)
 
 
