@@ -20,3 +20,7 @@ INSERT INTO `format` VALUES ('2dcc9e9c-9733-11e5-859e-402cf4f6ef0c', 'Downtown B
 INSERT INTO `format` VALUES ('37dd3f40-9733-11e5-a857-402cf4f6ef0c', 'SAP Talk', 'SAP Talk', '2015/11/30', '14:58:00', 'Feiyang');
 INSERT INTO `format` VALUES ('40a65be6-9733-11e5-b5ba-402cf4f6ef0c', 'Customer Talk', 'Customer Talk', '2015/11/30', '14:58:00', 'Feiyang');
 INSERT INTO `format` VALUES ('4a3ab8d4-9733-11e5-92fb-402cf4f6ef0c', 'Innovative Zone', 'Innovative Zone', '2015/11/30', '14:58:00', 'Feiyang');
+
+INSERT INTO resource_type VALUES ('30f6a174-9811-11e5-8f4a-402cf4f6ef0c', 'Show Floor', '2015/11/30', '14:58:00', 'Feiyang');
+INSERT INTO resource_type VALUES ('6e5e1c2c-9811-11e5-a4f0-402cf4f6ef0c', 'S.Ballroom', '2015/11/30', '14:58:00', 'Feiyang');
+INSERT INTO resource_type VALUES ('767f99a8-9811-11e5-b83b-402cf4f6ef0c', 'L.Ballroom', '2015/11/30', '14:58:00', 'Feiyang');

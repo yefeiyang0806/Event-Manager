@@ -22,6 +22,7 @@ def create_event():
     user_uuid = g.user.uuid
     menus = menus_of_role()
     form = CreateEventForm()
+    form.set_options()
     if form.validate_on_submit():
         #print (db.session.query(Content).filter(Content.name == form.content.data).first().events.count())
         temp = Event(form.topic.data, form.description.data, form.min_attendance.data, form.max_attendance.data, form.speaker.data, user_uuid, form.content.data, form.format.data)
@@ -57,6 +58,7 @@ def modify_event(event_uuid):
     first_name = g.user.first_name
     status = g.user.status
     form = CreateEventForm()
+    form.set_options()
     event = Event.query.get(event_uuid)
     if request.method == 'POST':
         print("POST received")
@@ -156,6 +158,17 @@ def arrange_events():
     #print (events)
     return render_template('event/arrange_events.html', events=events, first_name=first_name, status=status, \
         menus=menus, content_names=content_names, format_names=format_names)
+
+
+#Show the page of scheduling all the approved events. The page is reached by the "Place Event link in the event management side bar"
+@event.route('/place')
+@login_required
+def place_events():
+    first_name = g.user.first_name
+    status = g.user.status
+    menus = menus_of_role()
+    return render_template('event/place_events.html', first_name=first_name, status=status, \
+        menus=menus)
 
 
 #Required by the LoginManager
