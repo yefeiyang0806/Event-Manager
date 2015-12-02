@@ -7,12 +7,16 @@ from ..models import Content, Format
 
 class CreateEventForm(Form):
 	topic = StringField('Topic', validators=[InputRequired()])
+	short_text = StringField('Short_Text', validators=[InputRequired()])
 	description = StringField('Description', validators=[InputRequired()])
 	speaker = StringField('Speaker', validators=[InputRequired()])
 	content = SelectField('Content')
 	format = SelectField('Format')
 	min_attendance = IntegerField('Minimal attendance', default=10)
 	max_attendance = IntegerField('Maximal attendance', default=200)
+	day_duration = StringField('Day_Duration', validators=[InputRequired()])
+	hour_duration = StringField('Hour_Duration', validators=[InputRequired()])
+	minute_duration = StringField('Minute_Duration', validators=[InputRequired()])
 
 	def set_options(self):
 		contents = db.session.query(Content).all()

@@ -309,7 +309,7 @@ class EventScore(db.Model):
     
 
     def __repr__(self):
-        return '<EventScore %r>' %(self.event_topic)
+        return '<EventScore %r>' %(self.)
 
     def __init__(self, event_topic, event_year, score, agent, create_time, create_date):
         self.uuid = str(uuid.uuid1())
