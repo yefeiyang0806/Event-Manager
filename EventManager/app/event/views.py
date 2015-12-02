@@ -132,6 +132,16 @@ def arrange_events():
     menus = menus_of_role()
     content_filter = request.args.get('content', None)
     format_filter = request.args.get('format', None)
+    contents = db.session.query(Content).all()
+    formats = db.session.query(Format.name).all()
+    content_names = list()
+    format_names = list()
+    for c in contents:
+        content_names.append(str(c.name))
+    for f in formats:
+        format_names.append(str(f.name))
+
+    print(content_names)
 
     if content_filter != None and format_filter != None:
         events_content = db.session.query(Content).filter(Content.name == content_filter).first().events.all()
@@ -144,7 +154,8 @@ def arrange_events():
     else:
         events = db.session.query(Event).all()
     #print (events)
-    return render_template('event/arrange_events.html', events=events, first_name=first_name, status=status, menus=menus)
+    return render_template('event/arrange_events.html', events=events, first_name=first_name, status=status, \
+        menus=menus, content_names=content_names, format_names=format_names)
 
 
 #Required by the LoginManager
