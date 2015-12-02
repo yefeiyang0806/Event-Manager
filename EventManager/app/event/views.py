@@ -4,7 +4,7 @@ from flask import render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from flask.ext.mail import Message
 from .forms import CreateEventForm
-from ..models import User, Event, Role, Menu, Role_menu, Content, Format
+from ..models import User, Event, Role, Menu, Role_menu, Content, Format, ResourceType, Resource
 from ..emails import send_email
 from werkzeug.security import generate_password_hash
 import random
@@ -135,15 +135,13 @@ def arrange_events():
     content_filter = request.args.get('content', None)
     format_filter = request.args.get('format', None)
     contents = db.session.query(Content).all()
-    formats = db.session.query(Format.name).all()
+    formats = db.session.query(Format).all()
     content_names = list()
     format_names = list()
     for c in contents:
         content_names.append(str(c.name))
     for f in formats:
         format_names.append(str(f.name))
-
-    print(content_names)
 
     if content_filter != None and format_filter != None:
         events_content = db.session.query(Content).filter(Content.name == content_filter).first().events.all()
@@ -167,8 +165,18 @@ def place_events():
     first_name = g.user.first_name
     status = g.user.status
     menus = menus_of_role()
+    r_type_filter = request.args.get('r_type', None)
+    resource_filter = request.args.get('resource', None)
+    r_types = db.session.query(ResourceType).all()
+    resources = db.session.query(Resource).all()
+    r_type_names = list()
+    resource_names = list()
+    for t in r_types:
+        r_type_names.append(str(t.name))
+    for r in resources:
+        resource_names.append(str(r.name))
     return render_template('event/place_events.html', first_name=first_name, status=status, \
-        menus=menus)
+        menus=menus, r_type_names=r_type_names, resource_names=resource_names)
 
 
 #Required by the LoginManager

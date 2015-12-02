@@ -3,7 +3,7 @@ import time, uuid
 
 class User(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
-    email = db.Column(db.String(120), index = True, unique = True)
+    email = db.Column(db.String(40), index = True, unique = True)
     password = db.Column(db.String(120))
     first_name = db.Column(db.String(10))
     last_name = db.Column(db.String(10))
@@ -54,46 +54,59 @@ class User(db.Model):
 
 class Event(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
-    topic = db.Column(db.String(40), index = True, unique = True)
+    topic = db.Column(db.String(40))
+    short_text = db.Column(db.String(40))
     description = db.Column(db.String(200))
     min_attendance = db.Column(db.Integer)
     max_attendance = db.Column(db.Integer)
     speaker = db.Column(db.String(40))
-    status = db.Column(db.Integer, default=0)
+    year_start = db.Column(db.String(4))
+    month_start = db.Column(db.String(2))
+    day_start = db.Column(db.String(2))
+    day_duration = db.Column(db.String(3))
+    hour_duration = db.Column(db.String(2))
+    minute_duration = db.Column(db.String(2))
+
+    status = db.Column(db.String(2), default='NA')
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
-    create_by = db.Column(db.String(40), db.ForeignKey('user.uuid'))
-    content = db.Column(db.String(40), db.ForeignKey('content.uuid'))
-    format = db.Column(db.String(40), db.ForeignKey('format.uuid'))
-    schedule = db.relationship('EventSchedule', backref='related_event', lazy='dynamic')
+    create_by = db.Column(db.String(40), db.ForeignKey('user.email'))
+    content = db.Column(db.String(40), db.ForeignKey('content.name'))
+    format = db.Column(db.String(40), db.ForeignKey('format.name'))
 
     
     def __repr__(self):
         return '<Event %r>' %(self.topic)
 
 
-    def __init__(self, topic, description, min_attendance, max_attendance, speaker, create_by, content, format, schedule=[]):
+    def __init__(self, topic, short_text, description, min_attendance, max_attendance, speaker, year_start, month_start, day_start, day_duration, hour_duration, minute_duration, create_by, content, format):
         self.uuid = str(uuid.uuid1())
         self.topic = topic
+        self.short_text = short_text
         self.description = description
         self.min_attendance = min_attendance
         self.max_attendance = max_attendance
         self.speaker = speaker
-        self.create_by = create_by
+        self.year_start = year_start
+        self.month_start = month_start
+        self.day_start = day_start
+        self.day_duration = day_duration
+        self.hour_duration = hour_duration
+        self.minute_duration = minute_duration
         self.create_time = time.strftime("%H:%M:%S")
         self.create_date = time.strftime("%Y/%m/%d")
         self.status = 0
-        #self.content = content
-        #self.format = format
-        self.schedule = schedule
-        input_content = db.session.query(Content).get(content)
-        input_format = db.session.query(Format).get(format)
+
+        create_user = db.session.query(User).filter(User.email == create_by).first()
+        input_content = db.session.query(Content).filter(Content.name == content).first()
+        input_format = db.session.query(Format).filter(Format.name == format).first()
+        create_user.events.append(self)
         input_content.events.append(self)
         input_format.events.append(self)
 
 
-    def is_created_by(self, user_uuid):
-        if self.create_by == user_uuid:
+    def is_created_by(self, user_email):
+        if self.create_by == user_email:
             return True
 
         else:
@@ -180,7 +193,7 @@ class ResourceType(db.Model):
 class Content(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
     content_id = db.Column(db.String(20))
-    name = db.Column(db.String(10), index=True, unique=True)
+    name = db.Column(db.String(20), index=True, unique=True)
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
     create_by = db.Column(db.String(20))
@@ -206,7 +219,7 @@ class Format(db.Model):
     format_id = db.Column(db.String(20))
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
-    create_by = db.Column(db.String(20))
+    create_by = db.Column(db.String(40))
     events = db.relationship('Event', backref='format_type', lazy='dynamic')
 
 
@@ -231,9 +244,9 @@ class Resource(db.Model):
     max_capacity = db.Column(db.Integer)
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
-    create_by = db.Column(db.String(20))
+    create_by = db.Column(db.String(40))
     r_type = db.Column(db.String(40), db.ForeignKey('resource_type.uuid'))
-    schedules = db.relationship('EventSchedule', backref='assigned_resource', lazy='dynamic')
+    schedule = db.relationship('EventSchedule', backref='assigned_resource', lazy='dynamic')
 
 
     def __repr__(self):
@@ -251,27 +264,35 @@ class Resource(db.Model):
 
 class EventSchedule(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
-    event = db.Column(db.String(40), db.ForeignKey('event.uuid'))
-    start_date = db.Column(db.Date, default='1970-01-01')
+    event_topic = db.Column(db.String(40))
+    event_year = db.Column(db.String(4))
+    day_from = db.Column(db.Date, nullable=True)
+    day_to = db.Column(db.Date, nullable=True)
     time_from = db.Column(db.Time, nullable=True)
     time_to = db.Column(db.Time, nullable=True)
+
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
-    create_by = db.Column(db.String(20))
-    resource = db.Column(db.String(40), db.ForeignKey('resource.uuid'))
+    create_by = db.Column(db.String(40))
+    resource = db.Column(db.String(20), db.ForeignKey('resource.r_id'))
 
 
     def __repr__(self):
-        return '<EventSchedule %r>' %(self.topic)
+        return '<EventSchedule %r>' %(self.event_topic)
 
 
-    def __init__(self, start_date, time_from, time_to, event, resource, create_by):
+    def __init__(self, event_topic, event_year, day_from, day_to, time_from, time_to, resource, create_by):
+        related_resource = db.session.query(Resource).filter(Resource.r_id == resource).first()
+        related_resource.schedule.append(self)
+
         self.uuid = str(uuid.uuid1())
-        self.start_date = start_date
+        self.event_topic = event_topic
+        self.event_year = event_year
+        self.day_from = day_from
+        self.day_to = day_to
         self.time_from = time_from
         self.time_to = time_to
         self.event = event
-        self.resource = resource
         self.create_by = create_by
         self.create_time = time.strftime("%H:%M:%S")
         self.create_date = time.strftime("%Y/%m/%d")
