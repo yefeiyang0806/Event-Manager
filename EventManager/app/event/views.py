@@ -177,6 +177,12 @@ def place_events():
         menus=menus, r_type_names=r_type_names, resource_names=resource_names)
 
 
+#Save the schedule made at the arrange-event page. Backend function. DONT'T RENDER TEMPLATES
+@event.route('/set_schedule', methods = ['GET', 'POST'])
+@login_required
+def schedule_events():
+    
+
 #Required by the LoginManager
 @lm.user_loader
 def load_user(id):
