@@ -73,6 +73,10 @@ class Event(db.Model):
     create_by = db.Column(db.String(40), db.ForeignKey('user.email'))
     content = db.Column(db.String(40), db.ForeignKey('content.name'))
     format = db.Column(db.String(40), db.ForeignKey('format.name'))
+    schedule = db.relationship('EventSchedule', backref='scheduled_event', lazy='dynamic')
+    score = db.relationship('EventScore', backref='scored_event', lazy='dynamic')
+
+    __table_args__ = (db.UniqueConstraint('topic', 'year_start', name='_topic_year_start_uc'),)
 
     
     def __repr__(self):
@@ -266,6 +270,13 @@ class EventSchedule(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
     event_topic = db.Column(db.String(40))
     event_year = db.Column(db.String(4))
+    __table_args__ = (
+        db.ForeignKeyConstraint(
+            ['event_topic', 'event_year'],
+            ['event.topic', 'event.year_start'],
+        ),
+    )
+
     day_from = db.Column(db.Date, nullable=True)
     day_to = db.Column(db.Date, nullable=True)
     time_from = db.Column(db.Time, nullable=True)
@@ -284,10 +295,10 @@ class EventSchedule(db.Model):
     def __init__(self, event_topic, event_year, day_from, day_to, time_from, time_to, resource, create_by):
         related_resource = db.session.query(Resource).filter(Resource.r_id == resource).first()
         related_resource.schedule.append(self)
+        scheduled_event = db.session.query(Event).filter(Event.topic == event_topic).filter(Event.year_start == event_year).first()
+        scheduled_event.schedule.append(self)
 
         self.uuid = str(uuid.uuid1())
-        self.event_topic = event_topic
-        self.event_year = event_year
         self.day_from = day_from
         self.day_to = day_to
         self.time_from = time_from
@@ -302,6 +313,12 @@ class EventScore(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
     event_topic = db.Column(db.String(40))
     event_year = db.Column(db.String(4))
+    __table_args__ = (
+        db.ForeignKeyConstraint(
+            ['event_topic', 'event_year'],
+            ['event.topic', 'event.year_start'],
+        ),
+    )
     score =  db.Column(db.Integer)
     agent = db.Column(db.String(40))
     create_time = db.Column(db.Time)
@@ -313,11 +330,12 @@ class EventScore(db.Model):
 
     def __init__(self, event_topic, event_year, score, agent, create_time, create_date):
         self.uuid = str(uuid.uuid1())
-        self.event_topic = event_topic
-        self.event_year = event_year
         self.score = score
         self.agent = agent
         self.create_time = create_time
         self.create_date = create_date
+
+        scored_event = db.session.query(Event).filter(Event.topic == event_topic).filter(Event.year_start == event_year).first()
+        scored_event.score.append(self)
 
         
