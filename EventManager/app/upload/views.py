@@ -1,6 +1,8 @@
 import os
-from flask import Flask, request, render_template, redirect, url_for
+from flask import Flask, request, render_template, redirect, url_for,Blueprint
 from werkzeug.utils import secure_filename
+
+upload = Blueprint('upload', __name__)
 
 UPLOAD_FOLDER = '/static/uploads'
 ALLOWED_EXTENSIONS = set(['txt'])
@@ -22,6 +24,6 @@ def upload_file():
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.',1)[1] in ALLOWED_EXTENSIONS
 
-@upload.route('/uploads/<filename>')
+@upload.route('/upload/<filename>')
 def uploaded_file(filename):
     return send_from_directory(UPLOAD_FOLDER, filename)
