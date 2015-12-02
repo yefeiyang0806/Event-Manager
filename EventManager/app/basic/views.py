@@ -7,6 +7,8 @@ from .forms import LoginForm, JoinForm, RetrievePwdForm, PwdResetForm
 from ..models import User, Event, Menu, Role, Role_menu
 from ..emails import send_email
 from werkzeug.security import generate_password_hash
+
+
 import random
 
 
@@ -233,3 +235,4 @@ def refresh_active_code(email):
     user.active_code = new_active_code
     db.session.commit()
     return new_active_code
+
