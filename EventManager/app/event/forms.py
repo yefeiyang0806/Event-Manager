@@ -18,13 +18,13 @@ class CreateEventForm(Form):
 		contents = db.session.query(Content).all()
 		radio_list = list()
 		for c in contents:
-			tup = (c.uuid, c.name)
+			tup = (c.name, c.name)
 			radio_list.append(tup)
 		self.content.choices = radio_list
 
 		formats = db.session.query(Format).all()
 		radio_list2 = list()
 		for f in formats:
-			tup2 = (f.uuid, f.name)
+			tup2 = (f.name, f.name)
 			radio_list2.append(tup2)
 		self.format.choices = radio_list2

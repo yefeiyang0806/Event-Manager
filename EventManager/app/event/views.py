@@ -19,13 +19,13 @@ event = Blueprint('event', __name__)
 def create_event():
     first_name = g.user.first_name
     status = g.user.status
-    user_uuid = g.user.uuid
+    user_email = g.user.email
     menus = menus_of_role()
     form = CreateEventForm()
     form.set_options()
     if form.validate_on_submit():
         #print (db.session.query(Content).filter(Content.name == form.content.data).first().events.count())
-        temp = Event(form.topic.data, form.description.data, form.min_attendance.data, form.max_attendance.data, form.speaker.data, user_uuid, form.content.data, form.format.data)
+        temp = Event(form.topic.data, form.description.data, form.min_attendance.data, form.max_attendance.data, form.speaker.data, user_email, form.content.data, form.format.data)
         db.session.add(temp)
         db.session.commit()
         #print (db.session.query(Content).filter(Content.name == form.content.data).first().events.count())
@@ -40,7 +40,7 @@ def create_event():
 def delete_event():
     event_uuid = request.args.get('event_uuid')
     event = db.session.query(Event).filter(Event.uuid == event_uuid).first()
-    if event.is_created_by(g.user.uuid):
+    if event.is_created_by(g.user.email):
         print ("delete!!!")
         print ("ready to remove the event!")
         db.session.delete(event)
@@ -79,7 +79,7 @@ def modify_event(event_uuid):
             return render_template("event/modify_event.html", form=form,\
                 first_name=first_name, status=status, event_uuid=event_uuid, menus=menus)
 
-    if event.is_created_by(g.user.uuid):
+    if event.is_created_by(g.user.email):
         form.topic.data = event.topic
         form.description.data = event.description
         form.min_attendance.data = event.min_attendance
@@ -102,10 +102,8 @@ def view_event():
     status = g.user.status
     menus = menus_of_role()
     event_uuid = request.args.get('uuid')
-    print (event_uuid)
-    print("-----------------------------")
     event = db.session.query(Event).filter(Event.uuid == event_uuid).first()
-    if event.is_created_by(g.user.uuid):
+    if event.is_created_by(g.user.email):
         mode = 'creator'
     else:
         mode = 'viewer'
