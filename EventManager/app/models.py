@@ -296,3 +296,28 @@ class EventSchedule(db.Model):
         self.create_by = create_by
         self.create_time = time.strftime("%H:%M:%S")
         self.create_date = time.strftime("%Y/%m/%d")
+
+
+class EventScore(db.Model):
+    uuid = db.Column(db.String(40), primary_key = True)
+    event_topic = db.Column(db.String(40))
+    event_year = db.Column(db.String(4))
+    score =  db.Column(db.Integer)
+    agent = db.Column(db.String(40))
+    create_time = db.Column(db.Time)
+    create_date = db.Column(db.Date)
+    
+
+    def __repr__(self):
+        return '<EventScore %r>' %(self.event_topic)
+
+    def __init__(self, event_topic, event_year, score, agent, create_time, create_date):
+        self.uuid = str(uuid.uuid1())
+        self.event_topic = event_topic
+        self.event_year = event_year
+        self.score = score
+        self.agent = agent
+        self.create_time = create_time
+        self.create_date = create_date
+
+        
