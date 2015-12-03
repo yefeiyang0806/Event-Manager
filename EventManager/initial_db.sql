@@ -24,3 +24,8 @@ INSERT INTO `format` VALUES ('4a3ab8d4-9733-11e5-92fb-402cf4f6ef0c', 'Innovative
 INSERT INTO resource_type VALUES ('30f6a174-9811-11e5-8f4a-402cf4f6ef0c', 'Show Floor', '2015/11/30', '14:58:00', 'Feiyang');
 INSERT INTO resource_type VALUES ('6e5e1c2c-9811-11e5-a4f0-402cf4f6ef0c', 'S.Ballroom', '2015/11/30', '14:58:00', 'Feiyang');
 INSERT INTO resource_type VALUES ('767f99a8-9811-11e5-b83b-402cf4f6ef0c', 'L.Ballroom', '2015/11/30', '14:58:00', 'Feiyang');
+
+INSERT INTO resource VALUES ('4245b22e-989a-11e5-99f8-402cf4f6ef0c', 'SF-101', 'SF-101', 'Share Floor space 1', 15, '2015/11/30', '14:58:00', 'Feiyang', '30f6a174-9811-11e5-8f4a-402cf4f6ef0c');
+INSERT INTO resource VALUES ('a2c3c030-989a-11e5-a5c9-402cf4f6ef0c', 'SF-102', 'SF-102', 'Share Floor space 2', 15, '2015/11/30', '14:58:00', 'Feiyang', '30f6a174-9811-11e5-8f4a-402cf4f6ef0c');
+INSERT INTO resource VALUES ('c918d418-989a-11e5-b267-402cf4f6ef0c', 'SBrm-01', 'SBrm-01', 'Small Ballroom 01', 30, '2015/11/30', '14:58:00', 'Feiyang', '6e5e1c2c-9811-11e5-a4f0-402cf4f6ef0c');
+INSERT INTO resource VALUES ('11a2f6da-989b-11e5-87c7-402cf4f6ef0c', 'LBrm-02', 'LBrm-02', 'Large Ballroom 02', 100, '2015/11/30', '14:58:00', 'Feiyang', '767f99a8-9811-11e5-b83b-402cf4f6ef0c');

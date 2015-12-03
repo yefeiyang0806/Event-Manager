@@ -20,16 +20,18 @@
               <td align='right'>
                 <label class='control-label' for='content-filter'>Resource Type: </label>
                 <select id='content-filter'>
-                    <option selected>----Any----</option>
-                  {% for t_name in r_type_names %}
-                    <option>{{ t_name }}</option>
-                  {% endfor %}
+                {% for t_name in r_type_names %}
+                  <option>{{ t_name }}</option>
+                {% endfor %}
                 </select>
               </td>
               <td>
                 <label class='control-label' for='format-filter'>Resource: </label>
                 <select id='format-filter'>
                   <option selected>------Any------</option>
+                  {% for r_name in resource_names %}
+                    <option>{{ r_name }}</option>
+                  {% endfor %}
                 </select>
               </td>
               <td align='left'>

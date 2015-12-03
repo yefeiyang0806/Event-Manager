@@ -67,23 +67,23 @@
           	      	<!--c:if test="${ diet_tasks[i-1].state != 'Not Started'}"-->
           	      	<td>Content: {{event.content_type.name}}</td>
           	      </tr>
-                  <form id='schedule_info' method='POST' action='/event/set_arrangement'>
+                  <form class='schedule_info' method='POST' action='/event/set_arrangement'>
           	      <tr>
           	      	<td>Audience: {{ event.min_attendance }} - {{ event.max_attendance }}</td>
-          	      	<td>Time From: <input class='time-from' id='{{ event.uuid }}'></td>
-                    <td>Time From: <input class='time-to' id='{{ event.uuid }}'></td>
-                    <td>Resource: <input class='assign-resource' id='{{ event.uuid }}'></td>
+          	      	<td>Date: <input class='date-picker'></td>
+                    <td>Time: <input class='time-from'> to <input class='time-to'></td>
+                    <td>Resource: <input class='assign-resource'></td>
+                    <input type='hidden' id='event_uuid' value='{{ event.uuid }}'>
           	      	<!--td>Interested</td-->
           	      </tr>
+                  </form>
           	    </tbody>
           	  </table>
           	  <br />
           	    
           	{% endfor %}
+            <button class='btn btn-primary' id='submit_schedule'>Submit</button>
           {% endif %}
-        </div>
-        <div style="display:none" id='confirm' title='Delete the selected event?'>
-          <p>Do you want to delete the selected event?</p>
         </div>
       </div>
     </div>
@@ -110,8 +110,24 @@
         $(window.location).attr('href', '/event/arrange'+suffix);
       });
 
+      $(".date-picker").datepicker();
       $(".time-from").timepicker({ 'timeFormat': 'H:i:s' });
       $(".time-to").timepicker({ 'timeFormat': 'H:i:s' });
+
+      $("#submit_schedule").click(function(){
+        var data = [];
+        $(".schedule_info").each(function(){
+          var date = $(this).find(".date-picker");
+          console.log($(".date-picker").val());
+          var time_from = $(this).find(".time-from").val();
+          var time_to = $(this).find(".time-to").val();
+          var event_uuid = $(this).find("#event_uuid").val();
+          var record = {"event_uuid": event_uuid, "date": date, "time_from": time_from, "time_to": time_to};
+          data.push(record);
+        });
+        console.log(data);
+      });
+
     });
   </script>
 {% endblock %}

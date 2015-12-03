@@ -4,7 +4,7 @@ from flask import render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from flask.ext.mail import Message
 from .forms import CreateEventForm
-from ..models import User, Event, Role, Menu, Role_menu, Content, Format
+from ..models import User, Event, Role, Menu, Role_menu, Content, Format, ResourceType, Resource
 from ..emails import send_email
 from werkzeug.security import generate_password_hash
 import random
@@ -19,13 +19,13 @@ event = Blueprint('event', __name__)
 def create_event():
     first_name = g.user.first_name
     status = g.user.status
-    user_uuid = g.user.uuid
+    user_email = g.user.email
     menus = menus_of_role()
     form = CreateEventForm()
     form.set_options()
     if form.validate_on_submit():
         #print (db.session.query(Content).filter(Content.name == form.content.data).first().events.count())
-        temp = Event(form.topic.data, form.description.data, form.min_attendance.data, form.max_attendance.data, form.speaker.data, user_uuid, form.content.data, form.format.data)
+        temp = Event(form.topic.data, form.description.data, form.min_attendance.data, form.max_attendance.data, form.speaker.data, user_email, form.content.data, form.format.data)
         db.session.add(temp)
         db.session.commit()
         #print (db.session.query(Content).filter(Content.name == form.content.data).first().events.count())
@@ -40,7 +40,7 @@ def create_event():
 def delete_event():
     event_uuid = request.args.get('event_uuid')
     event = db.session.query(Event).filter(Event.uuid == event_uuid).first()
-    if event.is_created_by(g.user.uuid):
+    if event.is_created_by(g.user.email):
         print ("delete!!!")
         print ("ready to remove the event!")
         db.session.delete(event)
@@ -79,7 +79,7 @@ def modify_event(event_uuid):
             return render_template("event/modify_event.html", form=form,\
                 first_name=first_name, status=status, event_uuid=event_uuid, menus=menus)
 
-    if event.is_created_by(g.user.uuid):
+    if event.is_created_by(g.user.email):
         form.topic.data = event.topic
         form.description.data = event.description
         form.min_attendance.data = event.min_attendance
@@ -102,10 +102,8 @@ def view_event():
     status = g.user.status
     menus = menus_of_role()
     event_uuid = request.args.get('uuid')
-    print (event_uuid)
-    print("-----------------------------")
     event = db.session.query(Event).filter(Event.uuid == event_uuid).first()
-    if event.is_created_by(g.user.uuid):
+    if event.is_created_by(g.user.email):
         mode = 'creator'
     else:
         mode = 'viewer'
@@ -135,15 +133,13 @@ def arrange_events():
     content_filter = request.args.get('content', None)
     format_filter = request.args.get('format', None)
     contents = db.session.query(Content).all()
-    formats = db.session.query(Format.name).all()
+    formats = db.session.query(Format).all()
     content_names = list()
     format_names = list()
     for c in contents:
         content_names.append(str(c.name))
     for f in formats:
         format_names.append(str(f.name))
-
-    print(content_names)
 
     if content_filter != None and format_filter != None:
         events_content = db.session.query(Content).filter(Content.name == content_filter).first().events.all()
@@ -167,9 +163,25 @@ def place_events():
     first_name = g.user.first_name
     status = g.user.status
     menus = menus_of_role()
+    r_type_filter = request.args.get('r_type', None)
+    resource_filter = request.args.get('resource', None)
+    r_types = db.session.query(ResourceType).all()
+    resources = db.session.query(Resource).all()
+    r_type_names = list()
+    resource_names = list()
+    for t in r_types:
+        r_type_names.append(str(t.name))
+    for r in resources:
+        resource_names.append(str(r.name))
     return render_template('event/place_events.html', first_name=first_name, status=status, \
-        menus=menus)
+        menus=menus, r_type_names=r_type_names, resource_names=resource_names)
 
+
+#Save the schedule made at the arrange-event page. Backend function. DONT'T RENDER TEMPLATES
+@event.route('/set_schedule', methods = ['GET', 'POST'])
+@login_required
+def schedule_events():
+    return render_template('basic.member.html')
 
 #Required by the LoginManager
 @lm.user_loader
