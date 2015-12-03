@@ -19,6 +19,10 @@
         <h4>Host: {{ event.speaker }}</h4>
         <h4>Event Content: {{ event.content_type.name }}</h4>
         <h4>Event Format: {{ event.format_type.name }}</h4>
+        <h4>Event DateStart: {{ event.year_start + event.month_start + event.day_start}}</h4>
+        <h4>Event Day Duration: {{ event.day_duration }}</h4>
+        <h4>Event Hour Duration: {{ event.hour_duration }}</h4>
+        <h4>Event Minute Duration:{{ event.minute_duration }}</h4>        
         <h4>Created Date: {{ event.create_date }}</h4>
         <h4>Created Time: {{ event.create_time }}</h4>
         <h4>Attendance: {{ event.min_attendance }} - {{ event.max_attendance }}</h4>
