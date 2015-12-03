@@ -181,7 +181,7 @@ def place_events():
 @event.route('/set_schedule', methods = ['GET', 'POST'])
 @login_required
 def schedule_events():
-    
+    return render_template('basic.member.html')
 
 #Required by the LoginManager
 @lm.user_loader

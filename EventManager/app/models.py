@@ -3,16 +3,20 @@ import time, uuid
 
 class User(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
+    user_id = db.Column(db.String(10), index=True, unique = True)
     email = db.Column(db.String(40), index = True, unique = True)
     password = db.Column(db.String(120))
-    first_name = db.Column(db.String(10))
-    last_name = db.Column(db.String(10))
+    first_name = db.Column(db.String(20))
+    last_name = db.Column(db.String(20))
+    full_name = db.Column(db.String(60))
+    department = db.Column(db.String(40))
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
-    events = db.relationship('Event', backref='author', lazy='dynamic')
+    created_topics = db.relationship('Event', backref='author', lazy='dynamic')
+    topics_to_speak = db.relationship('Event', backref='speaker')
     status = db.Column(db.Integer, default=0)
     active_code = db.Column(db.String(4))
-    role_id = db.Column(db.String(40), db.ForeignKey('role.uuid'))
+    role_id = db.Column(db.String(40), db.ForeignKey('role.rolename'))
 
 
     def is_authenticated(self):
@@ -38,28 +42,30 @@ class User(db.Model):
         return '<User %r>' % (self.username)
 
 
-    def __init__(self, email, password, first_name, last_name, active_code):
+    def __init__(self, user_id, email, password, first_name, last_name, department, active_code):
         self.uuid = str(uuid.uuid1())
+        self.user_id = user_id
         self.email = email
         self.password = password
         self.first_name = first_name
         self.last_name = last_name
+        self.full_name = first_name + ' ' + last_name
+        self.department = department
         self.create_time = time.strftime("%H:%M:%S")
         self.create_date = time.strftime("%Y/%m/%d")
         self.active_code = active_code
         self.status = 0
-        role = db.session.query(Role.uuid).filter(Role.rolename == "normal").first()
-        self.role_id = str(role.uuid)
+        related_role = db.session.query(Role.uuid).filter(Role.rolename == "normal").first()
+        related_role.append(self)
 
 
-class Event(db.Model):
+class Topic(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
-    topic = db.Column(db.String(40))
-    short_text = db.Column(db.String(40))
-    description = db.Column(db.String(200))
+    topic_id = db.Column(db.String())
+    title = db.Column(db.String(255))
+    description = db.Column(db.String(400))
     min_attendance = db.Column(db.Integer)
     max_attendance = db.Column(db.Integer)
-    speaker = db.Column(db.String(40))
     year_start = db.Column(db.String(4))
     month_start = db.Column(db.String(2))
     day_start = db.Column(db.String(2))
@@ -70,27 +76,32 @@ class Event(db.Model):
     status = db.Column(db.String(2), default='NA')
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
-    create_by = db.Column(db.String(40), db.ForeignKey('user.email'))
-    content = db.Column(db.String(40), db.ForeignKey('content.name'))
-    format = db.Column(db.String(40), db.ForeignKey('format.name'))
-    schedule = db.relationship('EventSchedule', backref='scheduled_event', lazy='dynamic')
-    score = db.relationship('EventScore', backref='scored_event', lazy='dynamic')
+    speaker1 = db.Column(db.String(10), db.ForeignKey('user.user_id'))
+    speaker2 = db.Column(db.String(10), nullable=True)
+    speaker3 = db.Column(db.String(10), nullable=True)
+    create_by = db.Column(db.String(10), db.ForeignKey('user.user_id'))
+    content = db.Column(db.String(40), db.ForeignKey('content.content_id'))
+    format = db.Column(db.String(40), db.ForeignKey('format.format_id'))
+    schedule = db.relationship('EventSchedule', backref='scheduled_topic', lazy='dynamic')
+    validation = db.relationship('TopicValidation', backref='validated_topic', lazy='dynamic')
 
-    __table_args__ = (db.UniqueConstraint('topic', 'year_start', name='_topic_year_start_uc'),)
+    __table_args__ = (db.UniqueConstraint('title', 'year_start', name='_title_year_start_uc'),)
 
     
     def __repr__(self):
         return '<Event %r>' %(self.topic)
 
 
-    def __init__(self, topic, short_text, description, min_attendance, max_attendance, speaker, year_start, month_start, day_start, day_duration, hour_duration, minute_duration, create_by, content, format):
+    def __init__(self, title, description, min_attendance, max_attendance, speaker1, speaker2, speaker3, year_start, month_start, day_start, \
+        day_duration, hour_duration, minute_duration, create_by, content_id, format_id):
         self.uuid = str(uuid.uuid1())
-        self.topic = topic
-        self.short_text = short_text
+        self.title = title
         self.description = description
         self.min_attendance = min_attendance
         self.max_attendance = max_attendance
-        self.speaker = speaker
+        self.speaker1 = speaker1
+        self.speaker2 = speaker2
+        self.speaker3 = speaker3
         self.year_start = year_start
         self.month_start = month_start
         self.day_start = day_start
@@ -101,16 +112,18 @@ class Event(db.Model):
         self.create_date = time.strftime("%Y/%m/%d")
         self.status = 0
 
-        create_user = db.session.query(User).filter(User.email == create_by).first()
-        input_content = db.session.query(Content).filter(Content.name == content).first()
-        input_format = db.session.query(Format).filter(Format.name == format).first()
+        create_user = db.session.query(User).filter(User.user_id == create_by).first()
+        input_content = db.session.query(Content).filter(Content.content_id == content_id).first()
+        input_format = db.session.query(Format).filter(Format.format_id == format_id).first()
+        
         create_user.events.append(self)
         input_content.events.append(self)
         input_format.events.append(self)
 
 
-    def is_created_by(self, user_email):
-        if self.create_by == user_email:
+
+    def is_created_by(self, user_id):
+        if self.create_by == user_id:
             return True
 
         else:
