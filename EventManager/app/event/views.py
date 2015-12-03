@@ -4,7 +4,7 @@ from flask import render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from flask.ext.mail import Message
 from .forms import CreateEventForm
-from ..models import User, Event, Role, Menu, Role_menu, Content, Format, ResourceType, Resource
+from ..models import User, Topic, Role, Menu, Role_menu, Content, Format, ResourceType, Resource
 from ..emails import send_email
 from werkzeug.security import generate_password_hash
 import random

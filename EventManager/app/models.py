@@ -12,11 +12,11 @@ class User(db.Model):
     department = db.Column(db.String(40))
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
-    created_topics = db.relationship('Event', backref='author', lazy='dynamic')
-    topics_to_speak = db.relationship('Event', backref='speaker')
+    created_topics = db.relationship('Topic', backref='author', lazy='dynamic')
+    topics_to_speak = db.relationship('Topic', backref='speaker')
     status = db.Column(db.Integer, default=0)
     active_code = db.Column(db.String(4))
-    role_id = db.Column(db.String(40), db.ForeignKey('role.rolename'))
+    role_id = db.Column(db.String(40), db.ForeignKey('role.role_id'))
 
 
     def is_authenticated(self):
@@ -61,7 +61,7 @@ class User(db.Model):
 
 class Topic(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
-    topic_id = db.Column(db.String())
+    topic_id = db.Column(db.String(10))
     title = db.Column(db.String(255))
     description = db.Column(db.String(400))
     min_attendance = db.Column(db.Integer)
@@ -82,7 +82,7 @@ class Topic(db.Model):
     create_by = db.Column(db.String(10), db.ForeignKey('user.user_id'))
     content = db.Column(db.String(40), db.ForeignKey('content.content_id'))
     format = db.Column(db.String(40), db.ForeignKey('format.format_id'))
-    schedule = db.relationship('EventSchedule', backref='scheduled_topic', lazy='dynamic')
+    schedule = db.relationship('TopicSchedule', backref='scheduled_topic', lazy='dynamic')
     validation = db.relationship('TopicValidation', backref='validated_topic', lazy='dynamic')
 
     __table_args__ = (db.UniqueConstraint('title', 'year_start', name='_title_year_start_uc'),)
@@ -116,6 +116,9 @@ class Topic(db.Model):
         input_content = db.session.query(Content).filter(Content.content_id == content_id).first()
         input_format = db.session.query(Format).filter(Format.format_id == format_id).first()
         
+        same_format_topic_count = db.session.query(Topic).filter(Topic.format == input_format.format_id).count()
+        self.topic_id = input_format.format_id + "-" + same_format_topic_count
+        
         create_user.events.append(self)
         input_content.events.append(self)
         input_format.events.append(self)
@@ -132,43 +135,58 @@ class Topic(db.Model):
 
 class Role_menu(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
-    role_id = db.Column(db.String(40), db.ForeignKey('role.uuid'), primary_key = True)
-    menu_id = db.Column(db.String(40), db.ForeignKey('menu.uuid'), primary_key = True)
+    role_id = db.Column(db.String(10), db.ForeignKey('role.role_id'), primary_key = True)
+    menu_id = db.Column(db.String(10), db.ForeignKey('menu.menu_id'), primary_key = True)
     menu = db.relationship("Menu", backref="role_assoc")
+    create_date = db.Column(db.Date)
+    create_time = db.Column(db.Time)
+    create_by = db.Column(db.String(10))
 
     def __repr__(self):
         return '<Role_Menu %r>' % (self.uuid)
 
 
-    def __init__(self, role_id, menu_id):
+    def __init__(self, role_id, menu_id, create_by):
         self.role_id = role_id
         self.menu_id = menu_id
         self.uuid = str(uuid.uuid1())
+        self.create_time = time.strftime("%H:%M:%S")
+        self.create_date = time.strftime("%Y/%m/%d")
+        self.create_by = create_by
 
 
 class Menu(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
     menu = db.Column(db.String(40), index = True, unique = True)
+    menu_id = db.Column(db.String(10), index = True, unique = True)
     menu_path = db.Column(db.String(40))
+    create_date = db.Column(db.Date)
+    create_time = db.Column(db.Time)
+    create_by = db.Column(db.String(10))
 
 
     def __repr__(self):
         return '<User %r>' % (self.menu)
 
 
-    def __init__(self, menu, menu_path):
+    def __init__(self, menu, menu_id, menu_path, create_by):
         self.uuid = str(uuid.uuid1())
         self.menu = menu
+        self.menu_id = menu_id
         self.menu_path = menu_path
+        self.create_time = time.strftime("%H:%M:%S")
+        self.create_date = time.strftime("%Y/%m/%d")
+        self.create_by = create_by
 
 
 class Role(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
     rolename = db.Column(db.String(20), index = True, unique = True)
+    role_id = db.Column(db.String(10), index = True, unique = True)
     description = db.Column(db.String(40))
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
-    create_by = db.Column(db.String(20))
+    create_by = db.Column(db.String(10))
     menus = db.relationship("Role_menu", backref='role')
 
     
@@ -176,9 +194,10 @@ class Role(db.Model):
         return '<Role %r>' %(self.rolename)
 
 
-    def __init__(self, rolename, description,create_by):
+    def __init__(self, rolename, role_id, description,create_by):
         self.uuid = str(uuid.uuid1())
         self.rolename=rolename
+        self.role_id = role_id
         self.description = description
         self.create_time = time.strftime("%H:%M:%S")
         self.create_date = time.strftime("%Y/%m/%d")
@@ -190,7 +209,7 @@ class ResourceType(db.Model):
     name = db.Column(db.String(10), index=True, unique=True)
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
-    create_by = db.Column(db.String(20))
+    create_by = db.Column(db.String(10))
     related_resources = db.relationship('Resource', backref='resource_type', lazy='dynamic')
 
 
@@ -209,11 +228,11 @@ class ResourceType(db.Model):
 
 class Content(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
-    content_id = db.Column(db.String(20))
+    content_id = db.Column(db.String(20), unique = True)
     name = db.Column(db.String(20), index=True, unique=True)
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
-    create_by = db.Column(db.String(20))
+    create_by = db.Column(db.String(10))
     events = db.relationship('Event', backref='content_type', lazy='dynamic')
 
 
@@ -233,10 +252,10 @@ class Content(db.Model):
 class Format(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
     name = db.Column(db.String(20), index=True, unique=True)
-    format_id = db.Column(db.String(20))
+    format_id = db.Column(db.String(20), unique = True)
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
-    create_by = db.Column(db.String(40))
+    create_by = db.Column(db.String(10))
     events = db.relationship('Event', backref='format_type', lazy='dynamic')
 
 
@@ -261,7 +280,7 @@ class Resource(db.Model):
     max_capacity = db.Column(db.Integer)
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
-    create_by = db.Column(db.String(40))
+    create_by = db.Column(db.String(10))
     r_type = db.Column(db.String(40), db.ForeignKey('resource_type.uuid'))
     schedule = db.relationship('EventSchedule', backref='assigned_resource', lazy='dynamic')
 
@@ -279,14 +298,14 @@ class Resource(db.Model):
         self.resource_type = resource_type.uuid
 
 
-class EventSchedule(db.Model):
+class TopicSchedule(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
-    event_topic = db.Column(db.String(40))
-    event_year = db.Column(db.String(4))
+    topic_title = db.Column(db.String(255))
+    topic_year = db.Column(db.String(4))
     __table_args__ = (
         db.ForeignKeyConstraint(
-            ['event_topic', 'event_year'],
-            ['event.topic', 'event.year_start'],
+            ['topic_title', 'topic_year'],
+            ['topic.title', 'topic.year_start'],
         ),
     )
 
@@ -297,58 +316,59 @@ class EventSchedule(db.Model):
 
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
-    create_by = db.Column(db.String(40))
+    create_by = db.Column(db.String(10))
     resource = db.Column(db.String(20), db.ForeignKey('resource.r_id'))
 
 
     def __repr__(self):
-        return '<EventSchedule %r>' %(self.event_topic)
+        return '<TopicSchedule %r>' %(self.topic_topic)
 
 
-    def __init__(self, event_topic, event_year, day_from, day_to, time_from, time_to, resource, create_by):
+    def __init__(self, topic_title, topic_year, day_from, day_to, time_from, time_to, resource, create_by):
         related_resource = db.session.query(Resource).filter(Resource.r_id == resource).first()
         related_resource.schedule.append(self)
-        scheduled_event = db.session.query(Event).filter(Event.topic == event_topic).filter(Event.year_start == event_year).first()
-        scheduled_event.schedule.append(self)
+        scheduled_topic = db.session.query(Topic).filter(Topic.title == topic_title).filter(topic.year_start == topic_year).first()
+        scheduled_topic.schedule.append(self)
 
         self.uuid = str(uuid.uuid1())
         self.day_from = day_from
         self.day_to = day_to
         self.time_from = time_from
         self.time_to = time_to
-        self.event = event
         self.create_by = create_by
         self.create_time = time.strftime("%H:%M:%S")
         self.create_date = time.strftime("%Y/%m/%d")
 
 
-class EventScore(db.Model):
+class TopicValidation(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
-    event_topic = db.Column(db.String(40))
-    event_year = db.Column(db.String(4))
+    topic_title = db.Column(db.String(255))
+    topic_year = db.Column(db.String(4))
     __table_args__ = (
         db.ForeignKeyConstraint(
-            ['event_topic', 'event_year'],
-            ['event.topic', 'event.year_start'],
+            ['topic_title', 'topic_year'],
+            ['topic.title', 'topic.year_start'],
         ),
     )
-    score =  db.Column(db.Integer)
-    agent = db.Column(db.String(40))
+    validation =  db.Column(db.Integer)
+    agent = db.Column(db.String(10))
     create_time = db.Column(db.Time)
     create_date = db.Column(db.Date)
     
 
     def __repr__(self):
-        return '<EventScore %r>' %(self.event_topic)
+        return '<TopicValidation %r>' %(self.topic_title)
 
-    def __init__(self, event_topic, event_year, score, agent, create_time, create_date):
+    def __init__(self, topic_title, topic_year, validation, agent):
         self.uuid = str(uuid.uuid1())
-        self.score = score
+        self.validation = validation
         self.agent = agent
         self.create_time = create_time
         self.create_date = create_date
+        self.create_time = time.strftime("%H:%M:%S")
+        self.create_date = time.strftime("%Y/%m/%d")
 
-        scored_event = db.session.query(Event).filter(Event.topic == event_topic).filter(Event.year_start == event_year).first()
-        scored_event.score.append(self)
+        validated_topic = db.session.query(Topic).filter(Topic.title == topic_title).filter(Topic.year_start == topic_year).first()
+        validated_topic.validation.append(self)
 
         

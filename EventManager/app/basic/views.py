@@ -4,7 +4,7 @@ from flask import render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from flask.ext.mail import Message
 from .forms import LoginForm, JoinForm, RetrievePwdForm, PwdResetForm
-from ..models import User, Event, Menu, Role, Role_menu
+from ..models import User, Topic, Menu, Role, Role_menu
 from ..emails import send_email
 from werkzeug.security import generate_password_hash
 
@@ -38,17 +38,17 @@ def index():
 
 
 #The home page of logged in users.
-#List all the events created by the logged-in user
+#List all the topics created by the logged-in user
 @basic.route('/member', methods = ['GET', 'POST'])
 @login_required
 def logged_in():
-    first_name = g.user.first_name
+    full_name = g.user.full_name
     status = g.user.status
     sidebar = 'personal'
-    events = g.user.events.all()
+    topics = g.user.topics.all()
     menus = menus_of_role()
-    # print(events)
-    return render_template('basic/member.html', first_name=first_name, events=events, status=status, menus=menus)
+    # print(topics)
+    return render_template('basic/member.html', full_name=full_name, topics=topics, status=status, menus=menus)
 
 
 #Register a new account
@@ -60,13 +60,13 @@ def register():
         flash('Passed validation')
         hash_password = generate_password_hash(form.password.data)
         active_code = generate_active_code()
-        temp = User(form.email.data, hash_password, form.first_name.data, form.last_name.data, active_code)
+        temp = User(form.email.data, hash_password, form.full_name.data, form.last_name.data, active_code)
         db.session.add(temp)
         db.session.commit()
         basic_url = 'http://localhost:5000'
         activate_link = basic_url + url_for('basic.activate_user') + '?active_code=' + active_code
         send_email('Event Manager Registration', ADMINS[0], [form.email.data], "Hello just for testing", \
-            render_template('basic/email/registration_confirm.html', first_name=form.first_name.data, activate_link=activate_link))
+            render_template('basic/email/registration_confirm.html', full_name=form.full_name.data, activate_link=activate_link))
 
         temp_user = db.session.query(User).filter(User.email == form.email.data)[0]
         login_user(temp_user)
@@ -78,12 +78,12 @@ def register():
 @basic.route('/send_activate')
 @login_required
 def send_activate_link():
-    first_name = g.user.first_name
+    full_name = g.user.full_name
     email = g.user.email
     active_code = refresh_active_code(email)
     basic_url = 'http://localhost:5000'
     activate_link = basic_url + url_for('basic.activate_user') + '?active_code=' + active_code
-    send_email('Account activate Link', ADMINS[0], [g.user.email], "", render_template('basic/email/activate_user.html', first_name=first_name, activate_link=activate_link))
+    send_email('Account activate Link', ADMINS[0], [g.user.email], "", render_template('basic/email/activate_user.html', full_name=full_name, activate_link=activate_link))
     return redirect(url_for('basic.index'))
 
 
@@ -94,7 +94,7 @@ def send_activate_link():
 @basic.route('/activate_user')
 @login_required
 def activate_user():
-    first_name = g.user.first_name
+    full_name = g.user.full_name
     user_uuid = g.user.uuid
     menus = menus_of_role()
     active_code = request.args.get("active_code")
@@ -118,7 +118,7 @@ def activate_user():
         msg = "Sorry, your activation code is invalid. Please try again. You can receive a new activation code by the following link."
         result = 'Failed'
     status = g.user.status
-    return render_template('basic/activate_result.html', msg=msg, result=result, first_name= first_name, status=status, menus=menus)
+    return render_template('basic/activate_result.html', msg=msg, result=result, full_name= full_name, status=status, menus=menus)
 
 
 #Logout user
@@ -137,9 +137,9 @@ def send_password_reset_link():
     if form.validate_on_submit():
         locked_user = db.session.query(User).filter(User.email == form.email.data).first()
         active_code = refresh_active_code(locked_user.email)
-        first_name = locked_user.first_name
+        full_name = locked_user.full_name
         last_name = locked_user.last_name
-        name = str(first_name+" "+last_name)
+        name = str(full_name+" "+last_name)
         reset_link = basic_url + url_for('basic.password_reset') + '?email=' + form.email.data + '&active_code=' + active_code
         send_email('Password Reset Link', ADMINS[0], [form.email.data], "", render_template('basic/email/forgot_password.html', name=name, reset_link=reset_link))
     else:
@@ -191,9 +191,9 @@ def password_reset():
 #Test the feature of sending emails
 @basic.route('/login')
 def login():
-    #first_name = g.user.first_name
-    send_email('test subject', ADMINS[0], ['85230316@qq.com'], "Hello just for testing", render_template('email/registration_confirm.html', first_name=first_name))
-    return render_template('basic/member.html', first_name='test', status=0)
+    #full_name = g.user.full_name
+    send_email('test subject', ADMINS[0], ['85230316@qq.com'], "Hello just for testing", render_template('email/registration_confirm.html', full_name=full_name))
+    return render_template('basic/member.html', full_name='test', status=0)
 
 
 #Required by LoginManager
