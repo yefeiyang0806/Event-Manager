@@ -11,7 +11,7 @@ ALLOWED_EXTENSIONS = set(['txt'])
 @upload.route('/upload_file', methods=['GET', 'POST'])
 def upload_file():
     if request.method == 'GET':
-        return render_template('/upload.html')
+        return render_template('upload/upload.html')
     elif request.method == 'POST':
         f = request.files['file']
         if f and allowed_file(f.filename):
