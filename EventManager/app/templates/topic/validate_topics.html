@@ -1,0 +1,133 @@
+{% extends "bootstrap/base.html" %}
+{% block title %}Validate Topics{% endblock %}
+{% block body %}
+  {{super()}}
+  <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
+  <link href="{{url_for('static', filename='jquery-timepicker/jquery.timepicker.css')}}" rel="stylesheet">
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  {% set active_list = 'validate_topics' %}
+  {% include 'public/navbar.html' %}
+  <div class="container-fluid">
+  	<div class="row">
+  		{% include 'public/side_bar.html' %}
+    	<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+        <h1 class="page-header">Validate Topics</h1>
+        <br />
+
+        <div class='row' style='width:90%;text-align:center;'>
+          <table class='filter-table' width="90%">
+            <tr>
+              <td align='right'>
+                <label class='control-label' for='content-filter'>Content: </label>
+                <select id='content-filter'>
+                    <option selected>----Any----</option>
+                  {% for c_name in content_names %}
+                    <option>{{ c_name }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td>
+                <label class='control-label' for='format-filter'>Format: </label>
+                <select id='format-filter'>
+                  <option selected>--------Any--------</option>
+                  {% for f_name in format_names %}
+                    <option>{{ f_name }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td align='left'>
+                <button class='btn btn-primary' id='set_filter'>Search</button>
+              </td>
+            </tr>
+          </table>
+        </div>
+        <br>
+
+        <div class="table-responsive">
+          {% if not topics %}
+			      <div class="panel panel-warning">
+            	<div class="panel-heading">
+              	<h2 class="panel-title">No topic waiting for validation.</h2>
+              </div>
+              <div class="panel-body">
+              	You can change the filter conditions above<br />
+              	to search for topics in other categories.
+              </div>
+          	</div>
+		  	  {% else %}
+          	{% for topic in topics %}
+          	  <!--h3 class="topic_title text-muted"><a href="/topic/view?uuid={{ topic.topic_id }}">{{ topic.topic }}</a></h3>
+          	  <h4 class="task_title text-success">&nbsp;&nbsp;Host by <strong>{{topic.speaker}}</strong></h4-->
+          	  <table class="table-arrange table-striped">
+          	    <tbody>
+          	      <tr>
+          	      	<td><strong>{{ topic.title }}</strong></td>
+                    <td>Speaker: {{ topic.speaker }}</td>
+                    <td>Format: {{topic.format_type.name }}</td>
+          	      	<!--c:if test="${ diet_tasks[i-1].state != 'Not Started'}"-->
+          	      	<td>Content: {{topic.content_type.name}}</td>
+          	      </tr>
+                  <form class='schedule_info' method='POST' action='/topic/set_arrangement'>
+          	      <tr>
+          	      	<td>Audience: {{ topic.min_attendance }} - {{ topic.max_attendance }}</td>
+          	      	<td>Date: <input class='date-picker'></td>
+                    <td>Time: <input class='time-from'> to <input class='time-to'></td>
+                    <td>Resource: <input class='assign-resource'></td>
+                    <input type='hidden' id='topic_id' value='{{ topic.topic_id }}'>
+          	      	<!--td>Interested</td-->
+          	      </tr>
+                  </form>
+          	    </tbody>
+          	  </table>
+          	  <br />
+          	    
+          	{% endfor %}
+            <button class='btn btn-primary' id='submit_schedule'>Submit</button>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>
+  <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  <script src="{{url_for('static', filename='jquery-timepicker/jquery.timepicker.js')}}"></script>
+  <script>
+    $(document).ready(function() {
+      $("#set_filter").click(function(){
+        var suffix = "";
+        var content_name = $("#content-filter").find(":selected").text();
+        var format_name = $("#format-filter").find(":selected").text();
+        if (content_name != "----Any----" && format_name != "--------Any--------"){
+          suffix += "?content=" + content_name + "&format=" + format_name;
+        }
+        else if (content_name != "----Any----"){
+          suffix += "?content=" + content_name;
+        }
+        else if (format_name != "--------Any--------"){
+          suffix += "?format=" + format_name;
+        }
+        $(window.location).attr('href', '/topic/arrange'+suffix);
+      });
+
+      $(".date-picker").datepicker();
+      $(".time-from").timepicker({ 'timeFormat': 'H:i:s' });
+      $(".time-to").timepicker({ 'timeFormat': 'H:i:s' });
+
+      $("#submit_schedule").click(function(){
+        var data = [];
+        $(".schedule_info").each(function(){
+          var date = $(this).find(".date-picker");
+          console.log($(".date-picker").val());
+          var time_from = $(this).find(".time-from").val();
+          var time_to = $(this).find(".time-to").val();
+          var topic_id = $(this).find("#topic_id").val();
+          var record = {"topic_id": topic_id, "date": date, "time_from": time_from, "time_to": time_to};
+          data.push(record);
+        });
+        console.log(data);
+      });
+
+    });
+  </script>
+{% endblock %}

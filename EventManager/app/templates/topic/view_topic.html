@@ -1,10 +1,6 @@
 {% extends "bootstrap/base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
-<<<<<<< HEAD
 {% block title %}Topic Details{% endblock %}
-=======
-{% block title %}topic Details{% endblock %}
->>>>>>> 2760f0c243bf0f5d83de290b54c488545b9cb008
 {% block body %}
   {{super()}}
   <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
@@ -23,7 +19,7 @@
         <h4>Speaker: {{ topic.speaker1 }}</h4>
         <h4>Content: {{ topic.content_type.name }}</h4>
         <h4>Format: {{ topic.format_type.name }}</h4>
-        <h4>Start Date: {{ topic.year_start + topic.month_start + topic.day_start}}</h4>
+        <h4>Start Date: {{ topic.year_start + '-' + topic.month_start + '-' + topic.day_start}}</h4>
         <h4>Duration: {{ topic.day_duration }} days {{ topic.hour_duration }} hours {{ topic.minute_duration }} minutes</h4>     
         <h4>Created Date: {{ topic.create_date }}</h4>
         <h4>Created Time: {{ topic.create_time }}</h4>
@@ -54,11 +50,7 @@
     $(document).ready(function() {
       
       $(".delete").click(function(){
-<<<<<<< HEAD
         var topic_id = $(this).attr('name');
-=======
-        var topic_uuid = $(this).attr('name');
->>>>>>> 2760f0c243bf0f5d83de290b54c488545b9cb008
         console.log("hello");
         $( "#confirm" ).dialog({
           resizable: false,
@@ -67,13 +59,8 @@
           buttons: {
             Delete: function() {
               $( this ).dialog( "close" );
-<<<<<<< HEAD
               console.log("topic id is :" + topic_id);
               $(window.location).attr('href', '/topic/delete?topic_id='+topic_id);
-=======
-              console.log("topic uuid is :" + topic_uuid);
-              $(window.location).attr('href', '/topic/delete?topic_uuid='+topic_uuid);
->>>>>>> 2760f0c243bf0f5d83de290b54c488545b9cb008
             },
             Cancel: function() {
               $( this ).dialog( "close" );
