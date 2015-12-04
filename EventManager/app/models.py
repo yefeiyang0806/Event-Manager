@@ -103,7 +103,7 @@ class Topic(db.Model):
         self.description = description
         self.min_attendance = min_attendance
         self.max_attendance = max_attendance
-        self.speaker1 = speaker1_id
+        self.speaker1 = speaker1
         self.speaker2 = speaker2
         self.speaker3 = speaker3
         self.year_start = year_start
@@ -119,12 +119,12 @@ class Topic(db.Model):
         self.link = link
         self.jamlink = jamlink
 
-        #create_user = db.session.query(User).filter(User.user_id == create_by_id).first()
+        create_user = db.session.query(User).filter(User.user_id == create_by).first()
         input_content = db.session.query(Content).filter(Content.content_id == content_id).first()
         input_format = db.session.query(Format).filter(Format.format_id == format_id).first()
         
         same_format_topic_count = db.session.query(Topic).filter(Topic.format == input_format.format_id).count()
-        self.topic_id = input_format.format_id + "-" + same_format_topic_count
+        self.topic_id = input_format.format_id + "-" + str(same_format_topic_count)
         
         create_user.created_topics.append(self)
         input_content.topics.append(self)

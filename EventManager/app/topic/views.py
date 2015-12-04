@@ -20,9 +20,9 @@ topic = Blueprint('topic', __name__)
 def create_topic():
     first_name = g.user.first_name
     status = g.user.status
-    user_email = g.user.email
+    user_id = g.user.user_id
     menus = menus_of_role()
-    form = CreatetopicForm()
+    form = CreateTopicForm()
     form.set_options()   
     
     if form.validate_on_submit():      
@@ -30,13 +30,11 @@ def create_topic():
         year_start = startdata[0]
         month_start = startdata[1]
         day_start = startdata[2]
-        form.add_topic_id
-
                #print (db.session.query(Content).filter(Content.name == form.content.data).first().topics.count())
-        temp = topic(form.title.data, form.description.data, form.min_attendance.data, form.max_attendance.data, \
-                year_start, month_start, day_start, form.day_duration.data, form.hour_duration.data,form.minute_duration.data,\
-              form.speaker1.data, form.speaker2.data, form.speaker3.data, form.content.data, form.format.data, form.link.data, \
-              form.jamlink.data, form.location.data)     
+        temp = Topic(form.title.data, form.description.data, form.min_attendance.data, form.max_attendance.data,\
+                form.speaker1.data, form.speaker2.data, form.speaker3.data, year_start, month_start, day_start,\
+                form.day_duration.data, form.hour_duration.data, form.minute_duration.data, user_id,\
+                form.content.data, form.format.data, form.location.data, form.link.data, form.jamlink.data)     
         db.session.add(temp)
         db.session.commit()
         #print (db.session.query(Content).filter(Content.name == form.content.data).first().topics.count())user_email, 
@@ -212,7 +210,7 @@ def menus_of_role():
     middles = db.session.query(Role_menu).filter(Role_menu.role_id == g.user.role_id).all()
     menus = list()
     for m in middles:
-        menu = db.session.query(Menu).get(m.menu_id)
+        menu = db.session.query(Menu).filter(Menu.menu_id == m.menu_id).first()
         menus.append(menu)
     #print (menus)
     return menus

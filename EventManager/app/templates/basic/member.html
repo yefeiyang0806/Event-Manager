@@ -11,7 +11,7 @@
   	<div class="row">
   		{% include 'public/side_bar.html' %}
     	<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-        <h1 class="page-header">Personal Events</h1>
+        <h1 class="page-header">Personal Topics</h1>
         <br />
         <div class="table-responsive">
           {% if not topics %}
@@ -42,9 +42,9 @@
           	      	</c:if-->
           	      </tr>
           	      <tr>
-          	      	<td>Event Status: {{ topic.status }}</td>
+          	      	<td>Topic Status: {{ topic.status }}</td>
           	      	<!--c:if test="${ diet_tasks[i-1].state != 'Expired'}"-->
-          	      	<td colspan="2">Event format: {{ topic.format_type.name }}</td>
+          	      	<td colspan="2">Topic format: {{ topic.format_type.name }}</td>
           	      	<!--/c:if>
           	      	<c:if test="${ diet_tasks[i-1].state == 'Expired'}">
           	      	  <td>Finished at: ${ diet_tasks[i-1].finish }</td>

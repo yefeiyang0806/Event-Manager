@@ -6,7 +6,7 @@ from ..models import Content, Format
 
 
 class CreateTopicForm(Form):
-    topic = StringField('Topic Title', validators=[InputRequired()])
+    title = StringField('Topic Title', validators=[InputRequired()])
     description = StringField('Description', validators=[InputRequired()])
     speaker = StringField('Speaker', validators=[InputRequired()])
     content = SelectField('Content')
@@ -28,13 +28,13 @@ class CreateTopicForm(Form):
         contents = db.session.query(Content).all()
         radio_list = list()
         for c in contents:
-            tup = (c.name, c.content_id)
+            tup = (c.content_id, c.name)
             radio_list.append(tup)
         self.content.choices = radio_list
         
         formats = db.session.query(Format).all()
         radio_list2 = list()
         for f in formats:
-            tup2 = (f.name, f.format_id)
+            tup2 = (f.format_id, f.name)
             radio_list2.append(tup2)
         self.format.choices = radio_list2

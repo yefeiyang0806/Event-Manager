@@ -23,9 +23,9 @@
   </ul-->
   <!-- This is the side bar of the logged in pages -->
   <ul class="nav nav-sidebar">
-    <li id='personal_events'><a href="/index">Personal Events</a></li>
-    <li id='available_events'><a href="/event/available">Available Events</a></li>
-    <li id='register_events'><a href="/event/create">Register Event</a></li>
+    <li id='personal_events'><a href="/index">Personal Topics</a></li>
+    <li id='available_events'><a href="/topic/available">Available Topics</a></li>
+    <li id='register_events'><a href="/topic/create">Register Topic</a></li>
     <li id='upload_files'><a href="/basic/upload"> Upload Files</a></li>
     {% for m in menus %}
       {% include m.menu_path + '/side_bar.html' %}
