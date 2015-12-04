@@ -1,50 +1,50 @@
 {% extends "bootstrap/base.html" %}
-{% block title %}All Available Events{% endblock %}
+{% block title %}All Available Topics{% endblock %}
 {% block body %}
   {{super()}}
   <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
   <!--link href="{{url_for('static', filename='css/register.css')}}" rel="stylesheet"-->
   <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-  {% set active_list = 'available_events' %}
+  {% set active_list = 'available_topics' %}
   {% include 'public/navbar.html' %}
   <div class="container-fluid">
   	<div class="row">
   		{% include 'public/side_bar.html' %}
     	<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-        <h1 class="page-header">Available Events</h1>
+        <h1 class="page-header">Available Topics</h1>
         <br />
         <div class="table-responsive">
-          {% if not events %}
+          {% if not topics %}
 			      <div class="panel panel-warning">
             	<div class="panel-heading">
-              	<h2 class="panel-title">No event records yet.</h2>
+              	<h2 class="panel-title">No  records yet.</h2>
               </div>
               <div class="panel-body">
-              	You can <a href="/event/create">register new events here</a>.<br />
+              	You can <a href="/topic/create">register new topics here</a>.<br />
               	More actions are available on the left-hand side navigator bar.
               </div>
           	</div>
 		  	 {% else %}
-          	{% for event in events %}
-          	  <h3 class="event_title text-muted"><a href="/event/view?uuid={{ event.uuid }}">{{ event.topic }}</a></h3>
-          	  <h4 class="task_title text-success">&nbsp;&nbsp;Host by <strong>{{event.speaker}}</strong></h4>
+          	{% for topic in topics %}
+          	  <h3 class="topic_title text-muted"><a href="/topic/view?uuid={{ topic.uuid }}">{{ topic.topic }}</a></h3>
+          	  <h4 class="task_title text-success">&nbsp;&nbsp;Host by <strong>{{topic.speaker}}</strong></h4>
           	  <table class="table">
           	    <tbody>
           	      <tr>
-          	      	<td>Attendance Number: {{ event.min_attendance }} - {{ event.max_attendance }}</td>
-                    <td>Content: {{ event.content_type.name }}</td>
-                    <td>Created Date: {{ event.create_date }}</td>
+          	      	<td>Attendance Number: {{ topic.min_attendance }} - {{ topic.max_attendance }}</td>
+                    <td>Content: {{ topic.content_type.name }}</td>
+                    <td>Created Date: {{ topic.create_date }}</td>
           	      	<!--c:if test="${ diet_tasks[i-1].state != 'Not Started'}"-->
-          	      	  <td><a class="btn btn-info" role="button" href="/event/modify/{{ event.uuid }}">Join</a></td>
+          	      	  <td><a class="btn btn-info" role="button" href="/topic/modify/{{ topic.uuid }}">Join</a></td>
           	      	<!--/c:if-->
           	      	<!--c:if test="${ diet_tasks[i-1].state == 'Not Started'}">
           	      	<td><a class="btn btn-info disabled" role="button" href="/project/food/modify_diet_task?id=${ diet_tasks[i-1].id }">Performance</a></td>
           	      	</c:if-->
           	      </tr>
           	      <tr>
-          	      	<td>Event Status: {{ event.status }}</td>
-          	      	<td colspan="2">Event format: {{ event.format_type.name }}</td>
-          	      	<td><button class="btn btn-info delete" role="button" name="{{ event.uuid }}">Interested</button></td>
+          	      	<td>Topic Status: {{ topic.status }}</td>
+          	      	<td colspan="2">Topic format: {{ topic.format_type.name }}</td>
+          	      	<td><button class="btn btn-info delete" role="button" name="{{ topic.uuid }}">Interested</button></td>
           	      </tr>
           	    </tbody>
           	  </table>
@@ -53,8 +53,8 @@
           	{% endfor %}
           {% endif %}
         </div>
-        <div style="display:none" id='confirm' title='Delete the selected event?'>
-          <p>Do you want to delete the selected event?</p>
+        <div style="display:none" id='confirm' title='Delete the selected topic?'>
+          <p>Do you want to delete the selected topic?</p>
         </div>
       </div>
     </div>
