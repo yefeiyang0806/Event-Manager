@@ -31,17 +31,12 @@ def create_topic():
         month_start = startdata[1]
         day_start = startdata[2]
                #print (db.session.query(Content).filter(Content.name == form.content.data).first().topics.count())
-<<<<<<< HEAD
-        temp = topic(form.title.data, form.description.data, form.min_attendance.data, form.max_attendance.data, \
-            form.speaker1.data, form.speaker2.data, form.speaker3.data, year_start, month_start, day_start, form.day_duration.data, form.hour_duration.data,form.minute_duration.data,\
-               form.content.data, form.format.data, form.link.data, \
-              form.jamlink.data, form.location.data)     
-=======
+
         temp = Topic(form.title.data, form.description.data, form.min_attendance.data, form.max_attendance.data,\
                 form.speaker1.data, form.speaker2.data, form.speaker3.data, year_start, month_start, day_start,\
                 form.day_duration.data, form.hour_duration.data, form.minute_duration.data, user_id,\
                 form.content.data, form.format.data, form.location.data, form.link.data, form.jamlink.data)     
->>>>>>> 7c88e73a1b8bbd19d8e120d776adb677819b8db1
+
         db.session.add(temp)
         db.session.commit()
         #print (db.session.query(Content).filter(Content.name == form.content.data).first().topics.count())user_email, 
@@ -71,17 +66,17 @@ def delete_topic():
 @topic.route('/modify/<topic_uuid>', methods = ['GET', 'POST'])
 @login_required
 def modify_topic(topic_uuid):
+    print(g.user.email)
     first_name = g.user.first_name
     status = g.user.status
-    form = CreatetopicForm()
+    form = CreateTopicForm()
     form.set_options()
-    topic = topic.query.get(topic_uuid)
+    topic = Topic.query.get(topic_uuid)
     if request.method == 'POST':
         print("POST received")
         if form.validate_on_submit():
             #topic_id = request.form.get('topic_id')
             topic.title = form.title.data
-            topic.short_text = form.short_text.data
             topic.description = form.description.data
             topic.min_attendance = form.min_attendance.data
             topic.max_attendance = form.max_attendance.data
@@ -92,9 +87,14 @@ def modify_topic(topic_uuid):
             topic.day_duration =  form.day_duration.data
             topic.hour_duration = form.hour_duration.data 
             topic.minute_duration = form.minute_duration.data
-            topic.speaker = form.speaker.data
+            topic.link = form.link.data
+            topic.jamlink = form.jamlink.data
+            topic.speaker1 = form.speaker1.data
+            topic.speaker2 = form.speaker2.data
+            topic.speaker3 = form.speaker3.data
             topic.format = form.format.data
-            topic.content = form.content.data
+            topic.content = form.content.data            
+            topic.location = form.location.data            
             db.session.commit()
             return redirect(url_for("basic.index"))
         else:
@@ -105,7 +105,6 @@ def modify_topic(topic_uuid):
 
     if topic.is_created_by(g.user.email):
         form.title.data = topic.title
-        form.short_text.data = topic.short_text
         form.description.data = topic.description
         form.min_attendance.data = topic.min_attendance
         form.max_attendance.data = topic.max_attendance        
@@ -116,6 +115,14 @@ def modify_topic(topic_uuid):
         form.speaker.data = topic.speaker
         form.content.data = topic.content
         form.format.data = topic.format
+        form.speaker1.data = topic.speaker1 
+        form.speaker2.data = topic.speaker2
+        form.speaker3.data = topic.speaker3 
+        form.format.data = topic.format 
+        form.content.data = topic.content
+        form.link.data = topic.link 
+        form.jamlink.data = topic.jamlink 
+        form.location.data = topic.location
         menus = menus_of_role()
         return render_template("topic/modify_topic.html", form=form,\
             first_name=first_name, status=status, topic_uuid=topic_uuid, menus=menus)
@@ -131,7 +138,7 @@ def view_topic():
     status = g.user.status
     menus = menus_of_role()
     topic_uuid = request.args.get('uuid')
-    topic = db.session.query(topic).filter(topic.uuid == topic_uuid).first()
+    topic = db.session.query(Topic).filter(Topic.uuid == topic_uuid).first()
     if topic.is_created_by(g.user.email):
         mode = 'creator'
     else:
@@ -148,7 +155,7 @@ def available_topics():
     first_name = g.user.first_name
     status = g.user.status
     menus = menus_of_role()
-    topics = db.session.query(topic).all()
+    topics = db.session.query(Topic).all()
     return render_template('topic/available_topics.html', topics=topics, first_name=first_name, status=status, menus=menus)
 
 
@@ -179,7 +186,7 @@ def arrange_topics():
     elif content_filter == None and format_filter != None:
         topics = db.session.query(Format).filter(Format.name == format_filter).first().topics.all()
     else:
-        topics = db.session.query(topic).all()
+        topics = db.session.query(Topic).all()
     #print (topics)
     return render_template('topic/arrange_topics.html', topics=topics, first_name=first_name, status=status, \
         menus=menus, content_names=content_names, format_names=format_names)
