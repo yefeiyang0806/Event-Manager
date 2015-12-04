@@ -21,7 +21,6 @@ def create_topic():
     first_name = g.user.first_name
     status = g.user.status
     user_email = g.user.email
-    print(user_email)
     menus = menus_of_role()
     form = CreatetopicForm()
     form.set_options()   
