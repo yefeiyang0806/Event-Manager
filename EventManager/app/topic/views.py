@@ -84,13 +84,13 @@ def modify_topic(topic_id):
             topic.day_duration =  form.day_duration.data
             topic.hour_duration = form.hour_duration.data 
             topic.minute_duration = form.minute_duration.data
+            topic.link = form.link.data
+            topic.jamlink = form.jamlink.data
             topic.speaker1 = form.speaker1.data
             topic.speaker2 = form.speaker2.data
             topic.speaker3 = form.speaker3.data
             topic.format = form.format.data
-            topic.content = form.content.data
-            topic.link = form.link.data
-            topic.jamlink = form.jamlink.data
+            topic.content = form.content.data            
             topic.location = form.location.data
             db.session.commit()
             return redirect(url_for("basic.index"))
@@ -114,8 +114,13 @@ def modify_topic(topic_id):
         form.speaker3.data = topic.speaker3
         form.content.data = topic.content
         form.format.data = topic.format
-        form.link.data = topic.link
-        form.jamlink.data = topic.jamlink
+        form.speaker1.data = topic.speaker1 
+        form.speaker2.data = topic.speaker2
+        form.speaker3.data = topic.speaker3 
+        form.format.data = topic.format 
+        form.content.data = topic.content
+        form.link.data = topic.link 
+        form.jamlink.data = topic.jamlink 
         form.location.data = topic.location
         menus = menus_of_role()
         return render_template("topic/modify_topic.html", form=form,\
