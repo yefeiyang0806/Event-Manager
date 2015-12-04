@@ -34,8 +34,8 @@ def create_topic():
 
                #print (db.session.query(Content).filter(Content.name == form.content.data).first().topics.count())
         temp = topic(form.title.data, form.description.data, form.min_attendance.data, form.max_attendance.data, \
-                year_start, month_start, day_start, form.day_duration.data, form.hour_duration.data,form.minute_duration.data,\
-              form.speaker1.data, form.speaker2.data, form.speaker3.data, form.content.data, form.format.data, form.link.data, \
+            form.speaker1.data, form.speaker2.data, form.speaker3.data, year_start, month_start, day_start, form.day_duration.data, form.hour_duration.data,form.minute_duration.data,\
+               form.content.data, form.format.data, form.link.data, \
               form.jamlink.data, form.location.data)     
         db.session.add(temp)
         db.session.commit()
@@ -212,7 +212,7 @@ def menus_of_role():
     middles = db.session.query(Role_menu).filter(Role_menu.role_id == g.user.role_id).all()
     menus = list()
     for m in middles:
-        menu = db.session.query(Menu).get(m.menu_id)
+        menu = db.session.query(Menu).filter(Menu.menu_id == m.menu_id).first()
         menus.append(menu)
     #print (menus)
     return menus

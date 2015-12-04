@@ -6,9 +6,12 @@ from ..models import Content, Format
 
 
 def unique_title_year(form, field):
-	exist_email = db.session.query(Topic).filter(Topic.email == form.email.data).first()
-	if exist_email is not None:
-		raise ValidationError('Email address already exists')
+	startdata = form.DateStart.data.split('-')
+    year_start = startdata[0]
+	exist_topic = db.session.query(Topic).filter(Topic.title == form.title.data and Topic.year_start == year_start).first()
+
+	if exist_topic is not None:
+		raise ValidationError('Title already exists')
 
 
 
