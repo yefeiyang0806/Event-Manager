@@ -3,8 +3,8 @@ from config import ADMINS
 from flask import render_template, flash, redirect, session, url_for, request, g, request, Blueprint
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from flask.ext.mail import Message
-from .forms import CreatetopicForm
-from ..models import User, topic, Role, Menu, Role_menu, Content, Format, ResourceType, Resource
+from .forms import CreateTopicForm
+from ..models import User, Topic, Role, Menu, Role_menu, Content, Format, ResourceType, Resource
 from ..emails import send_email
 from werkzeug.security import generate_password_hash
 import random
@@ -24,15 +24,19 @@ def create_topic():
     menus = menus_of_role()
     form = CreatetopicForm()
     form.set_options()   
-
+    
     if form.validate_on_submit():      
         startdata = form.DateStart.data.split('-')
         year_start = startdata[0]
         month_start = startdata[1]
         day_start = startdata[2]
+        form.add_topic_id
+
                #print (db.session.query(Content).filter(Content.name == form.content.data).first().topics.count())
-        temp = topic(form.title.data, form.short_text.data, form.description.data, form.min_attendance.data, form.max_attendance.data, \
-            form.speaker.data, year_start, month_start, day_start, form.day_duration.data, form.hour_duration.data,form.minute_duration.data, user_email, form.content.data, form.format.data)
+        temp = topic(form.title.data, form.description.data, form.min_attendance.data, form.max_attendance.data, \
+                year_start, month_start, day_start, form.day_duration.data, form.hour_duration.data,form.minute_duration.data,\
+              form.speaker1.data, form.speaker2.data, form.speaker3.data, form.content.data, form.format.data, form.link.data, \
+              form.jamlink.data, form.location.data)     
         db.session.add(temp)
         db.session.commit()
         #print (db.session.query(Content).filter(Content.name == form.content.data).first().topics.count())user_email, 

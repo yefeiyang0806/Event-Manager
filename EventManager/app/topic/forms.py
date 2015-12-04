@@ -17,7 +17,7 @@ class CreateTopicForm(Form):
 	day_duration = StringField('Day_Duration', validators=[InputRequired()], default='1')
 	hour_duration = StringField('Hour_Duration', validators=[InputRequired()], default='2')
 	minute_duration = StringField('Minute_Duration', validators=[InputRequired()], default='15')
-    link = StringField("Link", validators=[InputRequired()])
+	link = StringField("Link", validators=[InputRequired()])
 	jamlink = StringField("JamLink", validators=[InputRequired()])
 	speaker1 = StringField('Speaker1', validators=[InputRequired()])
 	speaker2 = StringField('Speaker2', validators=[InputRequired()])
@@ -38,3 +38,7 @@ class CreateTopicForm(Form):
 			tup2 = (f.name, f.name)
 			radio_list2.append(tup2)
 		self.format.choices = radio_list2
+
+
+		
+		
