@@ -82,9 +82,13 @@ class Topic(db.Model):
     create_by = db.Column(db.String(10), db.ForeignKey('user.user_id'))
     content = db.Column(db.String(40), db.ForeignKey('content.content_id'))
     format = db.Column(db.String(40), db.ForeignKey('format.format_id'))
+    link = db.Column(db.String(60))
+    jamlink = db.Column(db.String(60))
+
+    location = db.Column(db.String(30))
     schedule = db.relationship('TopicSchedule', backref='scheduled_topic', lazy='dynamic')
     validation = db.relationship('TopicValidation', backref='validated_topic', lazy='dynamic')
-
+    
     __table_args__ = (db.UniqueConstraint('title', 'year_start', name='_title_year_start_uc'),)
 
     
@@ -93,7 +97,7 @@ class Topic(db.Model):
 
 
     def __init__(self, title, description, min_attendance, max_attendance, speaker1, speaker2, speaker3, year_start, month_start, day_start, \
-        day_duration, hour_duration, minute_duration, create_by, content_id, format_id):
+        day_duration, hour_duration, minute_duration, create_by, content_id, format_id, location):
         self.uuid = str(uuid.uuid1())
         self.title = title
         self.description = description
@@ -111,6 +115,7 @@ class Topic(db.Model):
         self.create_time = time.strftime("%H:%M:%S")
         self.create_date = time.strftime("%Y/%m/%d")
         self.status = 0
+        self.location=location
 
         #create_user = db.session.query(User).filter(User.user_id == create_by_id).first()
         input_content = db.session.query(Content).filter(Content.content_id == content_id).first()
@@ -119,6 +124,10 @@ class Topic(db.Model):
         same_format_topic_count = db.session.query(Topic).filter(Topic.format == input_format.format_id).count()
         self.topic_id = input_format.format_id + "-" + same_format_topic_count
         
+<<<<<<< HEAD
+=======
+
+>>>>>>> 1ed3f83cf0c340fb88945957c3741db4daba23e6
         create_user.created_topics.append(self)
         input_content.topics.append(self)
         input_format.topics.append(self)

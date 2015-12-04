@@ -24,15 +24,19 @@ def create_topic():
     menus = menus_of_role()
     form = CreatetopicForm()
     form.set_options()   
-
+    
     if form.validate_on_submit():      
         startdata = form.DateStart.data.split('-')
         year_start = startdata[0]
         month_start = startdata[1]
         day_start = startdata[2]
+        form.add_topic_id
+
                #print (db.session.query(Content).filter(Content.name == form.content.data).first().topics.count())
-        temp = topic(form.title.data, form.short_text.data, form.description.data, form.min_attendance.data, form.max_attendance.data, \
-            form.speaker.data, year_start, month_start, day_start, form.day_duration.data, form.hour_duration.data,form.minute_duration.data, user_email, form.content.data, form.format.data)
+        temp = topic(form.title.data, form.description.data, form.min_attendance.data, form.max_attendance.data, \
+                year_start, month_start, day_start, form.day_duration.data, form.hour_duration.data,form.minute_duration.data,\
+              form.speaker1.data, form.speaker2.data, form.speaker3.data, form.content.data, form.format.data, form.link.data, \
+              form.jamlink.data, form.location.data)     
         db.session.add(temp)
         db.session.commit()
         #print (db.session.query(Content).filter(Content.name == form.content.data).first().topics.count())user_email, 
