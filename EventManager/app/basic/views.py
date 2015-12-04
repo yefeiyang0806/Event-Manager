@@ -4,7 +4,7 @@ from flask import render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from flask.ext.mail import Message
 from .forms import LoginForm, JoinForm, RetrievePwdForm, PwdResetForm
-from ..models import User, Topic, Menu, Role, Role_menu
+from ..models import User, Topic, Menu, Role, Role_menu, Content, Format, ResourceType
 from ..emails import send_email
 from werkzeug.security import generate_password_hash
 
@@ -45,7 +45,7 @@ def logged_in():
     full_name = g.user.full_name
     status = g.user.status
     sidebar = 'personal'
-    topics = g.user.topics.all()
+    topics = g.user.created_topics.all()
     menus = menus_of_role()
     # print(topics)
     return render_template('basic/member.html', full_name=full_name, topics=topics, status=status, menus=menus)
@@ -60,13 +60,13 @@ def register():
         flash('Passed validation')
         hash_password = generate_password_hash(form.password.data)
         active_code = generate_active_code()
-        temp = User(form.email.data, hash_password, form.full_name.data, form.last_name.data, active_code)
+        temp = User(form.user_id.data, form.email.data, hash_password, form.first_name.data, form.last_name.data, form.department.data, active_code)
         db.session.add(temp)
         db.session.commit()
         basic_url = 'http://localhost:5000'
         activate_link = basic_url + url_for('basic.activate_user') + '?active_code=' + active_code
         send_email('Event Manager Registration', ADMINS[0], [form.email.data], "Hello just for testing", \
-            render_template('basic/email/registration_confirm.html', full_name=form.full_name.data, activate_link=activate_link))
+            render_template('basic/email/registration_confirm.html', full_name=temp.full_name, activate_link=activate_link))
 
         temp_user = db.session.query(User).filter(User.email == form.email.data)[0]
         login_user(temp_user)
@@ -194,6 +194,57 @@ def login():
     #full_name = g.user.full_name
     send_email('test subject', ADMINS[0], ['85230316@qq.com'], "Hello just for testing", render_template('email/registration_confirm.html', full_name=full_name))
     return render_template('basic/member.html', full_name='test', status=0)
+    
+    
+#Only used for generate initial database
+@basic.route('/generate_db')
+def generate_db():
+    normal_role = Role('normal', 'NM', 'default role for testing', 'i325390')
+    admin_role = Role('admin', 'AD', 'default role for testing ADMIN', 'i325390')
+    em_menu = Menu('Event Management', 'EM',  'Menu/Event Management', 'i325390')
+    rm_menu = Menu('Role Management', 'RM',  'Menu/Role Management', 'i325390')
+    normal_em = Role_menu('NM', 'EM', 'i325390')
+    normal_rm = Role_menu('NM', 'RM', 'i325390')
+    admin_em = Role_menu('AD', 'EM', 'i325390')
+    admin_rm = Role_menu('AD', 'RM', 'i325390')
+    c_hana = Content('HANA', 'HANA', 'i325390')
+    c_cloud = Content('Cloud', 'Cloud', 'i325390')
+    c_fiori = Content('Fiori', 'Fiori', 'i325390')
+    c_abap = Content('ABAP', 'ABAP', 'i325390')
+    c_iot = Content('IOT', 'IOT', 'i325390')
+    f_df = Format('Developer Fair', 'i325390', 'DF')
+    f_db = Format('Downtown Block', 'i325390', 'DB')
+    f_st = Format('SAP Talk', 'i325390', 'ST')
+    f_ct = Format('Customer Talk', 'i325390', 'CT')
+    f_iz = Format('Innovation Zone', 'i325390', 'IZ')
+    rt_sf = ResourceType('Show Floor', 'i325390')
+    rt_sb = ResourceType('Small Ballroom', 'i325390')
+    rt_lb = ResourceType('Large Ballroom', 'i325390')
+    
+    db.session.add(normal_role)
+    db.session.add(admin_role)
+    db.session.add(em_menu)
+    db.session.add(rm_menu)
+    db.session.add(normal_em)
+    db.session.add(normal_rm)
+    db.session.add(admin_em)
+    db.session.add(admin_rm)
+    db.session.add(c_hana)
+    db.session.add(c_cloud)
+    db.session.add(c_fiori)
+    db.session.add(c_abap)
+    db.session.add(c_iot)
+    db.session.add(f_df)
+    db.session.add(f_db)
+    db.session.add(f_st)
+    db.session.add(f_ct)
+    db.session.add(f_iz)
+    db.session.add(rt_sf)
+    db.session.add(rt_sb)
+    db.session.add(rt_lb)
+    db.session.commit()
+    
+    return redirect(url_for('basic.index'))
 
 
 #Required by LoginManager
@@ -213,7 +264,7 @@ def menus_of_role():
     middles = db.session.query(Role_menu).filter(Role_menu.role_id == g.user.role_id).all()
     menus = list()
     for m in middles:
-        menu = db.session.query(Menu).get(m.menu_id)
+        menu = db.session.query(Menu).filter(Menu.menu_id == m.menu_id).first()
         menus.append(menu)
     print (menus)
     return menus

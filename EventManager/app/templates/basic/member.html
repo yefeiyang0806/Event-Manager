@@ -1,5 +1,5 @@
 {% extends "bootstrap/base.html" %}
-{% block title %}{{ first_name }}'s Home Page{% endblock %}
+{% block title %}{{ full_name }}'s Home Page{% endblock %}
 {% block body %}
   {{super()}}
   <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">

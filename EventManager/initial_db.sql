@@ -1,5 +1,5 @@
-INSERT INTO role VALUES ('fa3b4e76-972c-11e5-80b0-402cf4f6ef0c', 'normal', 'default role for testing', '2015/11/30', '14:39:00', 'Feiyang');
-INSERT INTO role VALUES ('5f2857c0-972d-11e5-be6e-402cf4f6ef0c', 'admin', 'Admin role for testing', '2015/11/30', '14:40:00', 'Feiyang');
+INSERT INTO role VALUES ('fa3b4e76-972c-11e5-80b0-402cf4f6ef0c', 'normal', 'NM', 'default role for testing', '2015/11/30', '14:39:00', 'Feiyang');
+INSERT INTO role VALUES ('5f2857c0-972d-11e5-be6e-402cf4f6ef0c', 'admin', 'AD', 'Admin role for testing', '2015/11/30', '14:40:00', 'Feiyang');
 
 INSERT INTO menu VALUES ('930db3d2-972d-11e5-b3b8-402cf4f6ef0c', 'Event Management', 'Menu/Event Management');
 INSERT INTO menu VALUES ('e3f18738-972d-11e5-ba3e-402cf4f6ef0c', 'Role Management', 'Menu/Role Management');

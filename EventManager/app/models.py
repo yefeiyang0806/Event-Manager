@@ -13,7 +13,7 @@ class User(db.Model):
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
     created_topics = db.relationship('Topic', backref='author', lazy='dynamic')
-    topics_to_speak = db.relationship('Topic', backref='speaker')
+    #topics_to_speak = db.relationship('Topic', backref='speaker')
     status = db.Column(db.Integer, default=0)
     active_code = db.Column(db.String(4))
     role_id = db.Column(db.String(40), db.ForeignKey('role.role_id'))
@@ -55,8 +55,8 @@ class User(db.Model):
         self.create_date = time.strftime("%Y/%m/%d")
         self.active_code = active_code
         self.status = 0
-        related_role = db.session.query(Role.uuid).filter(Role.rolename == "normal").first()
-        related_role.append(self)
+        related_role = db.session.query(Role).filter(Role.rolename == "normal").first()
+        related_role.users.append(self)
 
 
 class Topic(db.Model):
@@ -76,7 +76,7 @@ class Topic(db.Model):
     status = db.Column(db.String(2), default='NA')
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
-    speaker1 = db.Column(db.String(10), db.ForeignKey('user.user_id'))
+    speaker1 = db.Column(db.String(10))
     speaker2 = db.Column(db.String(10), nullable=True)
     speaker3 = db.Column(db.String(10), nullable=True)
     create_by = db.Column(db.String(10), db.ForeignKey('user.user_id'))
@@ -89,7 +89,7 @@ class Topic(db.Model):
 
     
     def __repr__(self):
-        return '<Event %r>' %(self.topic)
+        return '<Topic %r>' %(self.topic)
 
 
     def __init__(self, title, description, min_attendance, max_attendance, speaker1, speaker2, speaker3, year_start, month_start, day_start, \
@@ -99,7 +99,7 @@ class Topic(db.Model):
         self.description = description
         self.min_attendance = min_attendance
         self.max_attendance = max_attendance
-        self.speaker1 = speaker1
+        self.speaker1 = speaker1_id
         self.speaker2 = speaker2
         self.speaker3 = speaker3
         self.year_start = year_start
@@ -112,16 +112,16 @@ class Topic(db.Model):
         self.create_date = time.strftime("%Y/%m/%d")
         self.status = 0
 
-        create_user = db.session.query(User).filter(User.user_id == create_by).first()
+        #create_user = db.session.query(User).filter(User.user_id == create_by_id).first()
         input_content = db.session.query(Content).filter(Content.content_id == content_id).first()
         input_format = db.session.query(Format).filter(Format.format_id == format_id).first()
         
         same_format_topic_count = db.session.query(Topic).filter(Topic.format == input_format.format_id).count()
         self.topic_id = input_format.format_id + "-" + same_format_topic_count
         
-        create_user.events.append(self)
-        input_content.events.append(self)
-        input_format.events.append(self)
+        create_user.created_topics.append(self)
+        input_content.topics.append(self)
+        input_format.topics.append(self)
 
 
 
@@ -188,6 +188,7 @@ class Role(db.Model):
     create_time = db.Column(db.Time)
     create_by = db.Column(db.String(10))
     menus = db.relationship("Role_menu", backref='role')
+    users = db.relationship("User", backref='user_role')
 
     
     def __repr__(self):
@@ -206,7 +207,7 @@ class Role(db.Model):
 
 class ResourceType(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
-    name = db.Column(db.String(10), index=True, unique=True)
+    name = db.Column(db.String(20), index=True, unique=True)
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
     create_by = db.Column(db.String(10))
@@ -233,7 +234,7 @@ class Content(db.Model):
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
     create_by = db.Column(db.String(10))
-    events = db.relationship('Event', backref='content_type', lazy='dynamic')
+    topics = db.relationship('Topic', backref='content_type', lazy='dynamic')
 
 
     def __repr__(self):
@@ -256,7 +257,7 @@ class Format(db.Model):
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
     create_by = db.Column(db.String(10))
-    events = db.relationship('Event', backref='format_type', lazy='dynamic')
+    topics = db.relationship('Topic', backref='format_type', lazy='dynamic')
 
 
     def __repr__(self):
@@ -282,7 +283,7 @@ class Resource(db.Model):
     create_time = db.Column(db.Time)
     create_by = db.Column(db.String(10))
     r_type = db.Column(db.String(40), db.ForeignKey('resource_type.uuid'))
-    schedule = db.relationship('EventSchedule', backref='assigned_resource', lazy='dynamic')
+    schedule = db.relationship('TopicSchedule', backref='assigned_resource', lazy='dynamic')
 
 
     def __repr__(self):

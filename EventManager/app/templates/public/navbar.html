@@ -32,9 +32,9 @@
 
           <ul class="nav navbar-nav navbar-right">
             {% if status == 0 %}
-              <li><p class="navbar-text" style="color:white;">Hello,&nbsp;&nbsp;<b>{{ first_name }}</b>&nbsp;&nbsp;(<a href="javascript:void(0);" id="a_confirm"><font color='#FF0000'>not activated</font></a>)</p></li>
+              <li><p class="navbar-text" style="color:white;">Hello,&nbsp;&nbsp;<b>{{ full_name }}</b>&nbsp;&nbsp;(<a href="javascript:void(0);" id="a_confirm"><font color='#FF0000'>not activated</font></a>)</p></li>
             {% else %}
-              <li><p class="navbar-text" style="color:white;">Hello,&nbsp;&nbsp;<b>{{ first_name }}</b></p></li>
+              <li><p class="navbar-text" style="color:white;">Hello,&nbsp;&nbsp;<b>{{ full_name }}</b></p></li>
             {% endif %}
             <li><a href="/logout" style="color:white;">Logout</a></li>
           </ul>

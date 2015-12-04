@@ -41,11 +41,13 @@ class LoginForm(Form):
 
 #registering form
 class JoinForm(Form):
-	email = StringField('Email', validators=[InputRequired(), unique_email, Email(message="Please input a valid Email address")])
-	password = PasswordField('Password', validators=[InputRequired(), EqualTo('confirm_password', message='Two passwords must match')])
-	confirm_password = PasswordField('Confirm password', validators=[InputRequired()])
-	first_name = StringField('First Name', validators=[InputRequired(), Length(max=10)])
-	last_name = StringField('Last Name', validators=[InputRequired(), Length(max=10)])
+    email = StringField('Email', validators=[InputRequired(), unique_email, Email(message="Please input a valid Email address")])
+    password = PasswordField('Password', validators=[InputRequired(), EqualTo('confirm_password', message='Two passwords must match')])
+    confirm_password = PasswordField('Confirm password', validators=[InputRequired()])
+    first_name = StringField('First Name', validators=[InputRequired(), Length(max=10)])
+    last_name = StringField('Last Name', validators=[InputRequired(), Length(max=10)])
+    user_id = StringField('User ID', validators=[InputRequired(), Length(max=10)])
+    department = StringField('Department', [InputRequired(), Length(max=40)])
 
 
 class RetrievePwdForm(Form):
