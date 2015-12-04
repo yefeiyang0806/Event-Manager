@@ -19,7 +19,7 @@
         <h4>Speaker: {{ topic.speaker1 }}</h4>
         <h4>Content: {{ topic.content_type.name }}</h4>
         <h4>Format: {{ topic.format_type.name }}</h4>
-        <h4>Start Date: {{ topic.year_start + topic.month_start + topic.day_start}}</h4>
+        <h4>Start Date: {{ topic.year_start + '-' + topic.month_start + '-' + topic.day_start}}</h4>
         <h4>Duration: {{ topic.day_duration }} days {{ topic.hour_duration }} hours {{ topic.minute_duration }} minutes</h4>     
         <h4>Created Date: {{ topic.create_date }}</h4>
         <h4>Created Time: {{ topic.create_time }}</h4>
@@ -51,7 +51,10 @@
       
       $(".delete").click(function(){
         var topic_id = $(this).attr('name');
+<<<<<<< HEAD
 
+=======
+>>>>>>> d25263e0dec6682d43a8fef3fe011f4e9dee6872
         console.log("hello");
         $( "#confirm" ).dialog({
           resizable: false,

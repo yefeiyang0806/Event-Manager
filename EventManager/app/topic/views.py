@@ -212,6 +212,38 @@ def place_topics():
         menus=menus, r_type_names=r_type_names, resource_names=resource_names)
 
 
+#Show the page of scheduling all the approved topics. The page is reached by the "Place topic link in the topic management side bar"
+@topic.route('/validate')
+@login_required
+def validate_topics():
+    full_name = g.user.full_name
+    status = g.user.status
+    menus = menus_of_role()
+    content_filter = request.args.get('content', None)
+    format_filter = request.args.get('format', None)
+    contents = db.session.query(Content).all()
+    formats = db.session.query(Format).all()
+    content_names = list()
+    format_names = list()
+    for c in contents:
+        content_names.append(str(c.name))
+    for f in formats:
+        format_names.append(str(f.name))
+
+    if content_filter != None and format_filter != None:
+        topics_content = db.session.query(Content).filter(Content.name == content_filter).first().topics.all()
+        topics_format = db.session.query(Format).filter(Format.name == format_filter).first().topics.all()
+        topics = set(topics_format).intersection(topics_content)
+    elif content_filter != None and format_filter == None:
+        topics = db.session.query(Content).filter(Content.name == content_filter).first().topics.all()
+    elif content_filter == None and format_filter != None:
+        topics = db.session.query(Format).filter(Format.name == format_filter).first().topics.all()
+    else:
+        topics = db.session.query(Topic).all()
+    #print (topics)
+    return render_template('topic/validate_topics.html', topics=topics, full_name=full_name, status=status, \
+        menus=menus, content_names=content_names, format_names=format_names)
+
 #Required by the LoginManager
 @lm.user_loader
 def load_user(id):
