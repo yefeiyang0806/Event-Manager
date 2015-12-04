@@ -5,7 +5,7 @@
   <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
   <!--link href="{{url_for('static', filename='css/register.css')}}" rel="stylesheet"-->
   <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-  {% set active_list = 'personal_events' %}
+  {% set active_list = 'personal_topics' %}
   {% include 'public/navbar.html' %}
   <div class="container-fluid">
   	<div class="row">
@@ -14,43 +14,43 @@
         <h1 class="page-header">Personal Events</h1>
         <br />
         <div class="table-responsive">
-          {% if not events %}
+          {% if not topics %}
 			      <div class="panel panel-warning">
             	<div class="panel-heading">
-              	<h2 class="panel-title">No event records yet.</h2>
+              	<h2 class="panel-title">No topic records yet.</h2>
               </div>
               <div class="panel-body">
-              	You can <a href="/event/create">register new events here</a>.<br />
+              	You can <a href="/topic/create">register new topics here</a>.<br />
               	More actions are available on the left-hand side navigator bar.
               </div>
           	</div>
 		  	 {% else %}
-          	{% for event in events %}
-          	  <h3 class="event_title text-muted"><a href="/event/view?uuid={{ event.uuid }}">{{ event.topic }}</a></h3>
-          	  <h4 class="task_title text-success">&nbsp;&nbsp;Host by <strong>{{event.speaker}}</strong></h4>
+          	{% for topic in topics %}
+          	  <h3 class="topic_title text-muted"><a href="/topic/view?topic_id={{ topic_id }}">{{ topic.title }}</a></h3>
+          	  <h4 class="task_title text-success">&nbsp;&nbsp;Host by <strong>{{topic.speaker}}</strong></h4>
           	  <table class="table">
           	    <tbody>
           	      <tr>
-          	      	<td>Attendance Number: {{ event.min_attendance }} - {{ event.max_attendance }}</td>
-          	      	<td>Content: {{ event.content_type.name }}</td>
-          	      	<td>Created Date: {{ event.create_date }}</td>
+          	      	<td>Attendance Number: {{ topic.min_attendance }} - {{ topic.max_attendance }}</td>
+          	      	<td>Content: {{ topic.content_type.name }}</td>
+          	      	<td>Created Date: {{ topic.create_date }}</td>
           	      	<!--c:if test="${ diet_tasks[i-1].state != 'Not Started'}"-->
-          	      	  <td><a class="btn btn-info" role="button" href="/event/modify/{{ event.uuid }}">Modify</a></td>
+          	      	  <td><a class="btn btn-info" role="button" href="/topic/modify/{{ topic.topic_id }}">Modify</a></td>
           	      	<!--/c:if-->
           	      	<!--c:if test="${ diet_tasks[i-1].state == 'Not Started'}">
           	      	<td><a class="btn btn-info disabled" role="button" href="/project/food/modify_diet_task?id=${ diet_tasks[i-1].id }">Performance</a></td>
           	      	</c:if-->
           	      </tr>
           	      <tr>
-          	      	<td>Event Status: {{ event.status }}</td>
+          	      	<td>Event Status: {{ topic.status }}</td>
           	      	<!--c:if test="${ diet_tasks[i-1].state != 'Expired'}"-->
-          	      	<td colspan="2">Event format: {{ event.format_type.name }}</td>
+          	      	<td colspan="2">Event format: {{ topic.format_type.name }}</td>
           	      	<!--/c:if>
           	      	<c:if test="${ diet_tasks[i-1].state == 'Expired'}">
           	      	  <td>Finished at: ${ diet_tasks[i-1].finish }</td>
           	      	  <td>Total Calorie: ${ totalCalories[i-1] }</td>
           	      	</c:if-->
-          	      	<td><button class="btn btn-info delete" role="button" name="{{ event.uuid }}">Delete</button></td>
+          	      	<td><button class="btn btn-info delete" role="button" name="{{ topic.topic_id }}">Delete</button></td>
           	      </tr>
           	    </tbody>
           	  </table>
@@ -59,8 +59,8 @@
           	{% endfor %}
           {% endif %}
         </div>
-        <div style="display:none" id='confirm' title='Delete the selected event?'>
-          <p>Do you want to delete the selected event?</p>
+        <div style="display:none" id='confirm' title='Delete the selected topic?'>
+          <p>Do you want to delete the selected topic?</p>
         </div>
       </div>
     </div>
@@ -72,7 +72,7 @@
     $(document).ready(function() {
       
       $(".delete").click(function(){
-        var event_uuid = $(this).attr('name');
+        var topic_id = $(this).attr('name');
         console.log("hello");
         $( "#confirm" ).dialog({
           resizable: false,
@@ -81,8 +81,8 @@
           buttons: {
             Delete: function() {
               $( this ).dialog( "close" );
-              console.log("event uuid is :" + event_uuid);
-              $(window.location).attr('href', '/event/delete?event_uuid='+event_uuid);
+              console.log("topic id is :" + topic_id);
+              $(window.location).attr('href', '/topic/delete?topic_id='+topic_id);
             },
             Cancel: function() {
               $( this ).dialog( "close" );
