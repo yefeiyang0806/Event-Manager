@@ -5,6 +5,13 @@ from wtforms.validators import InputRequired, Length, Email, EqualTo, Validation
 from ..models import Content, Format
 
 
+def unique_title_year(form, field):
+	exist_email = db.session.query(Topic).filter(Topic.email == form.email.data).first()
+	if exist_email is not None:
+		raise ValidationError('Email address already exists')
+
+
+
 class CreateTopicForm(Form):
     title = StringField('Topic Title', validators=[InputRequired()])
     description = StringField('Description', validators=[InputRequired()])

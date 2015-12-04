@@ -102,7 +102,7 @@ def modify_topic(topic_uuid):
         form.description.data = topic.description
         form.min_attendance.data = topic.min_attendance
         form.max_attendance.data = topic.max_attendance        
-        form.DateStart.data = topic.year_start + topic.month_start + topic.day_start
+        form.DateStart.data = topic.year_start + '-'+ topic.month_start +'-' + topic.day_start
         form.day_duration.data = topic.day_duration
         form.hour_duration.data = topic.hour_duration
         form.minute_duration.data = topic.minute_duration
