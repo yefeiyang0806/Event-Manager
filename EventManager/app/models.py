@@ -100,7 +100,6 @@ class Event(db.Model):
         self.create_time = time.strftime("%H:%M:%S")
         self.create_date = time.strftime("%Y/%m/%d")
         self.status = 0
-        print(create_by)
         create_user = db.session.query(User).filter(User.email == create_by).first()
         input_content = db.session.query(Content).filter(Content.name == content).first()
         input_format = db.session.query(Format).filter(Format.name == format).first()
