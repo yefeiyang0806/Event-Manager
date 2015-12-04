@@ -5,13 +5,13 @@
   <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
   <link href="{{url_for('static', filename='jquery-timepicker/jquery.timepicker.css')}}" rel="stylesheet">
   <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-  {% set active_list = 'arrange_events' %}
+  {% set active_list = 'arrange_topics' %}
   {% include 'public/navbar.html' %}
   <div class="container-fluid">
   	<div class="row">
   		{% include 'public/side_bar.html' %}
     	<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-        <h1 class="page-header">Arrange Events</h1>
+        <h1 class="page-header">Arrange Topics</h1>
         <br />
 
         <div class='row' style='width:90%;text-align:center;'>
@@ -44,36 +44,36 @@
         <br>
 
         <div class="table-responsive">
-          {% if not events %}
+          {% if not topics %}
 			      <div class="panel panel-warning">
             	<div class="panel-heading">
-              	<h2 class="panel-title">No event records yet.</h2>
+              	<h2 class="panel-title">No topic records yet.</h2>
               </div>
               <div class="panel-body">
-              	You can <a href="/event/create">register new events here</a>.<br />
+              	You can <a href="/topic/create">register new topics here</a>.<br />
               	More actions are available on the left-hand side navigator bar.
               </div>
           	</div>
 		  	  {% else %}
-          	{% for event in events %}
-          	  <!--h3 class="event_title text-muted"><a href="/event/view?uuid={{ event.uuid }}">{{ event.topic }}</a></h3>
-          	  <h4 class="task_title text-success">&nbsp;&nbsp;Host by <strong>{{event.speaker}}</strong></h4-->
+          	{% for topic in topics %}
+          	  <!--h3 class="topic_title text-muted"><a href="/topic/view?uuid={{ topic.topic_id }}">{{ topic.topic }}</a></h3>
+          	  <h4 class="task_title text-success">&nbsp;&nbsp;Host by <strong>{{topic.speaker}}</strong></h4-->
           	  <table class="table-arrange table-striped">
           	    <tbody>
           	      <tr>
-          	      	<td><strong>{{ event.topic }}</strong></td>
-                    <td>Speaker: {{ event.speaker }}</td>
-                    <td>Format: {{event.format_type.name }}</td>
+          	      	<td><strong>{{ topic.title }}</strong></td>
+                    <td>Speaker: {{ topic.speaker }}</td>
+                    <td>Format: {{topic.format_type.name }}</td>
           	      	<!--c:if test="${ diet_tasks[i-1].state != 'Not Started'}"-->
-          	      	<td>Content: {{event.content_type.name}}</td>
+          	      	<td>Content: {{topic.content_type.name}}</td>
           	      </tr>
-                  <form class='schedule_info' method='POST' action='/event/set_arrangement'>
+                  <form class='schedule_info' method='POST' action='/topic/set_arrangement'>
           	      <tr>
-          	      	<td>Audience: {{ event.min_attendance }} - {{ event.max_attendance }}</td>
+          	      	<td>Audience: {{ topic.min_attendance }} - {{ topic.max_attendance }}</td>
           	      	<td>Date: <input class='date-picker'></td>
                     <td>Time: <input class='time-from'> to <input class='time-to'></td>
                     <td>Resource: <input class='assign-resource'></td>
-                    <input type='hidden' id='event_uuid' value='{{ event.uuid }}'>
+                    <input type='hidden' id='topic_id' value='{{ topic.topic_id }}'>
           	      	<!--td>Interested</td-->
           	      </tr>
                   </form>
@@ -107,7 +107,7 @@
         else if (format_name != "--------Any--------"){
           suffix += "?format=" + format_name;
         }
-        $(window.location).attr('href', '/event/arrange'+suffix);
+        $(window.location).attr('href', '/topic/arrange'+suffix);
       });
 
       $(".date-picker").datepicker();
@@ -121,8 +121,8 @@
           console.log($(".date-picker").val());
           var time_from = $(this).find(".time-from").val();
           var time_to = $(this).find(".time-to").val();
-          var event_uuid = $(this).find("#event_uuid").val();
-          var record = {"event_uuid": event_uuid, "date": date, "time_from": time_from, "time_to": time_to};
+          var topic_id = $(this).find("#topic_id").val();
+          var record = {"topic_id": topic_id, "date": date, "time_from": time_from, "time_to": time_to};
           data.push(record);
         });
         console.log(data);

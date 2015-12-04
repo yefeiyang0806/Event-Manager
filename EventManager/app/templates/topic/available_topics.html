@@ -26,8 +26,8 @@
           	</div>
 		  	 {% else %}
           	{% for topic in topics %}
-          	  <h3 class="topic_title text-muted"><a href="/topic/view?uuid={{ topic.uuid }}">{{ topic.topic }}</a></h3>
-          	  <h4 class="task_title text-success">&nbsp;&nbsp;Host by <strong>{{topic.speaker}}</strong></h4>
+          	  <h3 class="topic_title text-muted"><a href="/topic/view?topic_id={{ topic.topic_id }}">{{ topic.title }}</a></h3>
+          	  <!--h4 class="task_title text-success">&nbsp;&nbsp;Host by <strong>{{topic.speaker}}</strong></h4-->
           	  <table class="table">
           	    <tbody>
           	      <tr>
@@ -35,7 +35,7 @@
                     <td>Content: {{ topic.content_type.name }}</td>
                     <td>Created Date: {{ topic.create_date }}</td>
           	      	<!--c:if test="${ diet_tasks[i-1].state != 'Not Started'}"-->
-          	      	  <td><a class="btn btn-info" role="button" href="/topic/modify/{{ topic.uuid }}">Join</a></td>
+          	      	  <td><a class="btn btn-info" role="button" href="/topic/modify/{{ topic.topic_id }}">Join</a></td>
           	      	<!--/c:if-->
           	      	<!--c:if test="${ diet_tasks[i-1].state == 'Not Started'}">
           	      	<td><a class="btn btn-info disabled" role="button" href="/project/food/modify_diet_task?id=${ diet_tasks[i-1].id }">Performance</a></td>
@@ -44,7 +44,7 @@
           	      <tr>
           	      	<td>Topic Status: {{ topic.status }}</td>
           	      	<td colspan="2">Topic format: {{ topic.format_type.name }}</td>
-          	      	<td><button class="btn btn-info delete" role="button" name="{{ topic.uuid }}">Interested</button></td>
+          	      	<td><button class="btn btn-info delete" role="button" name="{{ topic.topic_id }}">Interested</button></td>
           	      </tr>
           	    </tbody>
           	  </table>

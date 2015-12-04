@@ -1,6 +1,6 @@
 {% extends "bootstrap/base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
-{% block title %}Event Details{% endblock %}
+{% block title %}Topic Details{% endblock %}
 {% block body %}
   {{super()}}
   <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
@@ -14,28 +14,29 @@
   	<div class="row">
   	  {% include 'public/side_bar.html' %}
   	  <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-  	  	<h1 class="page-header">{{ event.topic }}</h1>
-        <h4>Description: {{ event.description }}</h4>
-        <h4>Host: {{ event.speaker }}</h4>
-        <h4>Event Content: {{ event.content_type.name }}</h4>
-        <h4>Event Format: {{ event.format_type.name }}</h4>
-        <h4>Event DateStart: {{ event.year_start + event.month_start + event.day_start}}</h4>
-        <h4>Event Day Duration: {{ event.day_duration }}</h4>
-        <h4>Event Hour Duration: {{ event.hour_duration }}</h4>
-        <h4>Event Minute Duration:{{ event.minute_duration }}</h4>        
-        <h4>Created Date: {{ event.create_date }}</h4>
-        <h4>Created Time: {{ event.create_time }}</h4>
-        <h4>Attendance: {{ event.min_attendance }} - {{ event.max_attendance }}</h4>
-        <h4>Status: {{ event.status }}</h4>
+  	  	<h1 class="page-header">{{ topic.title }}</h1>
+        <h4>Description: {{ topic.description }}</h4>
+        <h4>Speaker: {{ topic.speaker1 }}</h4>
+        <h4>Content: {{ topic.content_type.name }}</h4>
+        <h4>Format: {{ topic.format_type.name }}</h4>
+        <h4>Start Date: {{ topic.year_start + topic.month_start + topic.day_start}}</h4>
+        <h4>Duration: {{ topic.day_duration }} days {{ topic.hour_duration }} hours {{ topic.minute_duration }} minutes</h4>     
+        <h4>Created Date: {{ topic.create_date }}</h4>
+        <h4>Created Time: {{ topic.create_time }}</h4>
+        <h4>Attendance: {{ topic.min_attendance }} - {{ topic.max_attendance }}</h4>
+        <h4>Status: {{ topic.status }}</h4>
+        <h4>Jam Link: {{ topic.jamlink }}</h4>
+        <h4>Link: {{ topic.link }}</h4>
+        <h4>location: {{ topic.location }}</h4>
         {% if mode == 'viewer' %}
     	    <a type="button" class="btn btn-primary btn-login" id="register">Register</a>
         {% elif mode == 'creator' %}
-          <a href='/event/modify/{{ event.uuid }}' type="button" class="btn btn-primary btn-login" id="modify">Modify</a>
-          <button class="btn btn-info btn-login delete" role="button" name="{{ event.uuid }}">Delete</button>
+          <a href='/topic/modify/{{ topic.topic_id }}' type="button" class="btn btn-primary btn-login" id="modify">Modify</a>
+          <button class="btn btn-info btn-login delete" role="button" name="{{ topic.topic_id }}">Delete</button>
         {% endif %}
 
-        <div style="display:none" id='confirm' title='Delete the selected event?'>
-          <p>Do you want to delete the selected event?</p>
+        <div style="display:none" id='confirm' title='Delete the selected topic?'>
+          <p>Do you want to delete the selected topic?</p>
         </div>
 
       </div>
@@ -49,7 +50,7 @@
     $(document).ready(function() {
       
       $(".delete").click(function(){
-        var event_uuid = $(this).attr('name');
+        var topic_id = $(this).attr('name');
         console.log("hello");
         $( "#confirm" ).dialog({
           resizable: false,
@@ -58,8 +59,8 @@
           buttons: {
             Delete: function() {
               $( this ).dialog( "close" );
-              console.log("event uuid is :" + event_uuid);
-              $(window.location).attr('href', '/event/delete?event_uuid='+event_uuid);
+              console.log("topic id is :" + topic_id);
+              $(window.location).attr('href', '/topic/delete?topic_id='+topic_id);
             },
             Cancel: function() {
               $( this ).dialog( "close" );

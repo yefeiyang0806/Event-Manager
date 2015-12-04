@@ -107,7 +107,7 @@ def menus_of_role():
     middles = db.session.query(Role_menu).filter(Role_menu.role_id == g.user.role_id).all()
     menus = list()
     for m in middles:
-        menu = db.session.query(Menu).get(m.menu_id)
+        menu = db.session.query(Menu).filter(Menu.menu_id == m.menu_id).first()
         menus.append(menu)
     print (menus)
     return menus

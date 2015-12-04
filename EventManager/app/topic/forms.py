@@ -15,7 +15,7 @@ def unique_title_year(form, field):
 class CreateTopicForm(Form):
     title = StringField('Topic Title', validators=[InputRequired()])
     description = StringField('Description', validators=[InputRequired()])
-    speaker = StringField('Speaker', validators=[InputRequired()])
+    #speaker = StringField('Speaker', validators=[InputRequired()])
     content = SelectField('Content')
     format = SelectField('Format')
     min_attendance = IntegerField('Minimal attendance', default=10)
