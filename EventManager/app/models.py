@@ -126,8 +126,8 @@ class Topic(db.Model):
         
 
         create_user.created_topics.append(self)
-        input_content.created_topics.append(self)
-        input_format.created_topics.append(self)
+        input_content.topics.append(self)
+        input_format.topics.append(self)
 
 
 
