@@ -20,7 +20,7 @@ topic = Blueprint('topic', __name__)
 def create_topic():
     first_name = g.user.first_name
     status = g.user.status
-    user_email = g.user.email
+    user_id = g.user.user_id
     menus = menus_of_role()
     form = CreateTopicForm()
     form.set_options()   
@@ -30,13 +30,18 @@ def create_topic():
         year_start = startdata[0]
         month_start = startdata[1]
         day_start = startdata[2]
-        form.add_topic_id
-
                #print (db.session.query(Content).filter(Content.name == form.content.data).first().topics.count())
+<<<<<<< HEAD
         temp = topic(form.title.data, form.description.data, form.min_attendance.data, form.max_attendance.data, \
             form.speaker1.data, form.speaker2.data, form.speaker3.data, year_start, month_start, day_start, form.day_duration.data, form.hour_duration.data,form.minute_duration.data,\
                form.content.data, form.format.data, form.link.data, \
               form.jamlink.data, form.location.data)     
+=======
+        temp = Topic(form.title.data, form.description.data, form.min_attendance.data, form.max_attendance.data,\
+                form.speaker1.data, form.speaker2.data, form.speaker3.data, year_start, month_start, day_start,\
+                form.day_duration.data, form.hour_duration.data, form.minute_duration.data, user_id,\
+                form.content.data, form.format.data, form.location.data, form.link.data, form.jamlink.data)     
+>>>>>>> 7c88e73a1b8bbd19d8e120d776adb677819b8db1
         db.session.add(temp)
         db.session.commit()
         #print (db.session.query(Content).filter(Content.name == form.content.data).first().topics.count())user_email, 
