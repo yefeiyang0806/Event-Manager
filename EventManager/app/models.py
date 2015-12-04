@@ -111,11 +111,6 @@ class Topic(db.Model):
         self.create_time = time.strftime("%H:%M:%S")
         self.create_date = time.strftime("%Y/%m/%d")
         self.status = 0
-<<<<<<< HEAD
-        create_user = db.session.query(User).filter(User.email == create_by).first()
-        input_content = db.session.query(Content).filter(Content.name == content).first()
-        input_format = db.session.query(Format).filter(Format.name == format).first()
-=======
 
         create_user = db.session.query(User).filter(User.user_id == create_by).first()
         input_content = db.session.query(Content).filter(Content.content_id == content_id).first()
@@ -124,7 +119,6 @@ class Topic(db.Model):
         same_format_topic_count = db.session.query(Topic).filter(Topic.format == input_format.format_id).count()
         self.topic_id = input_format.format_id + "-" + same_format_topic_count
         
->>>>>>> 83fb8fa26cb867e43568b9e6d2a9a106bc7bb879
         create_user.events.append(self)
         input_content.events.append(self)
         input_format.events.append(self)
