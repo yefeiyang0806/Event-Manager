@@ -1,13 +1,13 @@
 from app import db, lm
 from config import ADMINS
-from flask import render_template, flash, redirect, session, url_for, request, g, request, Blueprint
+from flask import render_template, flash, redirect, session, url_for, request, g, request, Blueprint, jsonify
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from flask.ext.mail import Message
 from .forms import CreateTopicForm
-from ..models import User, Topic, Role, Menu, Role_menu, Content, Format, ResourceType, Resource
+from ..models import User, Topic, Role, Menu, Role_menu, Content, Format, ResourceType, Resource, TopicValidation
 from ..emails import send_email
 from werkzeug.security import generate_password_hash
-import random
+import random, json
 import re
 
 
@@ -212,7 +212,7 @@ def place_topics():
         menus=menus, r_type_names=r_type_names, resource_names=resource_names)
 
 
-#Show the page of scheduling all the approved topics. The page is reached by the "Place topic link in the topic management side bar"
+#Show the page of scheduling all the approved topics. The page is reached by the "validate topic" link in the topic management side bar"
 @topic.route('/validate')
 @login_required
 def validate_topics():
@@ -243,6 +243,38 @@ def validate_topics():
     #print (topics)
     return render_template('topic/validate_topics.html', topics=topics, full_name=full_name, status=status, \
         menus=menus, content_names=content_names, format_names=format_names)
+        
+        
+# Handle the content sent from the templates to insert validation result into db.
+@topic.route('/ajax_validation', methods=["GET", "POST"])
+@login_required
+def ajax_validation():
+    #print(request.get_json(force=True))
+    json_data = request.get_json(force=True)
+    results = json_data["Results"]
+    for result in results:
+        topic = db.session.query(Topic).filter(Topic.topic_id == result['topic_id']).first()
+        topic_validation = db.session.query(TopicValidation).filter(TopicValidation.topic_title == topic.title).first()
+        print(topic)
+        if topic_validation == None:
+            topic_validation = TopicValidation(topic.title, topic.year_start, result['validation'], g.user.user_id)
+            print(topic_validation.topic_title)
+            topic.validation.append(topic_validation)
+            db.session.add(topic_validation)
+            db.session.commit()
+        else:
+            topic_validation.validation = result['validation']
+            db.session.commit()
+    return jsonify({'status':'success'})
+    
+    
+# Responsible for the card-style of topic validation.
+@topic.route('/single_validation/<topic_id>', methods=["GET", "POST"])
+@login_required
+def single_validation(topic_id):
+    selected_topic = db.session.query(Topic).filter(Topic.topic_id == topic_id).first()
+    return render_template('topic/single_validation.html', topic=selected_topic)
+        
 
 #Required by the LoginManager
 @lm.user_loader

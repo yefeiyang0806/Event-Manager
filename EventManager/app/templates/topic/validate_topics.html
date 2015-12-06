@@ -56,44 +56,74 @@
           	</div>
 		  	  {% else %}
           	{% for topic in topics %}
-          	  <!--h3 class="topic_title text-muted"><a href="/topic/view?uuid={{ topic.topic_id }}">{{ topic.topic }}</a></h3>
-          	  <h4 class="task_title text-success">&nbsp;&nbsp;Host by <strong>{{topic.speaker}}</strong></h4-->
           	  <table class="table-arrange table-striped">
           	    <tbody>
           	      <tr>
-          	      	<td><strong>{{ topic.title }}</strong></td>
-                    <td>Speaker: {{ topic.speaker }}</td>
-                    <td>Format: {{topic.format_type.name }}</td>
+          	      	<td width='28%' colspan='2'><strong><a href='javascript:void(0)' class='title_links' id='{{ topic.topic_id }}'>{{ topic.title }}</strong></td>
+                    <td width='18%'>Speaker: 
+					  {% if topic.speaker2 == '' and topic.speaker3 == '' %}
+					  	{{ topic.speaker1 }}
+					  {% else %}
+					  	{{ topic.speaker1 + ', etc.' }}
+					  {% endif %}
+					</td>
+                    <td width='18%'>Format: {{topic.format_type.name }}</td>
           	      	<!--c:if test="${ diet_tasks[i-1].state != 'Not Started'}"-->
-          	      	<td>Content: {{topic.content_type.name}}</td>
+          	      	<td width='18%'>Content: {{topic.content_type.name}}</td>
+					<td width='18%'>Location: {{topic.location}}</td>
           	      </tr>
-                  <form class='schedule_info' method='POST' action='/topic/set_arrangement'>
+                  <!--form class='schedule_info' method='POST' action='/topic/set_arrangement'-->
           	      <tr>
-          	      	<td>Audience: {{ topic.min_attendance }} - {{ topic.max_attendance }}</td>
-          	      	<td>Date: <input class='date-picker'></td>
-                    <td>Time: <input class='time-from'> to <input class='time-to'></td>
-                    <td>Resource: <input class='assign-resource'></td>
-                    <input type='hidden' id='topic_id' value='{{ topic.topic_id }}'>
-          	      	<!--td>Interested</td-->
+					<td width='14%'>Topic ID: {{ topic.topic_id }}</td>
+          	      	<td width='14%'>Audience: {{ topic.min_attendance }} - {{ topic.max_attendance }}</td>
+          	      	<td width='18%'>Start Date: {{ topic.year_start + '-' + topic.month_start + '-' + topic.day_start }}</td>
+                    <td width='18%'>Duration: 
+					  {% if topic.day_duration != "0" %}
+					  	{{ topic.day_duration + ' days ' }}
+					  {% endif %}
+					  {% if topic.hour_duration != "0" %}
+					  	{{ topic.hour_duration + ' hours ' }}
+					  {% endif %}
+					  {% if topic.minute_duration != "0" %}
+					  	{{ topic.minute_duration + ' minutes ' }}
+					  {% endif %}
+					</td>
+					<td width='18%'>Jam Link: {{ topic.jamlink }}
+                    <td width='18%'>
+					  <input type='radio' name='{{ topic.topic_id }}' value=1 /> Positive&nbsp;&nbsp;&nbsp;&nbsp;
+					  <input type='radio' name='{{ topic.topic_id }}' value=0 /> Negative
+					</td>
           	      </tr>
-                  </form>
+                  <!--/form -->
           	    </tbody>
           	  </table>
           	  <br />
           	    
           	{% endfor %}
-            <button class='btn btn-primary' id='submit_schedule'>Submit</button>
+            <button class='btn btn-primary' id='submit_validation'>Submit</button>
           {% endif %}
         </div>
       </div>
     </div>
   </div>
-
+  <div style='display:none;'><iframe id='card_view'></iframe></div>
+  <meta name="csrf-token" content="{{ csrf_token() }}"></meta>
+  
   <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>
   <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
   <script src="{{url_for('static', filename='jquery-timepicker/jquery.timepicker.js')}}"></script>
   <script>
     $(document).ready(function() {
+	  var csrftoken = $('meta[name=csrf-token]').attr('content');
+
+	  $.ajaxSetup({
+		beforeSend: function(xhr, settings) {
+		  if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+			xhr.setRequestHeader("X-CSRFToken", csrftoken);
+		  }
+		}
+	  });	
+	  	
       $("#set_filter").click(function(){
         var suffix = "";
         var content_name = $("#content-filter").find(":selected").text();
@@ -107,26 +137,42 @@
         else if (format_name != "--------Any--------"){
           suffix += "?format=" + format_name;
         }
-        $(window.location).attr('href', '/topic/arrange'+suffix);
+        $(window.location).attr('href', '/topic/validate'+suffix);
       });
 
-      $(".date-picker").datepicker();
-      $(".time-from").timepicker({ 'timeFormat': 'H:i:s' });
-      $(".time-to").timepicker({ 'timeFormat': 'H:i:s' });
-
-      $("#submit_schedule").click(function(){
+      $("#submit_validation").click(function(){
         var data = [];
-        $(".schedule_info").each(function(){
-          var date = $(this).find(".date-picker");
-          console.log($(".date-picker").val());
-          var time_from = $(this).find(".time-from").val();
-          var time_to = $(this).find(".time-to").val();
-          var topic_id = $(this).find("#topic_id").val();
-          var record = {"topic_id": topic_id, "date": date, "time_from": time_from, "time_to": time_to};
+        $("input:radio:checked").each(function(){
+          console.log($(this).attr('name'));
+          var validation = $(this).val()
+          var topic_id = $(this).attr('name');
+          var record = {"topic_id": topic_id, "validation": validation};
           data.push(record);
         });
         console.log(data);
+		$.ajax({
+		  type: "POST",
+		  contentType: "application/json",
+		  dataType: "json",
+		  url: "/topic/ajax_validation",
+		  data: JSON.stringify({ "Results": data }),
+		  success: function(data){
+			console.log("send successfully!");	
+		  }
+		});
       });
+	  
+	  $(".title_links").click(function(){
+		console.log("Clicked");
+		var topic_id = $(this).attr('id');
+		var src = '/topic/single_validation/' + topic_id;
+		$("#card_view").attr('src', src);
+		$("#card_view").dialog({
+			modal: true,
+			width: '80%',
+			height: '80%'
+		});
+	  });
 
     });
   </script>

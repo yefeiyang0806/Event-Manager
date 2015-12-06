@@ -93,7 +93,7 @@ class Topic(db.Model):
 
     
     def __repr__(self):
-        return '<Topic %r>' %(self.topic)
+        return '<Topic %r>' %(self.title)
 
 
     def __init__(self, title, description, min_attendance, max_attendance, speaker1, speaker2, speaker3, year_start, month_start, day_start, \
@@ -371,8 +371,6 @@ class TopicValidation(db.Model):
         self.uuid = str(uuid.uuid1())
         self.validation = validation
         self.agent = agent
-        self.create_time = create_time
-        self.create_date = create_date
         self.create_time = time.strftime("%H:%M:%S")
         self.create_date = time.strftime("%Y/%m/%d")
 

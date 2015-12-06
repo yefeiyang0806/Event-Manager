@@ -4,15 +4,9 @@
 {% block body %}
   {{super()}}
   <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
-  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-  <style>
-  	.form-group {width:50%;}
-  </style>
-  <!--link href="{{url_for('static', filename='css/register.css')}}" rel="stylesheet"-->
-  {% include 'public/navbar.html' %}
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">  
   <div class="container-fluid">
   	<div class="row">
-  	  {% include 'public/side_bar.html' %}
   	  <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
   	  	<h1 class="page-header">{{ topic.title }}</h1>
         <h4>Description: {{ topic.description }}</h4>
@@ -51,7 +45,7 @@
       
       $(".delete").click(function(){
         var topic_id = $(this).attr('name');
-
+        console.log("hello");
         $( "#confirm" ).dialog({
           resizable: false,
           height:200,
