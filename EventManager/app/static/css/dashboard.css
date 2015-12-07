@@ -153,3 +153,16 @@ body {
 .table-arrange tr>td {
   min-width: 25%;
 }
+#scrollable {
+  overflow-x:scroll;
+  overflow-y:visible;
+  width:600px;
+}
+#scrollable_content tr>td {
+  min-width: 200px;
+  padding: 15px;
+}
+
+#scrollable_content tr {
+  min-width: 100px;
+}

@@ -4,7 +4,7 @@ from flask import render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from flask.ext.mail import Message
 from .forms import LoginForm, JoinForm, RetrievePwdForm, PwdResetForm
-from ..models import User, Topic, Menu, Role, Role_menu, Content, Format, ResourceType
+from ..models import User, Topic, Menu, Role, Role_menu, Content, Format, ResourceType, Resource
 from ..emails import send_email
 from werkzeug.security import generate_password_hash
 
@@ -244,6 +244,25 @@ def generate_db():
     db.session.add(rt_lb)
     db.session.commit()
     
+    return redirect(url_for('basic.index'))
+
+
+#Only used for generating resources.
+@basic.route('/generate_resources')
+def generate_resource():
+    resource1 = Resource('SF_001', 'SF_001', 'Show Floor on the first floor', 20, g.user.user_id, 'Show Floor')
+    resource2 = Resource('SF_002', 'SF_002', 'Show Floor on the second floor', 15, g.user.user_id, 'Show Floor')
+    resource3 = Resource('SF_003', 'SF_003', 'Show Floor on the third floor', 10, g.user.user_id, 'Show Floor')
+    resource4 = Resource('SB_001', 'SB_001', 'Small Ballroom on the first floor', 50, g.user.user_id, 'Small Ballroom')
+    resource5 = Resource('LB_001', 'LB_001', 'large Ballroom on the first floor', 100, g.user.user_id, 'Large Ballroom')
+
+    db.session.add(resource1)
+    db.session.add(resource2)
+    db.session.add(resource3)
+    db.session.add(resource4)
+    db.session.add(resource5)
+    db.session.commit()
+
     return redirect(url_for('basic.index'))
 
 

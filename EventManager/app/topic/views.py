@@ -4,7 +4,7 @@ from flask import render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from flask.ext.mail import Message
 from .forms import CreateTopicForm
-from ..models import User, Topic, Role, Menu, Role_menu, Content, Format, ResourceType, Resource, TopicValidation
+from ..models import User, Topic, Role, Menu, Role_menu, Content, Format, ResourceType, Resource, TopicValidation, TopicSchedule
 from ..emails import send_email
 from werkzeug.security import generate_password_hash
 import random, json
@@ -274,6 +274,49 @@ def ajax_validation():
 def single_validation(topic_id):
     selected_topic = db.session.query(Topic).filter(Topic.topic_id == topic_id).first()
     return render_template('topic/single_validation.html', topic=selected_topic)
+
+
+#Responsible for sending filtered resources back to templates of arrange_topics
+@topic.route('/filter_resources')
+@login_required
+def filter_resources():
+    topic_id = request.args.get('topic_id', None)
+    topic = db.session.query(Topic).filter(Topic.topic_id == topic_id).first()
+    resources = db.session.query(Resource).filter(Resource.max_capacity >= topic.max_attendance).all()
+    data = dict()
+    for resource in resources:
+        data[resource.r_id] = resource.name + " (" + str(resource.max_capacity) + ")"
+    return jsonify(data)
+
+
+#Responsible for validating the arrangement submitted by the administrators.
+#The validation mainly focuses on avoiding repeated assigned speakers and resources.
+#If the result is good, save the schedule.
+@topic.route('/validate_arrangement', methods=['GET', 'POST'])
+@login_required
+def validate_arrangement():
+    json_data = request.get_json(force=True)
+    schedule = json_data['schedule']
+    r_conflict = "Each resource can only be assigned at most one topic at the same time."
+    s_conflict = "Each spaker can only give at most one speech at the same time."
+    error_msg = dict()
+    for s in schedule:
+        if speaker_conflict(s['topic_id'], s['time_from'], s['time_to']):
+            error_msg[s['topic_id']] = s_conflict
+        if room_conflict(s['topic_id']):
+            error_msg[s['topic_id']] = r_conflict
+    if error_msg is empty:
+        for s in schedule:
+            topic = db.session.query(Topic).filter(Topic.topic_id == s['topic_id'])
+            t_S = TopicSchedule(topic.title, topic.year_start, s['date'], s['date'], \
+                s['time_from'], s['time_to'], s['resource'], g.user.user_id)
+            db.session.add(t_s)
+        db.session.commit()
+        return jsonify({'status':'success'})
+    else:
+        return jsonify({'ErrorMessage': error_msg})
+
+
         
 
 #Required by the LoginManager
@@ -291,6 +334,17 @@ def menus_of_role():
         menus.append(menu)
     #print (menus)
     return menus
+
+
+#Check if the speaker has been conflicted
+def speaker_conflict(topic_id, time_from, time_to):
+    scheduled_topic = db.session.query(Topic).filter(Topic.topic_id == topic_id).first()
+    same_speaker1_topics = db.session.query(Topic).filter(Topic.speaker1 == scheduled_topic.speaker1)
+    same_speaker2_topics = db.session.query(Topic).filter(Topic.speaker2 != '').filter(Topic.speaker2 == scheduled_topic.speaker2)
+    same_speaker3_topics = db.session.query(Topic).filter(Topic.speaker3 != '').filter(Topic.speaker3 == scheduled_topic.speaker3)
+    q = same_speaker1_topics.union(same_speaker2_topics).union(same_speaker3_topics)
+    result_topics = db.session.query(q)
+    print (result_topics)
 
 
 #Refresh the global variable before every request

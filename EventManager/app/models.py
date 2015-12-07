@@ -289,7 +289,7 @@ class Resource(db.Model):
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
     create_by = db.Column(db.String(10))
-    r_type = db.Column(db.String(40), db.ForeignKey('resource_type.uuid'))
+    r_type = db.Column(db.String(40), db.ForeignKey('resource_type.name'))
     schedule = db.relationship('TopicSchedule', backref='assigned_resource', lazy='dynamic')
 
 
@@ -297,13 +297,18 @@ class Resource(db.Model):
         return '<Resource %r>' %(self.name)
 
 
-    def __init__(self, name, create_by, resource_type):
+    def __init__(self, name, r_id, r_description, max_capacity, create_by, r_type):
         self.uuid = str(uuid.uuid1())
         self.name=name
+        self.r_id = r_id
+        self.r_description = r_description
+        self.max_capacity = max_capacity
         self.create_time = time.strftime("%H:%M:%S")
         self.create_date = time.strftime("%Y/%m/%d")
         self.create_by = create_by
-        self.resource_type = resource_type.uuid
+        
+        related_resource_type = db.session.query(ResourceType).filter(ResourceType.name == r_type).first()
+        related_resource_type.related_resources.append(self)
 
 
 class TopicSchedule(db.Model):
