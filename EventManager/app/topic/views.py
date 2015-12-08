@@ -7,7 +7,7 @@ from .forms import CreateTopicForm
 from ..models import User, Topic, Role, Menu, Role_menu, Content, Format, ResourceType, Resource, TopicValidation, TopicSchedule
 from ..emails import send_email
 from werkzeug.security import generate_password_hash
-import random, json
+import random, json, datetime
 import re
 
 
@@ -240,7 +240,7 @@ def validate_topics():
         topics = db.session.query(Format).filter(Format.name == format_filter).first().topics.all()
     else:
         topics = db.session.query(Topic).all()
-    #print (topics)
+    print(topics[0].validation.first())
     return render_template('topic/validate_topics.html', topics=topics, full_name=full_name, status=status, \
         menus=menus, content_names=content_names, format_names=format_names)
         
@@ -299,22 +299,38 @@ def validate_arrangement():
     schedule = json_data['schedule']
     r_conflict = "Each resource can only be assigned at most one topic at the same time."
     s_conflict = "Each spaker can only give at most one speech at the same time."
-    error_msg = dict()
+    errors = list()
     for s in schedule:
-        if speaker_conflict(s['topic_id'], s['time_from'], s['time_to']):
-            error_msg[s['topic_id']] = s_conflict
-        if room_conflict(s['topic_id']):
-            error_msg[s['topic_id']] = r_conflict
-    if error_msg is empty:
+        if speaker_conflict(s['topic_id'], s['date'], s['time_from'], s['time_to']):
+            error_msg = dict()
+            error_msg['topic_id'] = s['topic_id']
+            error_msg['message'] = s_conflict
+            errors.append(error_msg)
+        if room_conflict(s['topic_id'], s['date'], s['time_from'], s['time_to'], s['resource']):
+            error_msg = dict()
+            error_msg['topic_id'] = s['topic_id']
+            error_msg['message'] = r_conflict
+            errors.append(error_msg)
+    if not errors:
         for s in schedule:
-            topic = db.session.query(Topic).filter(Topic.topic_id == s['topic_id'])
-            t_S = TopicSchedule(topic.title, topic.year_start, s['date'], s['date'], \
+            topic = db.session.query(Topic).filter(Topic.topic_id == s['topic_id']).first()
+            #print('--------------------')
+            #print(topic)
+            if topic.schedule.first()==None:
+                t_s = TopicSchedule(topic.title, topic.year_start, s['date'], s['date'], \
                 s['time_from'], s['time_to'], s['resource'], g.user.user_id)
-            db.session.add(t_s)
+                db.session.add(t_s)
+            else:
+                t_s = topic.schedule.first()
+                t_s.day_from = s['date']
+                t_s.day_to = s['date']
+                t_s.time_from = s['time_from']
+                t_s.time_to = s['time_to']
+                t_s.resource = s['resource']
         db.session.commit()
         return jsonify({'status':'success'})
     else:
-        return jsonify({'ErrorMessage': error_msg})
+        return jsonify({'ErrorMessage': errors})
 
 
         
@@ -337,14 +353,64 @@ def menus_of_role():
 
 
 #Check if the speaker has been conflicted
-def speaker_conflict(topic_id, time_from, time_to):
+def speaker_conflict(topic_id, date, time_from, time_to):
     scheduled_topic = db.session.query(Topic).filter(Topic.topic_id == topic_id).first()
-    same_speaker1_topics = db.session.query(Topic).filter(Topic.speaker1 == scheduled_topic.speaker1)
-    same_speaker2_topics = db.session.query(Topic).filter(Topic.speaker2 != '').filter(Topic.speaker2 == scheduled_topic.speaker2)
-    same_speaker3_topics = db.session.query(Topic).filter(Topic.speaker3 != '').filter(Topic.speaker3 == scheduled_topic.speaker3)
-    q = same_speaker1_topics.union(same_speaker2_topics).union(same_speaker3_topics)
-    result_topics = db.session.query(q)
-    print (result_topics)
+    same_speaker_topics = db.session.query(Topic).filter(Topic.speaker1 == scheduled_topic.speaker1).all()
+    #print(same_speaker_topics)
+    same_speaker_topics = same_speaker_topics + db.session.query(Topic).filter(Topic.speaker2 != '').filter(Topic.speaker2 == scheduled_topic.speaker1).all()
+    #print(same_speaker_topics)
+    same_speaker_topics = same_speaker_topics + db.session.query(Topic).filter(Topic.speaker3 != '').filter(Topic.speaker3 == scheduled_topic.speaker1).all()
+    #print(same_speaker_topics)
+    if scheduled_topic.speaker2 != '':
+        same_speaker_topics = db.session.query(Topic).filter(Topic.speaker1 == scheduled_topic.speaker2).all()
+        same_speaker_topics = same_speaker_topics + db.session.query(Topic).filter(Topic.speaker2 != '').filter(Topic.speaker2 == scheduled_topic.speaker2).all()
+        same_speaker_topics = same_speaker_topics + db.session.query(Topic).filter(Topic.speaker3 != '').filter(Topic.speaker3 == scheduled_topic.speaker2).all()
+    if scheduled_topic.speaker3 != '':
+        same_speaker_topics = db.session.query(Topic).filter(Topic.speaker1 == scheduled_topic.speaker3).all()
+        same_speaker_topics = same_speaker_topics + db.session.query(Topic).filter(Topic.speaker2 != '').filter(Topic.speaker2 == scheduled_topic.speaker3).all()
+        same_speaker_topics = same_speaker_topics + db.session.query(Topic).filter(Topic.speaker3 != '').filter(Topic.speaker3 == scheduled_topic.speaker3).all()
+    same_speaker_topics.remove(scheduled_topic)
+    if same_speaker_topics == None:
+        return False
+    for sst in same_speaker_topics:
+        sst_schedules = db.session.query(TopicSchedule).filter(TopicSchedule.topic_title == sst.title).filter(TopicSchedule.topic_year == sst.year_start).all()
+        for schedule in sst_schedules:
+            if schedule.day_from.strftime('%Y-%m-%d') == date:
+                #print (schedule.day_from)
+                #print("Date: "+date)
+                t_to = datetime.datetime.strptime(time_to, '%H:%M:%S').time()
+                t_from = datetime.datetime.strptime(time_from, '%H:%M:%S').time()
+                if schedule.time_from <= t_to and schedule.time_to >= t_from:
+                    print("S Conflict!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                    return True
+    return False
+
+
+#Check if the resource has been conflicted
+def room_conflict(topic_id, date, time_from, time_to, resource):
+    scheduled_topic = db.session.query(Topic).filter(Topic.topic_id == topic_id).first()
+    schedule_topic_schedule = db.session.query(TopicSchedule).join(Resource).filter(TopicSchedule.topic_title == scheduled_topic.title).filter(TopicSchedule.topic_year == scheduled_topic.year_start).first()
+    #print(schedule_topic_schedule)
+    #print('resource: ' + resource)
+    #print(schedule_topic_schedule)
+    #print("------------------")
+    same_resource_schedule = db.session.query(TopicSchedule).join(Resource).filter(Resource.r_id == resource).all()
+    #print(same_resource_schedule)
+    if resource == schedule_topic_schedule.resource:
+        same_resource_schedule.remove(schedule_topic_schedule)
+    #print(same_resource_schedule)
+    if same_resource_schedule == None:
+        return False
+    for srs in same_resource_schedule:
+        if srs.day_from.strftime('%Y-%m-%d') == date:
+            print('New Date: ' + date)
+            t_to = datetime.datetime.strptime(time_to, '%H:%M:%S').time()
+            t_from = datetime.datetime.strptime(time_from, '%H:%M:%S').time()
+            if srs.time_from <= t_to and srs.time_to >= t_from:
+                print("R Conflict!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+                return True
+    #print(same_resource_schedule)
+    return False
 
 
 #Refresh the global variable before every request

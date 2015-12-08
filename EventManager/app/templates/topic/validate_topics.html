@@ -103,6 +103,7 @@
                     </td>
                     <!-- End of scrollable part -->
                     <td width='20%'>
+                      <input type='hidden' class='existing-validation' value={{ topic.validation.first().validation }} />
 					            <input type='radio' name='{{ topic.topic_id }}' value=1 /> Positive&nbsp;&nbsp;&nbsp;&nbsp;
 					            <input type='radio' name='{{ topic.topic_id }}' value=0 /> Negative
 					          </td>
@@ -128,16 +129,21 @@
   <script src="{{url_for('static', filename='jquery-timepicker/jquery.timepicker.js')}}"></script>
   <script>
     $(document).ready(function() {
-	  var csrftoken = $('meta[name=csrf-token]').attr('content');
-
-	  $.ajaxSetup({
-		beforeSend: function(xhr, settings) {
-		  if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
-			xhr.setRequestHeader("X-CSRFToken", csrftoken);
-		  }
-		}
-	  });
+      var csrftoken = $('meta[name=csrf-token]').attr('content');
+      $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+		      if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+		      }
+		    }
+      });
 	  	
+      $(".existing-validation").each(function(){
+        if ($(this).val() == 0 || $(this).val() == 1){
+          $(this).parent().find('input[type=radio][value=' + $(this).val() + ']').prop('checked',true);
+        }
+      });
+
       $("#set_filter").click(function(){
         var suffix = "";
         var content_name = $("#content-filter").find(":selected").text();

@@ -334,16 +334,16 @@ class TopicSchedule(db.Model):
 
 
     def __repr__(self):
-        return '<TopicSchedule %r>' %(self.topic_topic)
+        return '<TopicSchedule %r>' %(self.topic_title)
 
 
     def __init__(self, topic_title, topic_year, day_from, day_to, time_from, time_to, resource, create_by):
+        self.uuid = str(uuid.uuid1())
         related_resource = db.session.query(Resource).filter(Resource.r_id == resource).first()
         related_resource.schedule.append(self)
-        scheduled_topic = db.session.query(Topic).filter(Topic.title == topic_title).filter(topic.year_start == topic_year).first()
+        scheduled_topic = db.session.query(Topic).filter(Topic.title == topic_title).filter(Topic.year_start == topic_year).first()
         scheduled_topic.schedule.append(self)
 
-        self.uuid = str(uuid.uuid1())
         self.day_from = day_from
         self.day_to = day_to
         self.time_from = time_from

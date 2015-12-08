@@ -88,9 +88,9 @@
                     <!-- <div class='data-wrapper'> -->
                     <!-- <input type='hidden' id='topic_id' value='{{ topic.topic_id }}'> -->
           	      	<td>Audience: {{ topic.min_attendance }} - {{ topic.max_attendance }}</td>
-          	      	<td>Date: <input class='date-picker' name='date-picker'></td>
-                    <td>Time: <input class='time-from' size='8'> to <input class='time-to' size='8'></td>
-                    <td>Resource: <select class='assign-resource' id='{{ topic.topic_id }}'></td>
+          	      	<td>Date: <input class='date-picker' name='date-picker' value='{{ topic.schedule.first().day_from }}'></td>
+                    <td>Time: <input class='time-from' size='8' value='{{ topic.schedule.first().time_from }}'> to <input class='time-to' size='8' value='{{ topic.schedule.first().time_to }}'></td>
+                    <td>Resource: <select class='assign-resource' id='{{ topic.topic_id }}' name='{{ topic.schedule.first().resource }}'></td>
           	      	<!--td>Interested</td-->
                     <!-- </div> -->
           	      </tr>
@@ -141,13 +141,15 @@
         $(window.location).attr('href', '/topic/arrange'+suffix);
       });
 
-      $(".date-picker").datepicker();
+      $(".date-picker").datepicker({ minDate: "0", maxDate: "+12M", dateFormat: "yy-mm-dd"});
       $(".time-from").timepicker({
+        'timeFormat': 'H:i:s',
         'minTime': '6:00am',
         'maxTime': '9:00pm',
         'step': '15'
       });
       $(".time-to").timepicker({
+        'timeFormat': 'H:i:s',
         'minTime': '6:00am',
         'maxTime': '9:00pm',
         'step': '15'
@@ -155,6 +157,16 @@
 
       $("#submit_schedule").click(function(){
         var data = [];
+        var err_count = 0;
+        $(".front-validation").each(function(){
+          $(this).remove();
+        });
+        $('input').each(function(){
+          $(this).css('border', '1px solid LightGray');
+        });
+        $('select').each(function(){
+          $(this).css('border', '1px solid LightGray');
+        });
         $(".schedule-info").each(function(){
           var individual = new Object();
           var date = $(this).find('.date-picker').val();
@@ -162,6 +174,31 @@
           var time_to = $(this).find('.time-to').val();
           var resource = $(this).find('.assign-resource').val();
           var topic_id = $(this).find('.assign-resource').attr('id');
+          var blank = 0;
+          if (date == ''){
+            $(this).find('.date-picker').css('border', '1px solid #ff0000');
+            $(this).find('.date-picker').parent().append("<div class='front-validation'><font color='red'>Please select a date.</font></div>");
+            blank ++;
+          }
+          if (time_from == ''){
+            $(this).find('.time-from').css('border', '1px solid #ff0000');
+            $(this).find('.time-from').parent().append("<div class='front-validation'><font color='red'>Please select start time.</font></div>");
+            blank ++;
+          }
+          if (time_to == ''){
+            $(this).find('.time-to').css('border', '1px solid #ff0000');
+            $(this).find('.time-to').parent().append("<div class='front-validation'><font color='red'>Please select finish time.</font></div>");
+            blank ++;
+          }
+          if (resource == ''){
+            $(this).find('.assign-resource').css('border', '1px solid #ff0000');
+            $(this).find('.assign-resource').parent().append("<div class='front-validation'><font color='red'>Please select a resource.</font></div>");
+            blank ++;
+          }
+          if (blank > 0){
+            err_count ++;
+            return true;
+          }
           individual['date'] = date;
           individual['time_from'] = time_from;
           individual['time_to'] = time_to;
@@ -169,7 +206,9 @@
           individual['topic_id'] = topic_id;
           data.push(individual);
         });
-        console.log(data);
+        if (err_count > 0){
+          return true;
+        }
         $.ajax({
           type: "POST",
           contentType: "application/json",
@@ -177,7 +216,14 @@
           url: "/topic/validate_arrangement",
           data: JSON.stringify({ "schedule": data }),
           success: function(data){
-            console.log("send successfully!");
+            if (data['ErrorMessage']){
+              err_msg = data['ErrorMessage'];
+              console.log(err_msg);
+              $.each(err_msg, function(key, value){
+                console.log(value);
+                $("#"+value['topic_id']).parent().append('<div>' + value['message'] + '</div>');
+              });
+            }
           }
         });
       });
@@ -185,9 +231,15 @@
       $(".assign-resource").each(function(){
         var topic_id = $(this).attr('id');
         $(this).empty();
+        $(this).append("<option value=''>-----Select-----</option>")
         $.getJSON("/topic/filter_resources", {'topic_id': topic_id}, function(data){
           $.each( data, function( key, val ){
-            $('#'+topic_id).append("<option value='" + key + "'>" + val + "</option>");
+            if (key == $('#'+topic_id).attr('name')){
+              $('#'+topic_id).append("<option value='" + key + "' selected>" + val + "</option>");
+            }
+            else {
+              $('#'+topic_id).append("<option value='" + key + "'>" + val + "</option>");
+            }
           });
         });
         
