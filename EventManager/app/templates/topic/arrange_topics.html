@@ -190,6 +190,16 @@
             $(this).find('.time-to').parent().append("<div class='front-validation'><font color='red'>Please select finish time.</font></div>");
             blank ++;
           }
+          if (time_to != '' && time_from != ''){
+            t_to = timeToSecond(time_to);
+            t_from = timeToSecond(time_from);
+            if (t_to <= t_from){
+              blank++;
+              $(this).find('.time-from').css('border', '1px solid #ff0000');
+              $(this).find('.time-to').css('border', '1px solid #ff0000');
+              $(this).find('.time-from').parent().append("<div class='front-validation'><font color='red'>Start time must be earlier than finish time.</font></div>");
+            }
+          }
           if (resource == ''){
             $(this).find('.assign-resource').css('border', '1px solid #ff0000');
             $(this).find('.assign-resource').parent().append("<div class='front-validation'><font color='red'>Please select a resource.</font></div>");
@@ -216,13 +226,21 @@
           url: "/topic/validate_arrangement",
           data: JSON.stringify({ "schedule": data }),
           success: function(data){
+            $(".err-msg").each(function(){
+              $(this).remove();
+            });
             if (data['ErrorMessage']){
               err_msg = data['ErrorMessage'];
               console.log(err_msg);
               $.each(err_msg, function(key, value){
                 console.log(value);
-                $("#"+value['topic_id']).parent().append('<div>' + value['message'] + '</div>');
+                var error_alert = '<tr><td colspan="4"><div class="err-msg">';
+                error_alert += '<font color="red">' + value['message'] + '</font></div></td></tr>';
+                $("#"+value['topic_id']).closest('tbody').append(error_alert);
               });
+            }
+            else if (data['status']){
+              alert("Topic schedule updating status: " + data['status']);
             }
           }
         });
@@ -244,6 +262,11 @@
         });
         
       });
+
+      function timeToSecond(time){
+        time = time.split(/:/);
+        return time[0] * 3600 + time[1] * 60 + time[2];
+      }
 
 
     });

@@ -240,11 +240,11 @@ def validate_topics():
         topics = db.session.query(Format).filter(Format.name == format_filter).first().topics.all()
     else:
         topics = db.session.query(Topic).all()
-    print(topics[0].validation.first())
+    #print(topics[0].validation.first())
     return render_template('topic/validate_topics.html', topics=topics, full_name=full_name, status=status, \
         menus=menus, content_names=content_names, format_names=format_names)
         
-        
+
 # Handle the content sent from the templates to insert validation result into db.
 @topic.route('/ajax_validation', methods=["GET", "POST"])
 @login_required
@@ -380,7 +380,7 @@ def speaker_conflict(topic_id, date, time_from, time_to):
                 #print("Date: "+date)
                 t_to = datetime.datetime.strptime(time_to, '%H:%M:%S').time()
                 t_from = datetime.datetime.strptime(time_from, '%H:%M:%S').time()
-                if schedule.time_from <= t_to and schedule.time_to >= t_from:
+                if schedule.time_from < t_to and schedule.time_to > t_from:
                     print("S Conflict!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                     return True
     return False
@@ -406,7 +406,7 @@ def room_conflict(topic_id, date, time_from, time_to, resource):
             print('New Date: ' + date)
             t_to = datetime.datetime.strptime(time_to, '%H:%M:%S').time()
             t_from = datetime.datetime.strptime(time_from, '%H:%M:%S').time()
-            if srs.time_from <= t_to and srs.time_to >= t_from:
+            if srs.time_from < t_to and srs.time_to > t_from:
                 print("R Conflict!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                 return True
     #print(same_resource_schedule)
