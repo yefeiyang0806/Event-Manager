@@ -14,10 +14,10 @@
         <h1 class="page-header">Arrange Topics</h1>
         <br />
 
-        <div class='row' style='width:90%;text-align:center;'>
+        <div class='row' style='text-align:center;'>
           <table class='filter-table' width="90%">
             <tr>
-              <td align='right'>
+              <td align='center'>
                 <label class='control-label' for='content-filter'>Content: </label>
                 <select id='content-filter'>
                     <option selected>----Any----</option>
@@ -26,7 +26,7 @@
                   {% endfor %}
                 </select>
               </td>
-              <td>
+              <td align='center'>
                 <label class='control-label' for='format-filter'>Format: </label>
                 <select id='format-filter'>
                   <option selected>--------Any--------</option>
@@ -35,7 +35,16 @@
                   {% endfor %}
                 </select>
               </td>
-              <td align='left'>
+              <td align='center'>
+                <label class='control-label' for='location-filter'>Location: </label>
+                <select id='location-filter'>
+                  <option selected>------Any------</option>
+                  {% for l in locations %}
+                    <option>{{ l }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td>
                 <button class='btn btn-primary' id='set_filter'>Search</button>
               </td>
             </tr>
@@ -125,20 +134,48 @@
         }
       });
 
+      //Set the selected option based on the URL
+      var url_location = getUrlParameter('location');
+      var url_content = getUrlParameter('content');
+      var url_format = getUrlParameter('format');
+      $("#location-filter").find("option").each(function(){
+        if ($(this).text() == url_location){
+          $(this).prop('selected', true);
+        }
+      });
+      $("#content-filter").find("option").each(function(){
+        if ($(this).text() == url_content){
+          $(this).prop('selected', true);
+        }
+      });
+      $("#format-filter").find("option").each(function(){
+        if ($(this).text() == url_format){
+          $(this).prop('selected', true);
+        }
+      });
+
+      //Redirect the browser to the desired URL based on the filter conditions
       $("#set_filter").click(function(){
         var suffix = "";
         var content_name = $("#content-filter").find(":selected").text();
         var format_name = $("#format-filter").find(":selected").text();
-        if (content_name != "----Any----" && format_name != "--------Any--------"){
-          suffix += "?content=" + content_name + "&format=" + format_name;
+        var location = $("#location-filter").find(":selected").text();
+        if (content_name != "----Any----"){
+          suffix += "content=" + content_name;
         }
-        else if (content_name != "----Any----"){
-          suffix += "?content=" + content_name;
+        if (format_name != "--------Any--------"){
+          if (suffix != ""){
+            suffix += '&';
+          }
+          suffix += "format=" + format_name;
         }
-        else if (format_name != "--------Any--------"){
-          suffix += "?format=" + format_name;
+        if (location != "------Any------"){
+          if (suffix != ""){
+            suffix += '&';
+          }
+          suffix += "location=" + location;
         }
-        $(window.location).attr('href', '/topic/arrange'+suffix);
+        $(window.location).attr('href', '/topic/arrange?'+suffix);
       });
 
       $(".date-picker").datepicker({ minDate: "0", maxDate: "+12M", dateFormat: "yy-mm-dd"});
@@ -266,6 +303,19 @@
       function timeToSecond(time){
         time = time.split(/:/);
         return time[0] * 3600 + time[1] * 60 + time[2];
+      }
+
+      function getUrlParameter(sParam) {
+        var sPageURL = decodeURIComponent(window.location.search.substring(1));
+        var sURLVariables = sPageURL.split('&');
+
+        for (i = 0; i < sURLVariables.length; i++) {
+          var sParameterName = sURLVariables[i].split('=');
+          if (sParameterName[0] === sParam) {
+            return sParameterName[1];
+          }
+        }
+        return '';
       }
 
 

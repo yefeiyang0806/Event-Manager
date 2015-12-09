@@ -167,28 +167,33 @@ def arrange_topics():
     menus = menus_of_role()
     content_filter = request.args.get('content', None)
     format_filter = request.args.get('format', None)
+    location_filter = request.args.get('location', None)
     contents = db.session.query(Content).all()
     formats = db.session.query(Format).all()
+    locations_set = db.session.query(Topic.location).all()
     content_names = list()
     format_names = list()
+    locations = list()
     for c in contents:
         content_names.append(str(c.name))
     for f in formats:
         format_names.append(str(f.name))
+    for l in locations_set:
+        l_name = str(l[0])
+        if l_name not in locations:
+            locations.append(l_name)
 
-    if content_filter != None and format_filter != None:
+    topics_content = topics_format = topics_location = db.session.query(Topic).all()
+    if content_filter != None:
         topics_content = db.session.query(Content).filter(Content.name == content_filter).first().topics.all()
+    if format_filter != None:
         topics_format = db.session.query(Format).filter(Format.name == format_filter).first().topics.all()
-        topics = set(topics_format).intersection(topics_content)
-    elif content_filter != None and format_filter == None:
-        topics = db.session.query(Content).filter(Content.name == content_filter).first().topics.all()
-    elif content_filter == None and format_filter != None:
-        topics = db.session.query(Format).filter(Format.name == format_filter).first().topics.all()
-    else:
-        topics = db.session.query(Topic).all()
-    #print (topics)
+    if location_filter != None:
+        topics_location = db.session.query(Topic).filter(Topic.location == location_filter).all()
+    topics = set(topics_format).intersection(topics_content).intersection(topics_location)
+    
     return render_template('topic/arrange_topics.html', topics=topics, full_name=full_name, status=status, \
-        menus=menus, content_names=content_names, format_names=format_names)
+        menus=menus, content_names=content_names, format_names=format_names, locations=locations)
 
 
 #Show the page of scheduling all the approved topics. The page is reached by the "Place topic link in the topic management side bar"
@@ -221,28 +226,32 @@ def validate_topics():
     menus = menus_of_role()
     content_filter = request.args.get('content', None)
     format_filter = request.args.get('format', None)
+    location_filter = request.args.get('location', None)
     contents = db.session.query(Content).all()
     formats = db.session.query(Format).all()
+    locations_set = db.session.query(Topic.location).all()
     content_names = list()
     format_names = list()
+    locations = list()
     for c in contents:
         content_names.append(str(c.name))
     for f in formats:
         format_names.append(str(f.name))
+    for l in locations_set:
+        l_name = str(l[0])
+        if l_name not in locations:
+            locations.append(l_name)
 
-    if content_filter != None and format_filter != None:
+    topics_content = topics_format = topics_location = db.session.query(Topic).all()
+    if content_filter != None:
         topics_content = db.session.query(Content).filter(Content.name == content_filter).first().topics.all()
+    if format_filter != None:
         topics_format = db.session.query(Format).filter(Format.name == format_filter).first().topics.all()
-        topics = set(topics_format).intersection(topics_content)
-    elif content_filter != None and format_filter == None:
-        topics = db.session.query(Content).filter(Content.name == content_filter).first().topics.all()
-    elif content_filter == None and format_filter != None:
-        topics = db.session.query(Format).filter(Format.name == format_filter).first().topics.all()
-    else:
-        topics = db.session.query(Topic).all()
-    #print(topics[0].validation.first())
+    if location_filter != None:
+        topics_location = db.session.query(Topic).filter(Topic.location == location_filter).all()
+    topics = set(topics_format).intersection(topics_content).intersection(topics_location)
     return render_template('topic/validate_topics.html', topics=topics, full_name=full_name, status=status, \
-        menus=menus, content_names=content_names, format_names=format_names)
+        menus=menus, content_names=content_names, format_names=format_names, locations=locations)
         
 
 # Handle the content sent from the templates to insert validation result into db.
