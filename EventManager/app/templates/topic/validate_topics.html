@@ -138,7 +138,7 @@
     </div>
   </div>
   <div style='display:none;'>
-    <iframe id='card_view'></iframe>
+    <iframe id='card_view' width='900px' height='550px'></iframe>
   </div>
   <meta name="csrf-token" content="{{ csrf_token() }}"></meta>
   
@@ -241,8 +241,26 @@
 		    $("#card_view").attr('src', src);
 		    $("#card_view").dialog({
           modal: true,
-          width: '700px',
-          minHeight: '700px',
+          width: 900,
+          height: 550,
+          buttons: [
+            {
+              text: 'Prev',
+              click: function(){
+                $( this ).dialog( "close" );
+                changeValidation();
+                $( "#"+topic_id ).closest('table').prev('br').prev('.table-validation').find('.title_links').trigger('click');
+              }
+            },
+            {
+              text: 'Next',
+              click: function(){
+                $( this ).dialog( "close" );
+                changeValidation();
+                $( "#"+topic_id ).closest('table').next('br').next('.table-validation').find('.title_links').trigger('click');
+              }
+            }
+          ]
 		    });
       });
 
@@ -257,6 +275,19 @@
           }
         }
         return '';
+      }
+
+      function changeValidation(){
+        var topic_id = $('#card_view').contents().find('input[type=radio]:checked').attr('name');
+        var validation = $('#card_view').contents().find('input[type=radio]:checked').val();
+        $("input[name="+topic_id+"]").each(function(){
+          if ($(this).val() != validation){
+            $(this).prop('checked', false);
+          }
+          else {
+            $(this).prop('checked', true);
+          }
+        });
       }
 
     });

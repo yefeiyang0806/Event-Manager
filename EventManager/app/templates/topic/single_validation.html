@@ -4,37 +4,87 @@
 {% block body %}
   {{super()}}
   <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
-  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">  
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <style>
+    body {
+      padding-top: 10px;
+    }
+    td {
+      border-bottom: 1px solid LightGray;
+      border-top: 1px solid LightGray;
+      font-size: large;
+      color: SlateBlue;
+    }
+    .col-header{
+      text-align: right;
+      width: 30%;
+      padding-right: 20px;
+      border-right: 1px solid LightGray;
+    }
+    .col-content{
+      width: 70%;
+      text-align: left;
+      padding-left: 20px;
+    }
+  </style>
   <div class="container-fluid">
   	<div class="row">
-  	  <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-  	  	<h1 class="page-header">{{ topic.title }}</h1>
-        <h4>Description: {{ topic.description }}</h4>
-        <h4>Speaker: {{ topic.speaker1 }}</h4>
-        <h4>Content: {{ topic.content_type.name }}</h4>
-        <h4>Format: {{ topic.format_type.name }}</h4>
-        <h4>Start Date: {{ topic.year_start + '-' + topic.month_start + '-' + topic.day_start}}</h4>
-        <h4>Duration: {{ topic.day_duration }} days {{ topic.hour_duration }} hours {{ topic.minute_duration }} minutes</h4>     
-        <h4>Created Date: {{ topic.create_date }}</h4>
-        <h4>Created Time: {{ topic.create_time }}</h4>
-        <h4>Attendance: {{ topic.min_attendance }} - {{ topic.max_attendance }}</h4>
-        <h4>Status: {{ topic.status }}</h4>
-        <h4>Jam Link: {{ topic.jamlink }}</h4>
-        <h4>Link: {{ topic.link }}</h4>
-        <h4>location: {{ topic.location }}</h4>
-        {% if mode == 'viewer' %}
-    	    <a type="button" class="btn btn-primary btn-login" id="register">Register</a>
-        {% elif mode == 'creator' %}
-          <a href='/topic/modify/{{ topic.topic_id }}' type="button" class="btn btn-primary btn-login" id="modify">Modify</a>
-          <button class="btn btn-info btn-login delete" role="button" name="{{ topic.topic_id }}">Delete</button>
-        {% endif %}
-
-        <div style="display:none" id='confirm' title='Delete the selected topic?'>
-          <p>Do you want to delete the selected topic?</p>
-        </div>
-
+  	  <div class="main" style='text-align:center;'>
+  	  	<h1>{{ topic.title }}</h1>
+        <br />
+        <table width='80%' style='margin: 0 auto;'>
+          <tbody>
+            <tr>
+              <td class='col-header'>Description:</td>
+              <td class='col-content'>{{ topic.description }}</td>
+            </tr>
+              <td class='col-header'>Speaker:</td>
+              <td class='col-content'>{{ topic.speaker1 }}</td>
+            </tr>
+              <td class='col-header'>Content:</td>
+              <td class='col-content'>{{ topic.content_type.name }}</td>
+            </tr>
+              <td class='col-header'>Format:</td>
+              <td class='col-content'>{{ topic.format_type.name }}</td>
+            </tr>
+              <td class='col-header'>Start Date:</td>
+              <td class='col-content'>{{ topic.year_start + '-' + topic.month_start + '-' + topic.day_start}}</td>
+            </tr>
+              <td class='col-header'>Duration:</td>
+              <td class='col-content'>{{ topic.day_duration }} days {{ topic.hour_duration }} hours {{ topic.minute_duration }} minutes</td>
+            </tr>
+              <td class='col-header'>Created Date:</td>
+              <td class='col-content'>{{ topic.create_date }}</td>
+            </tr>
+              <td class='col-header'>Created Time:</td>
+              <td class='col-content'>{{ topic.create_time }}</td>
+            </tr>
+              <td class='col-header'>Attendance:</td>
+              <td class='col-content'>{{ topic.min_attendance }} - {{ topic.max_attendance }}</td>
+            </tr>
+              <td class='col-header'>Status:</td>
+              <td class='col-content'>{{ topic.status }}</td>
+            </tr>
+              <td class='col-header'>Jam Link:</td>
+              <td class='col-content'>{{ topic.jamlink }}</td>
+            </tr>
+              <td class='col-header'>Link:</td>
+              <td class='col-content'>{{ topic.link }}</td>
+            </tr>
+              <td class='col-header'>Location:</td>
+              <td class='col-content'>{{ topic.location }}</td>
+            </tr>
+            <tr>
+              <td class='col-header'>Validation:</td>
+              <td class='col-content'>
+                <input type='hidden' class='existing-validation' value={{ topic.validation.first().validation }} />
+                <input type='radio' name='{{ topic.topic_id }}' value=1 /> Positive<br />
+                <input type='radio' name='{{ topic.topic_id }}' value=0 /> Negative
+              </td>
+            </tr>
+          </tbody>
+        </table>
       </div>
-
   	</div>
   </div>
 
@@ -43,25 +93,10 @@
   <script>
     $(document).ready(function() {
       
-      $(".delete").click(function(){
-        var topic_id = $(this).attr('name');
-        console.log("hello");
-        $( "#confirm" ).dialog({
-          resizable: false,
-          height:200,
-          modal: true,
-          buttons: {
-            Delete: function() {
-              $( this ).dialog( "close" );
-              console.log("topic id is :" + topic_id);
-              $(window.location).attr('href', '/topic/delete?topic_id='+topic_id);
-            },
-            Cancel: function() {
-              $( this ).dialog( "close" );
-            }
-          }
-        });
-        console.log("opened");
+      $(".existing-validation").each(function(){
+        if ($(this).val() == 0 || $(this).val() == 1){
+          $(this).parent().find('input[type=radio][value=' + $(this).val() + ']').prop('checked',true);
+        }
       });
   
     });
