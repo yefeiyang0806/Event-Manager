@@ -5,6 +5,7 @@
   {{super()}}
   <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
   <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <link href="{{url_for('static', filename='bootstrap-tokenfield/dist/css/bootstrap-tokenfield.css')}}" rel="stylesheet">
   <style>
   	.form-group {width:50%;}
   </style>
@@ -16,6 +17,10 @@
   	  <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
   	  	{{ wtf.quick_form(form, action='/topic/modify/'+topic_id, method='post', extra_classes='form-reg', id='reg_form') }}
   	  		<!--div class="date_pick_display"><input type="text" id="start_date" name="start_date" /></div-->
+        <input type='hidden' id='speaker1_name' value='{{ speaker1_name }}' />
+        <input type='hidden' id='speaker2_name' value='{{ speaker2_name }}' />
+        <input type='hidden' id='speaker3_name' value='{{ speaker3_name }}' />
+
       <button type="button" class="btn btn-primary btn-login" id="submit" name='{{ topic_id }}'>Modify</button>
       </div>
 
@@ -24,14 +29,47 @@
 
   <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>
   <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  <script src="{{url_for('static', filename='bootstrap-tokenfield/dist/bootstrap-tokenfield.min.js')}}"></script>
   <script>
     $(document).ready(function() {
+
+      var cache = {};
+      var speaker1 = $("#speaker1").val();
+      var speaker2 = $("#speaker2").val();
+      var speaker3 = $("#speaker3").val();
+      $("#speaker1").val("");
+      $("#speaker2").val("");
+      $("#speaker3").val("");
+
+      $("#speaker1, #speaker2, #speaker3").tokenfield({
+        autocomplete:{
+          minLength: 1,
+          source: function( request, response ) {
+            var term = request.term;
+            if ( term in cache ) {
+              response( cache[ term ] );
+              return;
+            }
+            $.getJSON( "/ajax_speaker", request, function( data, status, xhr ) {
+              cache[ term ] = data;
+            
+              console.log(data);
+              response( data );
+            });
+          }
+        },
+      });
 	    
       $("#submit").click(function(){
 		    $("#reg_form").submit();
 	    });
   	  
 	    $( "#start_date" ).datepicker({ minDate: "0", maxDate: "+2M", dateFormat: "yy-mm-dd"});
+
+      $('#speaker1').tokenfield('setTokens', [{ value: speaker1, label: $("#speaker1_name").val() }]);
+      $('#speaker2').tokenfield('setTokens', [{ value: speaker2, label: $("#speaker1_name").val() }]);
+      $('#speaker3').tokenfield('setTokens', [{ value: speaker3, label: $("#speaker1_name").val() }]);
+
 	  });
     </script>
 	

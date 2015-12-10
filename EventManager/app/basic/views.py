@@ -1,6 +1,6 @@
 from app import db, lm
 from config import ADMINS
-from flask import render_template, flash, redirect, session, url_for, request, g, request, Blueprint
+from flask import render_template, flash, redirect, session, url_for, request, g, request, Blueprint, jsonify
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from flask.ext.mail import Message
 from .forms import LoginForm, JoinForm, RetrievePwdForm, PwdResetForm
@@ -9,7 +9,7 @@ from ..emails import send_email
 from werkzeug.security import generate_password_hash
 
 
-import random
+import random, json
 
 
 basic = Blueprint('basic', __name__)
@@ -186,6 +186,21 @@ def password_reset():
 
     return render_template('basic/reset_pwd.html', uuid=uuid, error_msg=error_msg, form=form, email=email, active_code=active_code)
 
+
+#Get terms from autocomplete and return user sets back to create_topic.html.
+#Terms can be a part of full name or user id.
+@basic.route('/ajax_speaker')
+def ajax_speaker():
+    term = request.args.get("term", None)
+    user_fullname = User.query.filter(User.full_name.contains(term)).all()
+    user_userId = User.query.filter(User.user_id.contains(term)).all()
+    speakers = set(user_fullname).union(set(user_userId))
+    speaker_list = list()
+    for speaker in speakers:
+        single_record = {'label': speaker.full_name, 'value': speaker.user_id}
+        speaker_list.append(single_record)
+    print (speaker_list)
+    return json.dumps(speaker_list)
 
 #Only for testing purpose
 #Test the feature of sending emails

@@ -109,9 +109,18 @@ def modify_topic(topic_id):
         form.day_duration.data = topic.day_duration
         form.hour_duration.data = topic.hour_duration
         form.minute_duration.data = topic.minute_duration
+
         form.speaker1.data = topic.speaker1
         form.speaker2.data = topic.speaker2
         form.speaker3.data = topic.speaker3
+        speaker1_name = User.query.filter(User.user_id == topic.speaker1).first().full_name
+        speaker2_name = ''
+        speaker3_name = ''
+        if topic.speaker2 != '':
+            speaker2_name = User.query.filter(User.user_id == topic.speaker2).first().full_name
+        if topic.speaker3 != '':
+            speaker3_name = User.query.filter(User.user_id == topic.speaker3).first().full_name
+
         form.content.data = topic.content
         form.format.data = topic.format
         form.speaker1.data = topic.speaker1 
@@ -123,8 +132,8 @@ def modify_topic(topic_id):
         form.jamlink.data = topic.jamlink 
         form.location.data = topic.location
         menus = menus_of_role()
-        return render_template("topic/modify_topic.html", form=form,\
-            full_name=full_name, status=status, topic_id=topic_id, menus=menus)
+        return render_template("topic/modify_topic.html", form=form, full_name=full_name, status=status, \
+            topic_id=topic_id, menus=menus, speaker1_name=speaker1_name, speaker2_name=speaker2_name, speaker3_name=speaker3_name)
     return redirect(url_for("basic.index"))
 
 
