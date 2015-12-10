@@ -109,9 +109,18 @@ def modify_topic(topic_id):
         form.day_duration.data = topic.day_duration
         form.hour_duration.data = topic.hour_duration
         form.minute_duration.data = topic.minute_duration
+
         form.speaker1.data = topic.speaker1
         form.speaker2.data = topic.speaker2
         form.speaker3.data = topic.speaker3
+        speaker1_name = User.query.filter(User.user_id == topic.speaker1).first().full_name
+        speaker2_name = ''
+        speaker3_name = ''
+        if topic.speaker2 != '':
+            speaker2_name = User.query.filter(User.user_id == topic.speaker2).first().full_name
+        if topic.speaker3 != '':
+            speaker3_name = User.query.filter(User.user_id == topic.speaker3).first().full_name
+
         form.content.data = topic.content
         form.format.data = topic.format
         form.speaker1.data = topic.speaker1 
@@ -123,8 +132,8 @@ def modify_topic(topic_id):
         form.jamlink.data = topic.jamlink 
         form.location.data = topic.location
         menus = menus_of_role()
-        return render_template("topic/modify_topic.html", form=form,\
-            full_name=full_name, status=status, topic_id=topic_id, menus=menus)
+        return render_template("topic/modify_topic.html", form=form, full_name=full_name, status=status, \
+            topic_id=topic_id, menus=menus, speaker1_name=speaker1_name, speaker2_name=speaker2_name, speaker3_name=speaker3_name)
     return redirect(url_for("basic.index"))
 
 
@@ -364,29 +373,30 @@ def menus_of_role():
 #Check if the speaker has been conflicted
 def speaker_conflict(topic_id, date, time_from, time_to):
     scheduled_topic = db.session.query(Topic).filter(Topic.topic_id == topic_id).first()
-    same_speaker_topics = db.session.query(Topic).filter(Topic.speaker1 == scheduled_topic.speaker1).all()
-    #print(same_speaker_topics)
-    same_speaker_topics = same_speaker_topics + db.session.query(Topic).filter(Topic.speaker2 != '').filter(Topic.speaker2 == scheduled_topic.speaker1).all()
-    #print(same_speaker_topics)
-    same_speaker_topics = same_speaker_topics + db.session.query(Topic).filter(Topic.speaker3 != '').filter(Topic.speaker3 == scheduled_topic.speaker1).all()
-    #print(same_speaker_topics)
+    same_speaker1_topics = set(db.session.query(Topic).filter(Topic.speaker1 == scheduled_topic.speaker1).all())
+    same_speaker1_topics = same_speaker1_topics.union(set(db.session.query(Topic).filter(Topic.speaker2 != '').filter(Topic.speaker2 == scheduled_topic.speaker1).all()))
+    same_speaker1_topics = same_speaker1_topics.union(set(db.session.query(Topic).filter(Topic.speaker3 != '').filter(Topic.speaker3 == scheduled_topic.speaker1).all()))
+
+    same_speaker_topics = set()
+    same_speaker2_topics = set()
+    same_speaker3_topics = set()
     if scheduled_topic.speaker2 != '':
-        same_speaker_topics = db.session.query(Topic).filter(Topic.speaker1 == scheduled_topic.speaker2).all()
-        same_speaker_topics = same_speaker_topics + db.session.query(Topic).filter(Topic.speaker2 != '').filter(Topic.speaker2 == scheduled_topic.speaker2).all()
-        same_speaker_topics = same_speaker_topics + db.session.query(Topic).filter(Topic.speaker3 != '').filter(Topic.speaker3 == scheduled_topic.speaker2).all()
+        same_speaker2_topics = set(db.session.query(Topic).filter(Topic.speaker1 == scheduled_topic.speaker2).all())
+        same_speaker2_topics = same_speaker2_topics.union(set(db.session.query(Topic).filter(Topic.speaker2 != '').filter(Topic.speaker2 == scheduled_topic.speaker2).all()))
+        same_speaker2_topics = same_speaker2_topics.union(set(db.session.query(Topic).filter(Topic.speaker3 != '').filter(Topic.speaker3 == scheduled_topic.speaker2).all()))
     if scheduled_topic.speaker3 != '':
-        same_speaker_topics = db.session.query(Topic).filter(Topic.speaker1 == scheduled_topic.speaker3).all()
-        same_speaker_topics = same_speaker_topics + db.session.query(Topic).filter(Topic.speaker2 != '').filter(Topic.speaker2 == scheduled_topic.speaker3).all()
-        same_speaker_topics = same_speaker_topics + db.session.query(Topic).filter(Topic.speaker3 != '').filter(Topic.speaker3 == scheduled_topic.speaker3).all()
-    same_speaker_topics.remove(scheduled_topic)
+        same_speaker3_topics = set(db.session.query(Topic).filter(Topic.speaker1 == scheduled_topic.speaker3).all())
+        same_speaker3_topics = same_speaker3_topics.union(set(db.session.query(Topic).filter(Topic.speaker2 != '').filter(Topic.speaker2 == scheduled_topic.speaker3).all()))
+        same_speaker3_topics = same_speaker3_topics.union(set(db.session.query(Topic).filter(Topic.speaker3 != '').filter(Topic.speaker3 == scheduled_topic.speaker3).all()))
+    same_speaker_topics = same_speaker1_topics.union(same_speaker2_topics).union(same_speaker3_topics)
+    same_speaker_topics.discard(scheduled_topic)
+
     if same_speaker_topics == None:
         return False
     for sst in same_speaker_topics:
         sst_schedules = db.session.query(TopicSchedule).filter(TopicSchedule.topic_title == sst.title).filter(TopicSchedule.topic_year == sst.year_start).all()
         for schedule in sst_schedules:
             if schedule.day_from.strftime('%Y-%m-%d') == date:
-                #print (schedule.day_from)
-                #print("Date: "+date)
                 t_to = datetime.datetime.strptime(time_to, '%H:%M:%S').time()
                 t_from = datetime.datetime.strptime(time_from, '%H:%M:%S').time()
                 if schedule.time_from < t_to and schedule.time_to > t_from:
@@ -405,7 +415,7 @@ def room_conflict(topic_id, date, time_from, time_to, resource):
     #print("------------------")
     same_resource_schedule = db.session.query(TopicSchedule).join(Resource).filter(Resource.r_id == resource).all()
     #print(same_resource_schedule)
-    if resource == schedule_topic_schedule.resource:
+    if schedule_topic_schedule!= None and resource == schedule_topic_schedule.resource:
         same_resource_schedule.remove(schedule_topic_schedule)
     #print(same_resource_schedule)
     if same_resource_schedule == None:
