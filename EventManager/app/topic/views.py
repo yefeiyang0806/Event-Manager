@@ -373,29 +373,30 @@ def menus_of_role():
 #Check if the speaker has been conflicted
 def speaker_conflict(topic_id, date, time_from, time_to):
     scheduled_topic = db.session.query(Topic).filter(Topic.topic_id == topic_id).first()
-    same_speaker_topics = db.session.query(Topic).filter(Topic.speaker1 == scheduled_topic.speaker1).all()
-    #print(same_speaker_topics)
-    same_speaker_topics = same_speaker_topics + db.session.query(Topic).filter(Topic.speaker2 != '').filter(Topic.speaker2 == scheduled_topic.speaker1).all()
-    #print(same_speaker_topics)
-    same_speaker_topics = same_speaker_topics + db.session.query(Topic).filter(Topic.speaker3 != '').filter(Topic.speaker3 == scheduled_topic.speaker1).all()
-    #print(same_speaker_topics)
+    same_speaker1_topics = set(db.session.query(Topic).filter(Topic.speaker1 == scheduled_topic.speaker1).all())
+    same_speaker1_topics = same_speaker1_topics.union(set(db.session.query(Topic).filter(Topic.speaker2 != '').filter(Topic.speaker2 == scheduled_topic.speaker1).all()))
+    same_speaker1_topics = same_speaker1_topics.union(set(db.session.query(Topic).filter(Topic.speaker3 != '').filter(Topic.speaker3 == scheduled_topic.speaker1).all()))
+
+    same_speaker_topics = set()
+    same_speaker2_topics = set()
+    same_speaker3_topics = set()
     if scheduled_topic.speaker2 != '':
-        same_speaker_topics = db.session.query(Topic).filter(Topic.speaker1 == scheduled_topic.speaker2).all()
-        same_speaker_topics = same_speaker_topics + db.session.query(Topic).filter(Topic.speaker2 != '').filter(Topic.speaker2 == scheduled_topic.speaker2).all()
-        same_speaker_topics = same_speaker_topics + db.session.query(Topic).filter(Topic.speaker3 != '').filter(Topic.speaker3 == scheduled_topic.speaker2).all()
+        same_speaker2_topics = set(db.session.query(Topic).filter(Topic.speaker1 == scheduled_topic.speaker2).all())
+        same_speaker2_topics = same_speaker2_topics.union(set(db.session.query(Topic).filter(Topic.speaker2 != '').filter(Topic.speaker2 == scheduled_topic.speaker2).all()))
+        same_speaker2_topics = same_speaker2_topics.union(set(db.session.query(Topic).filter(Topic.speaker3 != '').filter(Topic.speaker3 == scheduled_topic.speaker2).all()))
     if scheduled_topic.speaker3 != '':
-        same_speaker_topics = db.session.query(Topic).filter(Topic.speaker1 == scheduled_topic.speaker3).all()
-        same_speaker_topics = same_speaker_topics + db.session.query(Topic).filter(Topic.speaker2 != '').filter(Topic.speaker2 == scheduled_topic.speaker3).all()
-        same_speaker_topics = same_speaker_topics + db.session.query(Topic).filter(Topic.speaker3 != '').filter(Topic.speaker3 == scheduled_topic.speaker3).all()
-    same_speaker_topics.remove(scheduled_topic)
+        same_speaker3_topics = set(db.session.query(Topic).filter(Topic.speaker1 == scheduled_topic.speaker3).all())
+        same_speaker3_topics = same_speaker3_topics.union(set(db.session.query(Topic).filter(Topic.speaker2 != '').filter(Topic.speaker2 == scheduled_topic.speaker3).all()))
+        same_speaker3_topics = same_speaker3_topics.union(set(db.session.query(Topic).filter(Topic.speaker3 != '').filter(Topic.speaker3 == scheduled_topic.speaker3).all()))
+    same_speaker_topics = same_speaker1_topics.union(same_speaker2_topics).union(same_speaker3_topics)
+    same_speaker_topics.discard(scheduled_topic)
+
     if same_speaker_topics == None:
         return False
     for sst in same_speaker_topics:
         sst_schedules = db.session.query(TopicSchedule).filter(TopicSchedule.topic_title == sst.title).filter(TopicSchedule.topic_year == sst.year_start).all()
         for schedule in sst_schedules:
             if schedule.day_from.strftime('%Y-%m-%d') == date:
-                #print (schedule.day_from)
-                #print("Date: "+date)
                 t_to = datetime.datetime.strptime(time_to, '%H:%M:%S').time()
                 t_from = datetime.datetime.strptime(time_from, '%H:%M:%S').time()
                 if schedule.time_from < t_to and schedule.time_to > t_from:
@@ -414,7 +415,7 @@ def room_conflict(topic_id, date, time_from, time_to, resource):
     #print("------------------")
     same_resource_schedule = db.session.query(TopicSchedule).join(Resource).filter(Resource.r_id == resource).all()
     #print(same_resource_schedule)
-    if resource == schedule_topic_schedule.resource:
+    if schedule_topic_schedule!= None and resource == schedule_topic_schedule.resource:
         same_resource_schedule.remove(schedule_topic_schedule)
     #print(same_resource_schedule)
     if same_resource_schedule == None:
