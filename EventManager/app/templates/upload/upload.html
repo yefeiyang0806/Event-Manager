@@ -5,24 +5,26 @@
   {{super()}}
   <link href="{{url_for('static', filename='css/register.css')}}" rel="stylesheet">
   {% include 'basic/index_navbar.html' %}
-  <form action="upload" method="post" enctype="multipart/form-data">
+  <form id="form1" action="/upload/upload_file" method="post" enctype="multipart/form-data">
   <input type="file" name="file" /><br />
   <input type="submit" value="Upload" />
-  <button type="button" class="btn btn-primary btn-login" id="submit">Upload</button>
+<!--  <button type="button" class="btn btn-primary btn-login" id="submit">Upload</button>
+
+-->
   </form>
    
   
 
-  <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>
+<!--   <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>
   <script>
     $(document).ready(function() {
 	    
       $("#submit").click(function(){
-		    $("#reg_form").submit();
+		    $("#form1").submit();
         //alert("Hello Im here");
 	    });
 	
     });
   </script>
-  
+-->
 {% endblock %}
