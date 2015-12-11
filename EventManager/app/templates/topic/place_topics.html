@@ -4,6 +4,7 @@
   {{super()}}
   <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
   <link href="{{url_for('static', filename='jquery-timepicker/jquery.timepicker.css')}}" rel="stylesheet">
+  <link href="{{url_for('static', filename='jqwidgets/jqwidgets/styles/jqx.base.css')}}" rel="stylesheet">
   <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
   {% set active_list = 'place_events' %}
   {% include 'public/navbar.html' %}
@@ -14,27 +15,37 @@
         <h1 class="page-header">Place Events</h1>
         <br />
 
-        <div class='row' style='width:90%;text-align:center;'>
+        <div class='row' style='text-align:center;'>
           <table class='filter-table' width="90%">
             <tr>
-              <td align='right'>
-                <label class='control-label' for='content-filter'>Resource Type: </label>
+              <td align='center'>
+                <label class='control-label' for='content-filter'>Content: </label>
                 <select id='content-filter'>
-                {% for t_name in r_type_names %}
-                  <option>{{ t_name }}</option>
-                {% endfor %}
-                </select>
-              </td>
-              <td>
-                <label class='control-label' for='format-filter'>Resource: </label>
-                <select id='format-filter'>
-                  <option selected>------Any------</option>
-                  {% for r_name in resource_names %}
-                    <option>{{ r_name }}</option>
+                    <option selected>----Any----</option>
+                  {% for c_name in content_names %}
+                    <option>{{ c_name }}</option>
                   {% endfor %}
                 </select>
               </td>
-              <td align='left'>
+              <td align='center'>
+                <label class='control-label' for='format-filter'>Format: </label>
+                <select id='format-filter'>
+                  <option selected>--------Any--------</option>
+                  {% for f_name in format_names %}
+                    <option>{{ f_name }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td align='center'>
+                <label class='control-label' for='location-filter'>Location: </label>
+                <select id='location-filter'>
+                  <option selected>------Any------</option>
+                  {% for l in locations %}
+                    <option>{{ l }}</option>
+                  {% endfor %}
+                </select>
+              </td>
+              <td>
                 <button class='btn btn-primary' id='set_filter'>Search</button>
               </td>
             </tr>
@@ -42,7 +53,7 @@
         </div>
         <br>
 
-        <div class="table-responsive">
+        <!-- <div class="table-responsive">
           {% if not events %}
 			      <div class="panel panel-warning">
             	<div class="panel-heading">
@@ -55,15 +66,12 @@
           	</div>
 		  	  {% else %}
           	{% for event in events %}
-          	  <!--h3 class="event_title text-muted"><a href="/event/view?uuid={{ event.uuid }}">{{ event.topic }}</a></h3>
-          	  <h4 class="task_title text-success">&nbsp;&nbsp;Host by <strong>{{event.speaker}}</strong></h4-->
           	  <table class="table-arrange table-striped">
           	    <tbody>
           	      <tr>
           	      	<td><strong>{{ event.topic }}</strong></td>
                     <td>Speaker: {{ event.speaker }}</td>
                     <td>Format: {{event.format_type.name }}</td>
-          	      	<!--c:if test="${ diet_tasks[i-1].state != 'Not Started'}"-->
           	      	<td>Content: {{event.content_type.name}}</td>
           	      </tr>
                   <form id='schedule_info' method='POST' action='/event/set_arrangement'>
@@ -72,7 +80,6 @@
           	      	<td>Time From: <input class='time-from' id='{{ event.uuid }}'></td>
                     <td>Time From: <input class='time-to' id='{{ event.uuid }}'></td>
                     <td>Resource: <input class='assign-resource' id='{{ event.uuid }}'></td>
-          	      	<!--td>Interested</td-->
           	      </tr>
           	    </tbody>
           	  </table>
@@ -80,10 +87,8 @@
           	    
           	{% endfor %}
           {% endif %}
-        </div>
-        <div style="display:none" id='confirm' title='Delete the selected event?'>
-          <p>Do you want to delete the selected event?</p>
-        </div>
+        </div> -->
+        <div id='scheduler'></div>
       </div>
     </div>
   </div>
@@ -91,26 +96,174 @@
   <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>
   <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
   <script src="{{url_for('static', filename='jquery-timepicker/jquery.timepicker.js')}}"></script>
+  <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxcore.js')}}"></script>
+  <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxbuttons.js')}}"></script>
+  <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxscrollbar.js')}}"></script>
+  <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxdata.js')}}"></script>
+  <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxdate.js')}}"></script>
+  <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxscheduler.js')}}"></script>
+  <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxscheduler.api.js')}}"></script>
+  <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxdatetimeinput.js')}}"></script>
+  <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxmenu.js')}}"></script>
+  <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxcalendar.js')}}"></script>
+  <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxtooltip.js')}}"></script>
+  <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxwindow.js')}}"></script>
+  <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxcheckbox.js')}}"></script>
+  <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxlistbox.js')}}"></script>
+  <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxdropdownlist.js')}}"></script>
+  <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxnumberinput.js')}}"></script>
+  <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxradiobutton.js')}}"></script>
+  <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxinput.js')}}"></script>
+  <script src="{{url_for('static',filename='jqwidgets/jqwidgets/globalization/globalize.js')}}"></script>
+  <script src="{{url_for('static',filename='jqwidgets/jqwidgets/globalization/globalize.culture.de-DE.js')}}"></script>
   <script>
     $(document).ready(function() {
+
+      var appointments = new Array();
+            var appointment1 = {
+                id: "id1",
+                description: "George brings projector for presentations.",
+                location: "",
+                subject: "Quarterly Project Review Meeting",
+                calendar: "Room 1",
+                start: new Date(2015, 10, 23, 9, 0, 0),
+                end: new Date(2015, 10, 23, 16, 0, 0)
+            }
+            var appointment2 = {
+                id: "id2",
+                description: "",
+                location: "",
+                subject: "IT Group Mtg.",
+                calendar: "Room 2",
+                start: new Date(2015, 10, 24, 10, 0, 0),
+                end: new Date(2015, 10, 24, 15, 0, 0)
+            }
+            var appointment3 = {
+                id: "id3",
+                description: "",
+                location: "",
+                subject: "Course Social Media",
+                calendar: "Room 1",
+                start: new Date(2015, 10, 27, 11, 0, 0),
+                end: new Date(2015, 10, 27, 13, 0, 0)
+            }
+            var appointment4 = {
+                id: "id4",
+                description: "",
+                location: "",
+                subject: "New Projects Planning",
+                calendar: "Room 2",
+                start: new Date(2015, 10, 23, 0, 0, 0),
+                end: new Date(2015, 10, 25, 23, 59, 59)
+            }
+            var appointment5 = {
+                id: "id5",
+                description: "",
+                location: "",
+                subject: "Interview with James",
+                calendar: "Room 1",
+                start: new Date(2015, 10, 25, 15, 0, 0),
+                end: new Date(2015, 10, 25, 17, 0, 0)
+            }
+            var appointment6 = {
+                id: "id6",
+                description: "",
+                location: "",
+                subject: "Interview with Nancy",
+                calendar: "Room 2",
+                start: new Date(2015, 10, 26, 14, 0, 0),
+                end: new Date(2015, 10, 26, 16, 0, 0)
+            }
+            appointments.push(appointment1);
+            appointments.push(appointment2);
+            appointments.push(appointment3);
+            appointments.push(appointment4);
+            appointments.push(appointment5);
+            appointments.push(appointment6);
+            // prepare the data
+            var source =
+            {
+                dataType: "json",
+                dataFields: [
+                    { name: 'topic_id', type: 'string' },
+                    { name: 'date', type: 'string' },
+                    { name: 'description', type: 'string' },
+                    { name: 'year', type: 'string' },
+                    { name: 'topic_title', type: 'string' },
+                    { name: 'resource', type: 'string' },
+                    { name: 'timeFrom', type: 'string' },
+                    { name: 'timeTo', type: 'string' }
+                ],
+                id: 'topic_id',
+                url: '/topic/ajax_schedule'
+            };
+            var adapter = new $.jqx.dataAdapter(source);
+            $("#scheduler").jqxScheduler({
+                date: new $.jqx.date(2015, 11, 23),
+                width: 850,
+                height: 600,
+                dayNameFormat: "abbr",
+                source: adapter,
+                showLegend: true,
+                ready: function () {
+                    //$("#scheduler").jqxScheduler('ensureAppointmentVisible', 'id1');
+                },
+                resources:
+                {
+                    colorScheme: "scheme05",
+                    dataField: "resource",
+                    orientation: "horizontal",
+                    source:  new $.jqx.dataAdapter(source)
+                },
+                appointmentDataFields:
+                {
+                    from: "timeFrom",
+                    to: "timeTo",
+                    id: "topic_id",
+                    description: "description",
+                    location: "resource",
+                    subject: "topic_title",
+                    resourceId: "resource"
+                },
+                view: 'dayView',
+                views:
+                [
+                    { type: 'dayView', showWeekends: false, timeRuler: { scaleStartHour: 7, scaleEndHour: 21 }},
+                    { type: 'weekView', showWeekends: false }
+                ]
+            });
+
+      $("#scheduler").on('editDialogCreate', function (event) {
+        var args = event.args;
+        var dialog = args.dialog;
+        var fields = args.fields;
+        var appointment = args.appointment;
+        console.log(fields['subject'].val('Hello'));
+      });
+
+
       $("#set_filter").click(function(){
         var suffix = "";
         var content_name = $("#content-filter").find(":selected").text();
         var format_name = $("#format-filter").find(":selected").text();
-        if (content_name != "----Any----" && format_name != "--------Any--------"){
-          suffix += "?content=" + content_name + "&format=" + format_name;
+        var location = $("#location-filter").find(":selected").text();
+        if (content_name != "----Any----"){
+          suffix += "content=" + content_name;
         }
-        else if (content_name != "----Any----"){
-          suffix += "?content=" + content_name;
+        if (format_name != "--------Any--------"){
+          if (suffix != ""){
+            suffix += '&';
+          }
+          suffix += "format=" + format_name;
         }
-        else if (format_name != "--------Any--------"){
-          suffix += "?format=" + format_name;
+        if (location != "------Any------"){
+          if (suffix != ""){
+            suffix += '&';
+          }
+          suffix += "location=" + location;
         }
-        $(window.location).attr('href', '/event/arrange'+suffix);
+        $(window.location).attr('href', '/topic/validate?'+suffix);
       });
-
-      $(".time-from").timepicker({ 'timeFormat': 'H:i:s' });
-      $(".time-to").timepicker({ 'timeFormat': 'H:i:s' });
     });
   </script>
 {% endblock %}
