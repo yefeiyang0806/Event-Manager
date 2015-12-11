@@ -336,14 +336,14 @@ def validate_arrangement():
             #print(topic)
             if topic.schedule.first()==None:
                 t_s = TopicSchedule(topic.title, topic.year_start, s['date'], s['date'], \
-                s['time_from'], s['time_to'], s['resource'], g.user.user_id)
+                datetime.datetime.strptime(s['time_from'], '%H:%M:%S').time(), datetime.datetime.strptime(s['time_to'], '%H:%M:%S').time(), s['resource'], g.user.user_id)
                 db.session.add(t_s)
             else:
                 t_s = topic.schedule.first()
                 t_s.day_from = s['date']
                 t_s.day_to = s['date']
-                t_s.time_from = s['time_from']
-                t_s.time_to = s['time_to']
+                t_s.time_from = datetime.datetime.strptime(s['time_from'], '%H:%M:%S').time()
+                t_s.time_to = datetime.datetime.strptime(s['time_to'], '%H:%M:%S').time()
                 t_s.resource = s['resource']
         db.session.commit()
         return jsonify({'status':'success'})
@@ -351,7 +351,26 @@ def validate_arrangement():
         return jsonify({'ErrorMessage': errors})
 
 
-        
+#Return all the scheduled info to the place_topic.html through json
+@topic.route('/ajax_schedule', methods=['GET', 'POST'])
+@login_required
+def ajax_schedule():
+    all_schedule = TopicSchedule.query.all()
+    schedule = list()
+    for s in all_schedule:
+        each_schedule = dict()
+        each_schedule['topic_id'] = s.scheduled_topic.topic_id
+        each_schedule['description'] = s.scheduled_topic.description
+        each_schedule['topic_title'] = s.topic_title
+        each_schedule['year'] = s.topic_year
+        each_schedule['date'] = s.day_from.strftime('%Y-%m-%d')
+        each_schedule['timeFrom'] = datetime.time.strftime(s.time_from, "%H:%M:%S")
+        each_schedule['timeTo'] = datetime.time.strftime(s.time_to, "%H:%M:%S")
+        each_schedule['resource'] = s.scheduled_topic.content
+        schedule.append(each_schedule)
+        #print (each_schedule)
+    return json.dumps(schedule)
+
 
 #Required by the LoginManager
 @lm.user_loader
