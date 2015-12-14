@@ -27,7 +27,6 @@ def index():
     form = LoginForm()
     email_form = RetrievePwdForm()
     if form.validate_on_submit():
-        flash('Login requested for email = ' + form.email.data)
         remember_me = form.remember_me.data
         temp_user = db.session.query(User).filter(User.email == form.email.data)[0]
         login_user(temp_user, remember=remember_me)
@@ -44,10 +43,8 @@ def index():
 def logged_in():
     full_name = g.user.full_name
     status = g.user.status
-    sidebar = 'personal'
     topics = g.user.created_topics.all()
     menus = menus_of_role()
-    # print(topics)
     return render_template('basic/member.html', full_name=full_name, topics=topics, status=status, menus=menus)
 
 
@@ -95,16 +92,16 @@ def send_activate_link():
 @login_required
 def activate_user():
     full_name = g.user.full_name
-    user_uuid = g.user.uuid
+    user_id = g.user.user_id
     menus = menus_of_role()
     active_code = request.args.get("active_code")
     fetched_user = db.session.query(User).filter(User.active_code == active_code).first()
     if fetched_user != None:
-        fetched_uuid = fetched_user.uuid
+        fetched_user_id = fetched_user.user_id
     else:
-        fetched_uuid = '0'
+        fetched_user_id = '0'
     result = 'Succeeded'
-    if user_uuid == fetched_uuid:
+    if user_id == fetched_user_id:
         if fetched_user.status != 0:
             msg = 'You account has already been activated.'
         else:
@@ -115,7 +112,7 @@ def activate_user():
         new_active_code = refresh_active_code(fetched_user.email)
         
     else:
-        msg = "Sorry, your activation code is invalid. Please try again. You can receive a new activation code by the following link."
+        msg = "Sorry, your activation code is invalid. Please try again."
         result = 'Failed'
     status = g.user.status
     return render_template('basic/activate_result.html', msg=msg, result=result, full_name= full_name, status=status, menus=menus)
@@ -155,9 +152,9 @@ def password_reset():
     form = PwdResetForm()
     if request.method == 'POST':
         if form.validate_on_submit():
-            uuid = request.form.get('uuid')
+            user_id = request.form.get('user_id')
             hash_password = generate_password_hash(form.password.data) 
-            temp = db.session.query(User).get(uuid)
+            temp = db.session.query(User).filter(User.user_id==user_id).first()
             temp.password = hash_password
             new_active_code = refresh_active_code(temp.email)
             db.session.commit()
@@ -174,17 +171,17 @@ def password_reset():
     email = request.args.get('email')
     fetched_user = db.session.query(User).filter(User.email == email).first()
     error_msg = ""
-    uuid = ""
+    user_id = ""
     if fetched_user == None:
-        error_msg = 'Invalid Active Code.'
+        error_msg = 'Invalid Email Address.'
     else:
-        print(fetched_user.active_code)
+        #print(fetched_user.active_code)
         if fetched_user.active_code != active_code:
             error_msg = 'Invalid Active Code.'
         else:
-            uuid = fetched_user.uuid
+            user_id = fetched_user.user_id
 
-    return render_template('basic/reset_pwd.html', uuid=uuid, error_msg=error_msg, form=form, email=email, active_code=active_code)
+    return render_template('basic/reset_pwd.html', user_id=user_id, error_msg=error_msg, form=form, email=email, active_code=active_code)
 
 
 #Get terms from autocomplete and return user sets back to create_topic.html.
@@ -201,14 +198,6 @@ def ajax_speaker():
         speaker_list.append(single_record)
     print (speaker_list)
     return json.dumps(speaker_list)
-
-#Only for testing purpose
-#Test the feature of sending emails
-@basic.route('/login')
-def login():
-    #full_name = g.user.full_name
-    send_email('test subject', ADMINS[0], ['85230316@qq.com'], "Hello just for testing", render_template('email/registration_confirm.html', full_name=full_name))
-    return render_template('basic/member.html', full_name='test', status=0)
     
     
 #Only used for generate initial database
@@ -300,7 +289,6 @@ def menus_of_role():
     for m in middles:
         menu = db.session.query(Menu).filter(Menu.menu_id == m.menu_id).first()
         menus.append(menu)
-    print (menus)
     return menus
 
 

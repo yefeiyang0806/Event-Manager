@@ -13,8 +13,6 @@ def login_info_check(form, field):
 		raise ValidationError('Invalid Email or password')
 
 	hash_pwd = saved_hash_pwd[0]
-	# print(hash_pwd)
-	# print("Input value: " + form.password.data)
 	if not check_password_hash(hash_pwd, form.password.data):
 		raise ValidationError('Invalid Email or password')
 

@@ -1,5 +1,5 @@
 {% extends "bootstrap/base.html" %}
-{% block title %}{{ first_name }}'s Home Page{% endblock %}
+{% block title %}{{ full_name }}'s Home Page{% endblock %}
 {% block body %}
   {{super()}}
   <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
@@ -23,6 +23,7 @@
           </div>
           <div class="panel-body">
             {{ msg }}
+            <br />You can receive a new activation code by clicking <a href='/send_activate'>here</a>.
           </div>
         </div> 
       </div>

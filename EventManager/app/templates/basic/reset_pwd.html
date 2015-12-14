@@ -21,7 +21,7 @@
         {% endif %}
       {% endwith %}
 
-      <input type='hidden' name='uuid' id='uuid' value='{{ uuid }}' />
+      <input type='hidden' name='user_id' id='user_id' value='{{ user_id }}' />
       <input type='hidden' name='email' id='email' value='{{ email }}' />
       <input type='hidden' name='active_code' id='active_code' value='{{ active_code }}' />
       <button type="button" class="btn btn-primary btn-login" id="submit">Update</button>
@@ -36,8 +36,6 @@
         </div>
       </div>
     {% endif %}
-
-
   </div> <!-- /container -->
 
   <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>
@@ -45,15 +43,13 @@
     $(document).ready(function() {
 	    
       $("#submit").click(function(){
-        $("#pwd_reset").append($('#uuid'));
+        $("#pwd_reset").append($('#user_id'));
         $("#pwd_reset").append($('#email'));
         $("#pwd_reset").append($('#active_code'));
 		    $("#pwd_reset").submit();
-        //alert("Hello Im here");
 	    });
 	
     });
-
-        
+    
   </script>
 {% endblock %}

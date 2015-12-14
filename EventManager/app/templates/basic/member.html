@@ -3,7 +3,6 @@
 {% block body %}
   {{super()}}
   <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
-  <!--link href="{{url_for('static', filename='css/register.css')}}" rel="stylesheet"-->
   <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
   {% set active_list = 'personal_topics' %}
   {% include 'public/navbar.html' %}
@@ -24,32 +23,20 @@
               	More actions are available on the left-hand side navigator bar.
               </div>
           	</div>
-		  	 {% else %}
+		  	  {% else %}
           	{% for topic in topics %}
           	  <h3 class="topic_title text-muted"><a href="/topic/view?topic_id={{ topic.topic_id }}">{{ topic.title }}</a></h3>
-          	  <!--h4 class="task_title text-success">&nbsp;&nbsp;Speaker <strong>{{topic.speaker1}}</strong></h4-->
           	  <table class="table">
           	    <tbody>
           	      <tr>
           	      	<td>Attendance Number: {{ topic.min_attendance }} - {{ topic.max_attendance }}</td>
           	      	<td>Content: {{ topic.content_type.name }}</td>
           	      	<td>Created Date: {{ topic.create_date }}</td>
-          	      	<!--c:if test="${ diet_tasks[i-1].state != 'Not Started'}"-->
-          	      	  <td><a class="btn btn-info" role="button" href="/topic/modify/{{ topic.topic_id }}">Modify</a></td>
-          	      	<!--/c:if-->
-          	      	<!--c:if test="${ diet_tasks[i-1].state == 'Not Started'}">
-          	      	<td><a class="btn btn-info disabled" role="button" href="/project/food/modify_diet_task?id=${ diet_tasks[i-1].id }">Performance</a></td>
-          	      	</c:if-->
+          	      	<td><a class="btn btn-info" role="button" href="/topic/modify/{{ topic.topic_id }}">Modify</a></td>
           	      </tr>
           	      <tr>
           	      	<td>Topic Status: {{ topic.status }}</td>
-          	      	<!--c:if test="${ diet_tasks[i-1].state != 'Expired'}"-->
           	      	<td colspan="2">Topic format: {{ topic.format_type.name }}</td>
-          	      	<!--/c:if>
-          	      	<c:if test="${ diet_tasks[i-1].state == 'Expired'}">
-          	      	  <td>Finished at: ${ diet_tasks[i-1].finish }</td>
-          	      	  <td>Total Calorie: ${ totalCalories[i-1] }</td>
-          	      	</c:if-->
           	      	<td><button class="btn btn-info delete" role="button" name="{{ topic.topic_id }}">Delete</button></td>
           	      </tr>
           	    </tbody>

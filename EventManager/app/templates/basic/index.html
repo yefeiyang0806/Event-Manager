@@ -39,7 +39,6 @@
 	    
       $("#submit").click(function(){
 		    $("#login_form").submit();
-        //alert("Hello Im here");
 	    });
 
       $("#reset_pwd").click(function(){
@@ -51,7 +50,6 @@
             Send: function() {
               $( this ).dialog( "close" );
               $("#pwd_form").submit();
-              //$(window.location).attr('href', '/event/delete?event_id='+event_id);
             },
             Cancel: function() {
               $( this ).dialog( "close" );
@@ -60,9 +58,7 @@
         });
         console.log("opened");
       });
-	
     });
-
         
   </script>
 {% endblock %}
