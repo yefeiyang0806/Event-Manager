@@ -6,13 +6,13 @@
   <link href="{{url_for('static', filename='jquery-timepicker/jquery.timepicker.css')}}" rel="stylesheet">
   <link href="{{url_for('static', filename='jqwidgets/jqwidgets/styles/jqx.base.css')}}" rel="stylesheet">
   <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
-  {% set active_list = 'place_events' %}
+  {% set active_list = 'place_topics' %}
   {% include 'public/navbar.html' %}
   <div class="container-fluid">
   	<div class="row">
   		{% include 'public/side_bar.html' %}
     	<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-        <h1 class="page-header">Place Events</h1>
+        <h1 class="page-header">Place Topics</h1>
         <br />
 
         <div class='row' style='text-align:center;'>
@@ -88,7 +88,8 @@
           	{% endfor %}
           {% endif %}
         </div> -->
-        <div id='scheduler'></div>
+        <div id='scheduler' width='100%'></div>
+        <meta name="csrf-token" content="{{ csrf_token() }}"></meta>
       </div>
     </div>
   </div>
@@ -120,127 +121,94 @@
     $(document).ready(function() {
 
       var appointments = new Array();
-            var appointment1 = {
-                id: "id1",
-                description: "George brings projector for presentations.",
-                location: "",
-                subject: "Quarterly Project Review Meeting",
-                calendar: "Room 1",
-                start: new Date(2015, 10, 23, 9, 0, 0),
-                end: new Date(2015, 10, 23, 16, 0, 0)
-            }
-            var appointment2 = {
-                id: "id2",
-                description: "",
-                location: "",
-                subject: "IT Group Mtg.",
-                calendar: "Room 2",
-                start: new Date(2015, 10, 24, 10, 0, 0),
-                end: new Date(2015, 10, 24, 15, 0, 0)
-            }
-            var appointment3 = {
-                id: "id3",
-                description: "",
-                location: "",
-                subject: "Course Social Media",
-                calendar: "Room 1",
-                start: new Date(2015, 10, 27, 11, 0, 0),
-                end: new Date(2015, 10, 27, 13, 0, 0)
-            }
-            var appointment4 = {
-                id: "id4",
-                description: "",
-                location: "",
-                subject: "New Projects Planning",
-                calendar: "Room 2",
-                start: new Date(2015, 10, 23, 0, 0, 0),
-                end: new Date(2015, 10, 25, 23, 59, 59)
-            }
-            var appointment5 = {
-                id: "id5",
-                description: "",
-                location: "",
-                subject: "Interview with James",
-                calendar: "Room 1",
-                start: new Date(2015, 10, 25, 15, 0, 0),
-                end: new Date(2015, 10, 25, 17, 0, 0)
-            }
-            var appointment6 = {
-                id: "id6",
-                description: "",
-                location: "",
-                subject: "Interview with Nancy",
-                calendar: "Room 2",
-                start: new Date(2015, 10, 26, 14, 0, 0),
-                end: new Date(2015, 10, 26, 16, 0, 0)
-            }
-            appointments.push(appointment1);
-            appointments.push(appointment2);
-            appointments.push(appointment3);
-            appointments.push(appointment4);
-            appointments.push(appointment5);
-            appointments.push(appointment6);
-            // prepare the data
-            var source =
-            {
-                dataType: "json",
-                dataFields: [
-                    { name: 'topic_id', type: 'string' },
-                    { name: 'date', type: 'string' },
-                    { name: 'description', type: 'string' },
-                    { name: 'year', type: 'string' },
-                    { name: 'topic_title', type: 'string' },
-                    { name: 'resource', type: 'string' },
-                    { name: 'timeFrom', type: 'string' },
-                    { name: 'timeTo', type: 'string' }
-                ],
-                id: 'topic_id',
-                url: '/topic/ajax_schedule'
-            };
-            var adapter = new $.jqx.dataAdapter(source);
-            $("#scheduler").jqxScheduler({
-                date: new $.jqx.date(2015, 11, 23),
-                width: 850,
-                height: 600,
-                dayNameFormat: "abbr",
-                source: adapter,
-                showLegend: true,
-                ready: function () {
-                    //$("#scheduler").jqxScheduler('ensureAppointmentVisible', 'id1');
-                },
-                resources:
-                {
-                    colorScheme: "scheme05",
-                    dataField: "resource",
-                    orientation: "horizontal",
-                    source:  new $.jqx.dataAdapter(source)
-                },
-                appointmentDataFields:
-                {
-                    from: "timeFrom",
-                    to: "timeTo",
-                    id: "topic_id",
-                    description: "description",
-                    location: "resource",
-                    subject: "topic_title",
-                    resourceId: "resource"
-                },
-                view: 'dayView',
-                views:
-                [
-                    { type: 'dayView', showWeekends: false, timeRuler: { scaleStartHour: 7, scaleEndHour: 21 }},
-                    { type: 'weekView', showWeekends: false }
-                ]
-            });
-
-      $("#scheduler").on('editDialogCreate', function (event) {
-        var args = event.args;
-        var dialog = args.dialog;
-        var fields = args.fields;
-        var appointment = args.appointment;
-        console.log(fields['subject'].val('Hello'));
+      var csrftoken = $('meta[name=csrf-token]').attr('content');
+      $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+          if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+          }
+        }
       });
 
+      // prepare the data
+      var source =
+        {
+          dataType: "json",
+          dataFields: [
+            { name: 'topic_id', type: 'string' },
+            { name: 'contentFormat', type: 'string'},
+            { name: 'description', type: 'string' },
+            { name: 'year', type: 'string' },
+            { name: 'topic_title', type: 'string' },
+            { name: 'resource', type: 'string' },
+            { name: 'from', type: 'date' },
+            { name: 'to', type: 'date' }
+          ],
+          id: 'topic_id',
+          url: '/topic/ajax_schedule'
+        };
+
+      var data_of_resources = 
+        {
+          dataType: "json",
+          dataFields: [
+            { name: 'resource', type: 'string' },
+          ],
+          id: 'topic_id',
+          url: '/topic/ajax_resources'
+        };
+
+      var adapter = new $.jqx.dataAdapter(source);
+      $("#scheduler").jqxScheduler({
+        date: new $.jqx.date(2015, 12, 28),
+        width: '90%',
+        height: 800,
+        dayNameFormat: "abbr",
+        source: adapter,
+        showLegend: true,
+        ready: function () {
+          //$("#scheduler").jqxScheduler('ensureAppointmentVisible', 'id1');
+        },
+        editDialogCreate: function (dialog, fields, editAppointment) {
+          var format_field = "<div><div class='jqx-scheduler-edit-dialog-label'>Format</div><div class='jqx-scheduler-edit-dialog-field'><input class='jqx-widget-content jqx-input jqx-widget jqx-rc-all' style='width:100%;height:25px;' value='" + editAppointment.location + "' /></div></div>";
+          //var content_label = 'content';
+          //$('#format_content').val(editAppointment.location);
+          console.log(editAppointment.location);
+          console.log(editAppointment);
+          fields.repeatContainer.hide();
+          fields.statusContainer.hide();
+          fields.allDayContainer.hide();
+          fields.colorContainer.hide();
+          fields.timeZoneContainer.hide();
+          fields.subject.prop('disabled', true);
+          fields.description.prop('disabled', true);
+          console.log(fields);
+          fields.subject.parent().after(format_field);
+        },
+        resources:
+        {
+          colorScheme: "scheme05",
+          dataField: "resource",
+          orientation: "horizontal",
+          source:  new $.jqx.dataAdapter(data_of_resources)
+        },
+        appointmentDataFields:
+        {
+          from: "from",
+          to: "to",
+          id: "topic_id",
+          description: "description",
+          location: "contentFormat",
+          subject: "topic_title",
+          resourceId: "resource",
+        },
+        view: 'dayView',
+        views:
+        [
+          { type: 'dayView', showWeekends: false, timeRuler: { scaleStartHour: 7, scaleEndHour: 21 }},
+          { type: 'weekView', showWeekends: false }
+        ]
+      });
 
       $("#set_filter").click(function(){
         var suffix = "";

@@ -356,20 +356,54 @@ def validate_arrangement():
 @login_required
 def ajax_schedule():
     all_schedule = TopicSchedule.query.all()
+    scheduled_topics = list()
     schedule = list()
+
     for s in all_schedule:
+        scheduled_topics.append(s.scheduled_topic)
         each_schedule = dict()
         each_schedule['topic_id'] = s.scheduled_topic.topic_id
         each_schedule['description'] = s.scheduled_topic.description
         each_schedule['topic_title'] = s.topic_title
         each_schedule['year'] = s.topic_year
-        each_schedule['date'] = s.day_from.strftime('%Y-%m-%d')
-        each_schedule['timeFrom'] = datetime.time.strftime(s.time_from, "%H:%M:%S")
-        each_schedule['timeTo'] = datetime.time.strftime(s.time_to, "%H:%M:%S")
-        each_schedule['resource'] = s.scheduled_topic.content
+        from_str = datetime.datetime.combine(s.day_from,s.time_from)
+        to_str = datetime.datetime.combine(s.day_from,s.time_to)
+        each_schedule['from'] = datetime.datetime.strftime(from_str, "%Y-%m-%d %H:%M:%S")
+        each_schedule['to'] = datetime.datetime.strftime(to_str, "%Y-%m-%d %H:%M:%S")
+        each_schedule['resource'] = s.assigned_resource.name
+        each_schedule['contentFormat'] = s.scheduled_topic.format + " (" + s.scheduled_topic.content + ")"
         schedule.append(each_schedule)
-        #print (each_schedule)
+
+    unscheduled_topics = set(Topic.query.all()) - set(scheduled_topics)
+    print (unscheduled_topics)
+    for ut in unscheduled_topics:
+        each_schedule = dict()
+        each_schedule['topic_id'] = ut.topic_id
+        each_schedule['description'] = ut.description
+        each_schedule['topic_title'] = ut.title
+        each_schedule['year'] = ut.year_start
+        each_schedule['from'] = "1970-01-01 00:00:00"
+        start_time = datetime.datetime.strptime('2100-01-01 00:00:00', "%Y-%m-%d %H:%M:%S")
+        each_schedule['to'] = datetime.datetime.strftime(start_time + datetime.timedelta(hours=int(ut.hour_duration), minutes=int(ut.minute_duration)), "%Y-%m-%d %H:%M:%S")
+        each_schedule['resource'] = 'TBD'
+        each_schedule['contentFormat'] = ut.format + " (" + ut.content + ")"
+        schedule.append(each_schedule)
+
     return json.dumps(schedule)
+
+
+#Return all the resources info to the place_topic.html through json
+@topic.route('/ajax_resources', methods=['GET', 'POST'])
+@login_required
+def ajax_resources():
+    res = list()
+    all_resources = db.session.query(Resource).all()
+    for r in all_resources:
+        each_r = dict()
+        each_r['resource'] = r.name
+        res.append(each_r)
+    res.append({'resource': 'TBD'})
+    return json.dumps(res)
 
 
 #Required by the LoginManager
