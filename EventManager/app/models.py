@@ -13,7 +13,6 @@ class User(db.Model):
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
     created_topics = db.relationship('Topic', backref='author', lazy='dynamic')
-    #topics_to_speak = db.relationship('Topic', backref='speaker')
     status = db.Column(db.Integer, default=0)
     active_code = db.Column(db.String(4))
     role_id = db.Column(db.String(40), db.ForeignKey('role.role_id'))
@@ -231,7 +230,6 @@ class ResourceType(db.Model):
         self.create_time = time.strftime("%H:%M:%S")
         self.create_date = time.strftime("%Y/%m/%d")
         self.create_by = create_by
-
 
 
 class Content(db.Model):
