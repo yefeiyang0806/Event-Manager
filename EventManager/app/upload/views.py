@@ -29,17 +29,16 @@ def upload_file():
         f = request.files['file']
         if f and allowed_file(f.filename):
             filename = secure_filename(f.filename)
-            f.save(os.path.join(UPLOAD_FOLDER, filename))  
-            return redirect(url_for('uploadtest'))   
+            print(filename.path)
+            # f.save(os.path.join(UPLOAD_FOLDER, filename))  
+            # return redirect(url_for('uploadtest'))   
             # return ("upload successfully!")
 
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.',1)[1] in ALLOWED_EXTENSIONS
 
-@upload.route('/upload/<filename>')
-def uploaded_file(filename):
-    return send_from_directory(UPLOAD_FOLDER, filename)
+
 
 
 def open_excel(file):
