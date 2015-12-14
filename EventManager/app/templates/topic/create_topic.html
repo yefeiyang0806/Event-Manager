@@ -9,19 +9,15 @@
   <style>
   	.form-group {width:50%;}
   </style>
-  <!--link href="{{url_for('static', filename='css/register.css')}}" rel="stylesheet"-->
   {% set active_list = 'register_topics' %}
   {% include 'public/navbar.html' %}
   <div class="container-fluid">
   	<div class="row">
   	  {% include 'public/side_bar.html' %}
   	  <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-  	  	
   	  	{{ wtf.quick_form(form, action='/topic/create', method='post', extra_classes='form-reg', id='reg_form') }}
-
-    	<button type="button" class="btn btn-primary btn-login" id="submit">Register</button>
+        <button type="button" class="btn btn-primary btn-login" id="submit">Register</button>
       </div>
-
   	</div>
   </div>
 
@@ -43,7 +39,6 @@
             }
             $.getJSON( "/ajax_speaker", request, function( data, status, xhr ) {
               cache[ term ] = data;
-            
               console.log(data);
               response( data );
             });
@@ -53,7 +48,6 @@
 	    
       $("#submit").click(function(){
 		    $("#reg_form").submit();
-        //alert("Hello Im here");
       });
   	  
       $( "#start_date" ).datepicker({ minDate: "0", maxDate: "+12M", dateFormat: "yy-mm-dd"});

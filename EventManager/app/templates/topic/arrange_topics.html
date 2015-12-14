@@ -65,7 +65,6 @@
           	</div>
 		  	  {% else %}
           	{% for topic in topics %}
-          	  <!--h3 class="topic_title text-muted"><a href="/topic/view?uuid={{ topic.topic_id }}">{{ topic.topic }}</a></h3>
           	  <h4 class="task_title text-success">&nbsp;&nbsp;Host by <strong>{{topic.speaker}}</strong></h4-->
               <form class='schedule-info'>
           	  <table class="table-arrange table-striped">
@@ -80,7 +79,6 @@
                       {% endif %}
                     </td>
                     <td><b>{{topic.format_type.name }}</b> ({{topic.content_type.name}})</td>
-          	      	<!--c:if test="${ diet_tasks[i-1].state != 'Not Started'}"-->
           	      	<td>Duration:
                       {% if topic.day_duration != "0" %}
                         {{ topic.day_duration + ' days ' }}
@@ -94,14 +92,10 @@
                     </td>
           	      </tr>
           	      <tr>
-                    <!-- <div class='data-wrapper'> -->
-                    <!-- <input type='hidden' id='topic_id' value='{{ topic.topic_id }}'> -->
           	      	<td>Audience: {{ topic.min_attendance }} - {{ topic.max_attendance }}</td>
           	      	<td>Date: <input class='date-picker' name='date-picker' value='{{ topic.schedule.first().day_from }}'></td>
                     <td>Time: <input class='time-from' size='8' value='{{ topic.schedule.first().time_from }}'> to <input class='time-to' size='8' value='{{ topic.schedule.first().time_to }}'></td>
                     <td>Resource: <select class='assign-resource' id='{{ topic.topic_id }}' name='{{ topic.schedule.first().resource }}'></td>
-          	      	<!--td>Interested</td-->
-                    <!-- </div> -->
           	      </tr>
           	    </tbody>
           	  </table>

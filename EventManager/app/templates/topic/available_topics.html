@@ -3,7 +3,6 @@
 {% block body %}
   {{super()}}
   <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
-  <!--link href="{{url_for('static', filename='css/register.css')}}" rel="stylesheet"-->
   <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
   {% set active_list = 'available_topics' %}
   {% include 'public/navbar.html' %}
@@ -27,17 +26,13 @@
 		  	 {% else %}
           	{% for topic in topics %}
           	  <h3 class="topic_title text-muted"><a href="/topic/view?topic_id={{ topic.topic_id }}">{{ topic.title }}</a></h3>
-          	  <!--h4 class="task_title text-success">&nbsp;&nbsp;Host by <strong>{{topic.speaker}}</strong></h4-->
           	  <table class="table">
           	    <tbody>
           	      <tr>
           	      	<td>Attendance Number: {{ topic.min_attendance }} - {{ topic.max_attendance }}</td>
                     <td>Content: {{ topic.content_type.name }}</td>
                     <td>Created Date: {{ topic.create_date }}</td>
-          	      	<!--c:if test="${ diet_tasks[i-1].state != 'Not Started'}"-->
-          	      	  <td><a class="btn btn-info" role="button" href="/topic/modify/{{ topic.topic_id }}">Join</a></td>
-          	      	<!--/c:if-->
-          	      	<!--c:if test="${ diet_tasks[i-1].state == 'Not Started'}">
+          	      	<td><a class="btn btn-info" role="button" href="/topic/modify/{{ topic.topic_id }}">Join</a></td>
           	      	<td><a class="btn btn-info disabled" role="button" href="/project/food/modify_diet_task?id=${ diet_tasks[i-1].id }">Performance</a></td>
           	      	</c:if-->
           	      </tr>
@@ -49,7 +44,6 @@
           	    </tbody>
           	  </table>
           	  <br />
-          	    
           	{% endfor %}
           {% endif %}
         </div>

@@ -4,21 +4,9 @@ from wtforms import StringField, BooleanField, PasswordField, IntegerField, Date
 from wtforms.validators import InputRequired, Length, Email, EqualTo, ValidationError
 from ..models import Content, Format
 
-
-'''def unique_title_year(form, field):
-	startdata = form.DateStart.data.split('-')
-	year_start = startdata[0]
-	exist_topic = db.session.query(Topic).filter(Topic.title == form.title.data and Topic.year_start == year_start).first()
-
-	if exist_topic is not None:
-		raise ValidationError('Title already exists')
-
-'''
-
 class CreateTopicForm(Form):
     title = StringField('Topic Title', validators=[InputRequired()])
     description = StringField('Description', validators=[InputRequired()])
-
     content = SelectField('Content')
     format = SelectField('Format')
     min_attendance = IntegerField('Minimal attendance', default=10)
