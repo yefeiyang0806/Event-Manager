@@ -3,7 +3,6 @@
 {% block body %}
   {{super()}}
   <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
-  <!--link href="{{url_for('static', filename='css/register.css')}}" rel="stylesheet"-->
   <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
   {% set active_list = 'manage_role' %}
   {% include 'public/navbar.html' %}
@@ -36,13 +35,7 @@
                   </tr>
                   <tr>
                     <td>Created Date: {{ role.create_date }}</td>
-                    <!--c:if test="${ diet_tasks[i-1].state != 'Expired'}"-->
                     <td>Created Time: {{ role.create_time }}</td>
-                    <!--/c:if>
-                    <c:if test="${ diet_tasks[i-1].state == 'Expired'}">
-                      <td>Finished at: ${ diet_tasks[i-1].finish }</td>
-                      <td>Total Calorie: ${ totalCalories[i-1] }</td>
-                    </c:if-->
                     <td align='center'><button class="btn btn-info delete" role="button" name="{{ role.uuid }}" style="width:30%;">Delete</button></td>
                   </tr>
                 </tbody>

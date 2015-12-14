@@ -8,7 +8,6 @@
   <style>
   	.form-group {width:50%;}
   </style>
-  <!--link href="{{url_for('static', filename='css/register.css')}}" rel="stylesheet"-->
   {% set active_list = 'create_role' %}
   {% include 'public/navbar.html' %}
   <div class="container-fluid">
@@ -30,11 +29,10 @@
     $(document).ready(function() {
 	    
       $("#submit").click(function(){
-		$("#reg_form").submit();
-        //alert("Hello Im here");
-	  });
+		    $("#reg_form").submit();
+      });
   	  
-	  $( "#start_date" ).datepicker({ minDate: "0", maxDate: "+2M", dateFormat: "yy-mm-dd"});
+      $( "#start_date" ).datepicker({ minDate: "0", maxDate: "+2M", dateFormat: "yy-mm-dd"});
 	    
 	  });
     </script>
