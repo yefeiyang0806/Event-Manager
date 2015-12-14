@@ -79,7 +79,7 @@ def print_xls(path):
 
 if __name__=='__main__':
 	print('******************************************8')
-	print_xls(r+'C:\Users\i325391\Desktop\topic2.xlsx')
+	print_xls('C:\\\Users\\\i325391\\\Desktop\\\topic2.xlsx')
 
 
 	
