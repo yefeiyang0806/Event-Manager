@@ -7,6 +7,16 @@ import xlrd
 
 upload = Blueprint('upload', __name__)
 
+
+# from flask_wtf.csrf import CsrfProtect
+
+# csrf = CsrfProtect()
+
+# def create_app():
+#     app = Flask(__name__)
+#     csrf.init_app(app)
+
+
 UPLOAD_FOLDER = '/static/uploads'
 ALLOWED_EXTENSIONS = set(['xlsx'])
 
@@ -16,15 +26,10 @@ def upload_file():
     if request.method == 'GET':
         return render_template('upload/upload.html')
     elif request.method == 'POST':
-        print("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")
         f = request.files['file']
-        print("bbbbbbbbbbbbbbbbbbbbbbbbbbbb")
         if f and allowed_file(f.filename):
-            print("cccccccccccccccccccccccccccccccc")
             filename = secure_filename(f.filename)
-            print("ddddddddddddddddddddddddddddd")
-            f.save(os.path.join(UPLOAD_FOLDER, filename))   
-            print("eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee")
+            f.save(os.path.join(UPLOAD_FOLDER, filename))  
             return redirect(url_for('uploadtest'))   
             # return ("upload successfully!")
 
@@ -80,9 +85,25 @@ def uploadtest():
 #             print (ss[i])         #输出一行中各个列的值
 #             print ('+++++++++++++++++++')
 
+def print_xls(path):
+    data = open_excel(path)   #打开excel
+    table=data.sheets()[0] #打开excel的第几个sheet
+    nrows=table.nrows   #捕获到有效数据的行数
+    books=[]
+    for i in range(nrows):
+        ss=table.row_values(i)   #获取一行的所有值，每一列的值以列表项存在
+        #print ss
+        if i == 0:
+            continue
+        temp=Topic(ss)
+        print("111111111111111111111111111")
+        db.session.add(temp)
+        # elif:
+        for j in range(len(ss)):
+            print (ss[j])         #输出一行中各个列的值
+            print("++++++++++++++++++++++++++++")
+
 
 @upload.route('/test')
 def test():
-    tables = excel_table_byindex(url_for('static',filename='uploads/test.xlsx'))
-    for row in tables:
-        print (row)
+     print_xls('/uploads/test.xlsx')
