@@ -19,8 +19,7 @@
               	<h2 class="panel-title">No  records yet.</h2>
               </div>
               <div class="panel-body">
-              	You can <a href="/topic/create">register new topics here</a>.<br />
-              	More actions are available on the left-hand side navigator bar.
+              	You can <a href="/topic/create">register new topics here</a>.
               </div>
           	</div>
 		  	 {% else %}
@@ -33,8 +32,6 @@
                     <td>Content: {{ topic.content_type.name }}</td>
                     <td>Created Date: {{ topic.create_date }}</td>
           	      	<td><a class="btn btn-info" role="button" href="/topic/modify/{{ topic.topic_id }}">Join</a></td>
-          	      	<td><a class="btn btn-info disabled" role="button" href="/project/food/modify_diet_task?id=${ diet_tasks[i-1].id }">Performance</a></td>
-          	      	</c:if-->
           	      </tr>
           	      <tr>
           	      	<td>Topic Status: {{ topic.status }}</td>
