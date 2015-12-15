@@ -52,6 +52,9 @@
         </div>
         <br>
         <div id='scheduler' width='100%'></div>
+        <div>
+          <button class='btn btn-info' id='scheduler_update' >Show Results</button>
+        </div>
         <meta name="csrf-token" content="{{ csrf_token() }}"></meta>
       </div>
     </div>
@@ -133,18 +136,30 @@
           //$("#scheduler").jqxScheduler('ensureAppointmentVisible', 'id1');
         },
         editDialogCreate: function (dialog, fields, editAppointment) {
-          var format_field = "<div><div class='jqx-scheduler-edit-dialog-label'>Format</div><div class='jqx-scheduler-edit-dialog-field'><input class='jqx-widget-content jqx-input jqx-widget jqx-rc-all' style='width:100%;height:25px;' value='" + editAppointment.location + "' /></div></div>";
-          console.log(editAppointment.location);
-          console.log(editAppointment);
+          var assigned_content_format = null;
+          if (editAppointment != null){
+            assigned_content_format = editAppointment.location;
+          }
+          var format_field = "<div><div class='jqx-scheduler-edit-dialog-label'>Format</div><div class='jqx-scheduler-edit-dialog-field'><input class='jqx-widget-content jqx-input jqx-widget jqx-rc-all' style='width:100%;height:25px;' value='" + assigned_content_format + "' disabled /></div></div>";
           fields.repeatContainer.hide();
           fields.statusContainer.hide();
           fields.allDayContainer.hide();
           fields.colorContainer.hide();
           fields.timeZoneContainer.hide();
+          fields.locationContainer.hide();
+          fields.resourceLabel.html('Resource');
           fields.subject.prop('disabled', true);
           fields.description.prop('disabled', true);
-          console.log(fields);
+          fields.description.attr('rows', '8');
           fields.subject.parent().after(format_field);
+        },
+        editDialogOpen: function (dialog, fields, editAppointment) {
+          if (editAppointment != null){
+            fields.subject.parent().next().find('input').val(editAppointment.location);
+          }
+          else {
+            fields.subject.parent().next().find('input').val('');
+          }
         },
         resources:
         {
@@ -166,9 +181,28 @@
         view: 'dayView',
         views:
         [
-          { type: 'dayView', showWeekends: false, timeRuler: { scaleStartHour: 7, scaleEndHour: 21 }},
+          { type: 'dayView', showWeekends: false, timeRuler: { scaleStartHour: 7, scaleEndHour: 21, scale: "tenMinutes", formatString: "HH:mm" }, appointmentsRenderMode: "exactTime" },
           { type: 'weekView', showWeekends: false }
         ]
+      });
+
+      var modified_list = [];
+      var scheduled_list = [];
+      var unscheduled_list = [];
+      var hidden_list = [];
+
+      $('#scheduler').on('bindingComplete', function (event) {
+        appointments = event.args['owner'].appointments;
+        console.log(appointments);
+        $.each(appointments, function(){
+          var resource = this['resourceId'];
+          if (resource == 'TBD'){
+            unscheduled_list.push(this);
+          }
+          else {
+            scheduled_list.push(this);
+          }
+        });
       });
 
       $("#set_filter").click(function(){
@@ -176,23 +210,53 @@
         var content_name = $("#content-filter").find(":selected").text();
         var format_name = $("#format-filter").find(":selected").text();
         var location = $("#location-filter").find(":selected").text();
-        if (content_name != "----Any----"){
-          suffix += "content=" + content_name;
-        }
-        if (format_name != "--------Any--------"){
-          if (suffix != ""){
-            suffix += '&';
+        var fAndC = format_name + " (" + content_name + ")";
+        $.each(hidden_list, function(){
+          formatAndcontent = this['location'];
+          if (fAndC == formatAndcontent){
+            console.log($.inArray(this, hidden_list));
+            hidden_list.splice($.inArray(this, hidden_list), 1);
+            $('#scheduler').jqxScheduler('addAppointment', this);
+            console.log('ADDED:' + this['id']);
           }
-          suffix += "format=" + format_name;
-        }
-        if (location != "------Any------"){
-          if (suffix != ""){
-            suffix += '&';
+        });
+        $.each(unscheduled_list, function(){
+          formatAndcontent = this['location'];
+          if (fAndC != formatAndcontent){
+            if ($.inArray(this, hidden_list)<0){
+              hidden_list.push(this);
+              $('#scheduler').jqxScheduler('deleteAppointment', this['id']);
+              console.log('DELETE:' + this['id']);
+            }
           }
-          suffix += "location=" + location;
-        }
-        $(window.location).attr('href', '/topic/validate?'+suffix);
+        });
+        console.log(unscheduled_list);
+        console.log(hidden_list);
+        
       });
+
+      $('#scheduler').on('appointmentChange', function (event) {
+        var args = event.args;
+        var appointment = args.appointment;
+        //var from = appointment['from'].toString('yyyy-MM-dd');
+        //var resource = $('#scheduler').jqxScheduler('getAppointmentProperty', appointment['id'], 'resourceId');
+        //var from = $('#scheduler').jqxScheduler('getAppointmentProperty', appointment['id'], 'from').toString('yyyy-MM-dd HH:mm:ss');
+        if ($.inArray(appointment['id'], modified_list) == -1){
+          modified_list.push(appointment['id']);
+        }
+        console.log(modified_list);
+      });
+
+      $('#scheduler_update').click(function(){
+        for (var topic_id in modified_list){
+          // Get modified date and resource
+          // Generate json with id, from, to and resource
+          // Send back to the validation function to do validation
+          // Get response from topic/views.py
+          // Reset modified_list to empty
+        }
+      });
+
     });
   </script>
 {% endblock %}
