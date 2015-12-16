@@ -326,7 +326,24 @@ def ajax_schedule():
             " (" + s.scheduled_topic.content_type.name + ")"
         schedule.append(each_schedule)
 
-    unscheduled_topics = set(Topic.query.all()) - set(scheduled_topics)
+    if request.method == 'POST':
+        json_data = request.get_json(force=True)
+        filter_data = json_data["filters"]
+        content_filter = format_filter = location = None
+        for f in filter_data:
+            if f['type'] == 'content':
+                content_filter = f['value']
+            if f['type'] == 'format':
+                format_filter = f['value']
+            if f['type'] == 'location':
+                location = f['value']
+        filtered_results = content_format_location_filter(content_filter, format_filter, location)
+        filtered_topics = filtered_results['topics']
+        print(filtered_topics)
+        unscheduled_topics = set(filtered_topics) - set(scheduled_topics)
+    else:
+        unscheduled_topics = set(Topic.query.all()) - set(scheduled_topics)
+
     for ut in unscheduled_topics:
         each_schedule = dict()
         each_schedule['topic_id'] = ut.topic_id
