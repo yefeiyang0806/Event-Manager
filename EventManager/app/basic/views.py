@@ -26,14 +26,18 @@ def index():
 
     form = LoginForm()
     email_form = RetrievePwdForm()
+    next = request.args.get('next')
     if form.validate_on_submit():
         remember_me = form.remember_me.data
         temp_user = db.session.query(User).filter(User.email == form.email.data)[0]
         login_user(temp_user, remember=remember_me)
-        next = request.args.get('next')
-        return redirect(next or url_for('basic.logged_in'))
+        next = request.form.get('next')
+        print(next)
+        if next != None:
+            return redirect(next)
+        return redirect(url_for('basic.logged_in'))
 
-    return render_template("basic/index.html", form=form, email_form=email_form)
+    return render_template("basic/index.html", form=form, email_form=email_form, next=next)
 
 
 #The home page of logged in users.

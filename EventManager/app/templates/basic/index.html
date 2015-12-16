@@ -23,7 +23,7 @@
       <a href="javascript:void(0);" id='reset_pwd'>Forgot password?</a>
     </div>
     <div id="register_link"><a href="/register" class="btn btn-info">New User</a></div>
-
+    <input type='hidden' id='next_url' value='{{ next }}' />
   </div> <!-- /container -->
   <div style="display:none;" id="reset_email" title='Password Retrieve'>
     {{wtf.quick_form(email_form, action='/send_pwd_reset', method='post', id='pwd_form')}}<br>
@@ -38,6 +38,7 @@
     $(document).ready(function() {
 	    
       $("#submit").click(function(){
+        $("#login_form").append('<input type="hidden" id="next" name="next" value="' + $('#next_url').val() + '" />');
 		    $("#login_form").submit();
 	    });
 
