@@ -49,13 +49,8 @@ def create_topic():
 def delete_topic():
     topic_id = request.args.get('topic_id')
     topic = db.session.query(Topic).filter(Topic.topic_id == topic_id).first()
-<<<<<<< HEAD
-    if topic.is_created_by(g.user.user_id):
-        print ("delete!!!")
-        print ("ready to remove the topic!")
-=======
+
     if topic.is_created_by(g.user.email):
->>>>>>> a517fe6c042904e87efc2cf15f4a7850fd49ffa5
         db.session.delete(topic)
         db.session.commit()
     return redirect(url_for("basic.index"))
