@@ -26,14 +26,18 @@ def index():
 
     form = LoginForm()
     email_form = RetrievePwdForm()
+    next = request.args.get('next')
     if form.validate_on_submit():
         remember_me = form.remember_me.data
         temp_user = db.session.query(User).filter(User.email == form.email.data)[0]
         login_user(temp_user, remember=remember_me)
-        next = request.args.get('next')
-        return redirect(next or url_for('basic.logged_in'))
+        next = request.form.get('next')
+        if next != 'None':
+            print(next)
+            return redirect(next)
+        return redirect(url_for('basic.logged_in'))
 
-    return render_template("basic/index.html", form=form, email_form=email_form)
+    return render_template("basic/index.html", form=form, email_form=email_form, next=next)
 
 
 #The home page of logged in users.
@@ -43,7 +47,7 @@ def index():
 def logged_in():
     full_name = g.user.full_name
     status = g.user.status
-    topics = g.user.created_topics.all()
+    topics = Topic.query().filter(Topic.create_by == g.user.email).all()
     menus = menus_of_role()
     return render_template('basic/member.html', full_name=full_name, topics=topics, status=status, menus=menus)
 
@@ -253,6 +257,7 @@ def generate_db():
 
 #Only used for generating resources.
 @basic.route('/generate_resources')
+@login_required
 def generate_resource():
     resource1 = Resource('SF_001', 'SF_001', 'Show Floor on the first floor', 20, g.user.user_id, 'Show Floor')
     resource2 = Resource('SF_002', 'SF_002', 'Show Floor on the second floor', 15, g.user.user_id, 'Show Floor')

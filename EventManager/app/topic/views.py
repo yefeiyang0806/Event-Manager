@@ -49,9 +49,13 @@ def create_topic():
 def delete_topic():
     topic_id = request.args.get('topic_id')
     topic = db.session.query(Topic).filter(Topic.topic_id == topic_id).first()
+<<<<<<< HEAD
     if topic.is_created_by(g.user.user_id):
         print ("delete!!!")
         print ("ready to remove the topic!")
+=======
+    if topic.is_created_by(g.user.email):
+>>>>>>> a517fe6c042904e87efc2cf15f4a7850fd49ffa5
         db.session.delete(topic)
         db.session.commit()
     return redirect(url_for("basic.index"))
@@ -100,7 +104,7 @@ def modify_topic(topic_id):
             return render_template("topic/modify_topic.html", form=form,\
                 full_name=full_name, status=status, topic_id=topic_id, menus=menus)
 
-    if topic.is_created_by(g.user.user_id):
+    if topic.is_created_by(g.user.email):
         form.title.data = topic.title
         form.description.data = topic.description
         form.min_attendance.data = topic.min_attendance
@@ -147,7 +151,7 @@ def view_topic():
     menus = menus_of_role()
     topic_id = request.args.get('topic_id')
     topic = db.session.query(Topic).filter(Topic.topic_id == topic_id).first()
-    if topic.is_created_by(g.user.user_id):
+    if topic.is_created_by(g.user.email):
         mode = 'creator'
     else:
         mode = 'viewer'
@@ -177,29 +181,11 @@ def arrange_topics():
     content_filter = request.args.get('content', None)
     format_filter = request.args.get('format', None)
     location_filter = request.args.get('location', None)
-    contents = db.session.query(Content).all()
-    formats = db.session.query(Format).all()
-    locations_set = db.session.query(Topic.location).all()
-    content_names = list()
-    format_names = list()
-    locations = list()
-    for c in contents:
-        content_names.append(str(c.name))
-    for f in formats:
-        format_names.append(str(f.name))
-    for l in locations_set:
-        l_name = str(l[0])
-        if l_name not in locations:
-            locations.append(l_name)
-
-    topics_content = topics_format = topics_location = db.session.query(Topic).all()
-    if content_filter != None:
-        topics_content = db.session.query(Content).filter(Content.name == content_filter).first().topics.all()
-    if format_filter != None:
-        topics_format = db.session.query(Format).filter(Format.name == format_filter).first().topics.all()
-    if location_filter != None:
-        topics_location = db.session.query(Topic).filter(Topic.location == location_filter).all()
-    topics = set(topics_format).intersection(topics_content).intersection(topics_location)
+    results = content_format_location_filter(content_filter, format_filter, location_filter)
+    content_names = results['content_names']
+    format_names = results['format_names']
+    locations = results['locations']
+    topics = results['topics']
     
     return render_template('topic/arrange_topics.html', topics=topics, full_name=full_name, status=status, \
         menus=menus, content_names=content_names, format_names=format_names, locations=locations)
@@ -212,18 +198,15 @@ def place_topics():
     full_name = g.user.full_name
     status = g.user.status
     menus = menus_of_role()
-    r_type_filter = request.args.get('r_type', None)
-    resource_filter = request.args.get('resource', None)
-    r_types = db.session.query(ResourceType).all()
-    resources = db.session.query(Resource).all()
-    r_type_names = list()
-    resource_names = list()
-    for t in r_types:
-        r_type_names.append(str(t.name))
-    for r in resources:
-        resource_names.append(str(r.name))
+    content_filter = request.args.get('content', None)
+    format_filter = request.args.get('format', None)
+    location_filter = request.args.get('location', None)
+    results = content_format_location_filter(content_filter, format_filter, location_filter)
+    content_names = results['content_names']
+    format_names = results['format_names']
+    locations = results['locations']
     return render_template('topic/place_topics.html', full_name=full_name, status=status, \
-        menus=menus, r_type_names=r_type_names, resource_names=resource_names)
+        menus=menus, content_names=content_names, format_names=format_names, locations=locations)
 
 
 #Show the page of scheduling all the approved topics. The page is reached by the "validate topic" link in the topic management side bar"
@@ -236,29 +219,11 @@ def validate_topics():
     content_filter = request.args.get('content', None)
     format_filter = request.args.get('format', None)
     location_filter = request.args.get('location', None)
-    contents = db.session.query(Content).all()
-    formats = db.session.query(Format).all()
-    locations_set = db.session.query(Topic.location).all()
-    content_names = list()
-    format_names = list()
-    locations = list()
-    for c in contents:
-        content_names.append(str(c.name))
-    for f in formats:
-        format_names.append(str(f.name))
-    for l in locations_set:
-        l_name = str(l[0])
-        if l_name not in locations:
-            locations.append(l_name)
-
-    topics_content = topics_format = topics_location = db.session.query(Topic).all()
-    if content_filter != None:
-        topics_content = db.session.query(Content).filter(Content.name == content_filter).first().topics.all()
-    if format_filter != None:
-        topics_format = db.session.query(Format).filter(Format.name == format_filter).first().topics.all()
-    if location_filter != None:
-        topics_location = db.session.query(Topic).filter(Topic.location == location_filter).all()
-    topics = set(topics_format).intersection(topics_content).intersection(topics_location)
+    results = content_format_location_filter(content_filter, format_filter, location_filter)
+    content_names = results['content_names']
+    format_names = results['format_names']
+    locations = results['locations']
+    topics = results['topics']
     return render_template('topic/validate_topics.html', topics=topics, full_name=full_name, status=status, \
         menus=menus, content_names=content_names, format_names=format_names, locations=locations)
         
@@ -363,10 +328,44 @@ def ajax_schedule():
         each_schedule['description'] = s.scheduled_topic.description
         each_schedule['topic_title'] = s.topic_title
         each_schedule['year'] = s.topic_year
-        each_schedule['date'] = s.day_from.strftime('%Y-%m-%d')
-        each_schedule['timeFrom'] = datetime.time.strftime(s.time_from, "%H:%M:%S")
-        each_schedule['timeTo'] = datetime.time.strftime(s.time_to, "%H:%M:%S")
-        each_schedule['resource'] = s.scheduled_topic.content
+        from_str = datetime.datetime.combine(s.day_from,s.time_from)
+        to_str = datetime.datetime.combine(s.day_from,s.time_to)
+        each_schedule['from'] = datetime.datetime.strftime(from_str, "%Y-%m-%d %H:%M:%S")
+        each_schedule['to'] = datetime.datetime.strftime(to_str, "%Y-%m-%d %H:%M:%S")
+        each_schedule['resource'] = s.assigned_resource.name
+        each_schedule['contentFormat'] = s.scheduled_topic.format_type.name + \
+            " (" + s.scheduled_topic.content_type.name + ")"
+        schedule.append(each_schedule)
+
+    if request.method == 'POST':
+        json_data = request.get_json(force=True)
+        filter_data = json_data["filters"]
+        content_filter = format_filter = location = None
+        for f in filter_data:
+            if f['type'] == 'content':
+                content_filter = f['value']
+            if f['type'] == 'format':
+                format_filter = f['value']
+            if f['type'] == 'location':
+                location = f['value']
+        filtered_results = content_format_location_filter(content_filter, format_filter, location)
+        filtered_topics = filtered_results['topics']
+        print(filtered_topics)
+        unscheduled_topics = set(filtered_topics) - set(scheduled_topics)
+    else:
+        unscheduled_topics = set(Topic.query.all()) - set(scheduled_topics)
+
+    for ut in unscheduled_topics:
+        each_schedule = dict()
+        each_schedule['topic_id'] = ut.topic_id
+        each_schedule['description'] = ut.description
+        each_schedule['topic_title'] = ut.title
+        each_schedule['year'] = ut.year_start
+        each_schedule['from'] = "1970-01-01 00:00:00"
+        start_time = datetime.datetime.strptime('2100-01-01 00:00:00', "%Y-%m-%d %H:%M:%S")
+        each_schedule['to'] = datetime.datetime.strftime(start_time + datetime.timedelta(hours=int(ut.hour_duration), minutes=int(ut.minute_duration)), "%Y-%m-%d %H:%M:%S")
+        each_schedule['resource'] = 'TBD'
+        each_schedule['contentFormat'] = ut.format_type.name + " (" + ut.content_type.name + ")"
         schedule.append(each_schedule)
         #print (each_schedule)
     return json.dumps(schedule)
@@ -449,6 +448,40 @@ def room_conflict(topic_id, date, time_from, time_to, resource):
                 return True
     #print(same_resource_schedule)
     return False
+
+
+#Return topics based on the content, format and location
+def content_format_location_filter(content_filter, format_filter, location_filter):
+    contents = db.session.query(Content).all()
+    formats = db.session.query(Format).all()
+    locations_set = db.session.query(Topic.location).all()
+    content_names = list()
+    format_names = list()
+    locations = list()
+    results = dict()
+    for c in contents:
+        content_names.append(str(c.name))
+    for f in formats:
+        format_names.append(str(f.name))
+    for l in locations_set:
+        l_name = str(l[0])
+        if l_name not in locations:
+            locations.append(l_name)
+
+    topics_content = topics_format = topics_location = db.session.query(Topic).all()
+    if content_filter != None:
+        topics_content = db.session.query(Content).filter(Content.name == content_filter).first().topics.all()
+    if format_filter != None:
+        topics_format = db.session.query(Format).filter(Format.name == format_filter).first().topics.all()
+    if location_filter != None:
+        topics_location = db.session.query(Topic).filter(Topic.location == location_filter).all()
+    topics = set(topics_format).intersection(topics_content).intersection(topics_location)
+
+    results['content_names'] = content_names
+    results['format_names'] = format_names
+    results['locations'] = locations
+    results['topics'] = topics
+    return results
 
 
 #Refresh the global variable before every request

@@ -16,6 +16,26 @@
     $(document.getElementById(active_name)).addClass('active');
     if ($(document.getElementById(active_name)).parent().hasClass('collapse')){
       $(document.getElementById(active_name)).parent().removeClass('collapse').addClass('collapse in');
+      $(document.getElementById(active_name)).parent().parent().prev('li').find('.collapsed').removeClass('collapsed');
     }
+
+    $(".collapsed-title").each(function(){
+      if (! $(this).find('a').hasClass('collapsed')){
+        $(this).find('.glyphicon').removeClass('glyphicon-plus');
+        $(this).find('.glyphicon').addClass('glyphicon-minus');
+      }
+    });
+
+    $(".collapse").click(function(){
+      var menu_title = $(this).find('a');
+      if (menu_title.hasClass('collapsed')){
+        menu_title.find('.glyphicon').removeClass('glyphicon-plus');
+        menu_title.find('.glyphicon').addClass('glyphicon-minus');
+      }
+      else {
+        menu_title.find('.glyphicon').removeClass('glyphicon-minus');
+        menu_title.find('.glyphicon').addClass('glyphicon-plus');
+      }
+    });
   });
 </script>

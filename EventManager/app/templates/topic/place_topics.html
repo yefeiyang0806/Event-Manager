@@ -6,6 +6,11 @@
   <link href="{{url_for('static', filename='jquery-timepicker/jquery.timepicker.css')}}" rel="stylesheet">
   <link href="{{url_for('static', filename='jqwidgets/jqwidgets/styles/jqx.base.css')}}" rel="stylesheet">
   <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <style>
+    .ui-dialog {
+      z-index: 1050;
+    }
+  </style>
   {% set active_list = 'place_topics' %}
   {% include 'public/navbar.html' %}
   <div class="container-fluid">
@@ -51,7 +56,16 @@
           </table>
         </div>
         <br>
-        <div id='scheduler' width='100%'></div>
+        <div id='scheduler_wrapper'>
+          <div id='scheduler' width='100%'></div>
+        </div>
+        <div id='scheduler_btn'>
+          <button class='btn btn-info' id='scheduler_update' >Show Results</button>
+        </div>
+        <div id="dialog" style='display:none;' title="Modifications are detected!">
+          <p>Unsaved Modifications have been detected on the current scheduler.<br />
+            Refreshing the scheduler would discard these changes.</p>
+        </div>
         <meta name="csrf-token" content="{{ csrf_token() }}"></meta>
       </div>
     </div>
@@ -93,106 +107,170 @@
         }
       });
 
-      // prepare the data
-      var source =
-        {
-          dataType: "json",
-          dataFields: [
-            { name: 'topic_id', type: 'string' },
-            { name: 'contentFormat', type: 'string'},
-            { name: 'description', type: 'string' },
-            { name: 'year', type: 'string' },
-            { name: 'topic_title', type: 'string' },
-            { name: 'resource', type: 'string' },
-            { name: 'from', type: 'date' },
-            { name: 'to', type: 'date' }
-          ],
-          id: 'topic_id',
-          url: '/topic/ajax_schedule'
-        };
-
-      var data_of_resources = 
-        {
-          dataType: "json",
-          dataFields: [
-            { name: 'resource', type: 'string' },
-          ],
-          id: 'topic_id',
-          url: '/topic/ajax_resources'
-        };
-
-      var adapter = new $.jqx.dataAdapter(source);
-      $("#scheduler").jqxScheduler({
-        date: new $.jqx.date(2015, 12, 28),
-        width: '90%',
-        height: 800,
-        dayNameFormat: "abbr",
-        source: adapter,
-        showLegend: true,
-        ready: function () {
-          //$("#scheduler").jqxScheduler('ensureAppointmentVisible', 'id1');
-        },
-        editDialogCreate: function (dialog, fields, editAppointment) {
-          var format_field = "<div><div class='jqx-scheduler-edit-dialog-label'>Format</div><div class='jqx-scheduler-edit-dialog-field'><input class='jqx-widget-content jqx-input jqx-widget jqx-rc-all' style='width:100%;height:25px;' value='" + editAppointment.location + "' /></div></div>";
-          console.log(editAppointment.location);
-          console.log(editAppointment);
-          fields.repeatContainer.hide();
-          fields.statusContainer.hide();
-          fields.allDayContainer.hide();
-          fields.colorContainer.hide();
-          fields.timeZoneContainer.hide();
-          fields.subject.prop('disabled', true);
-          fields.description.prop('disabled', true);
-          console.log(fields);
-          fields.subject.parent().after(format_field);
-        },
-        resources:
-        {
-          colorScheme: "scheme05",
-          dataField: "resource",
-          orientation: "horizontal",
-          source:  new $.jqx.dataAdapter(data_of_resources)
-        },
-        appointmentDataFields:
-        {
-          from: "from",
-          to: "to",
-          id: "topic_id",
-          description: "description",
-          location: "contentFormat",
-          subject: "topic_title",
-          resourceId: "resource",
-        },
-        view: 'dayView',
-        views:
-        [
-          { type: 'dayView', showWeekends: false, timeRuler: { scaleStartHour: 7, scaleEndHour: 21 }},
-          { type: 'weekView', showWeekends: false }
-        ]
-      });
+      var modified_list = [];
 
       $("#set_filter").click(function(){
-        var suffix = "";
+        if (modified_list.length>0){
+          $('#dialog').dialog({
+            width:400,
+            height:240,
+            modal: true,
+            buttons: {
+              Confirm: function() {
+                $( this ).dialog( "close" );
+                recreate_scheduler();
+              },
+              Cancel: function() {
+                $( this ).dialog( "close" );
+              }
+            }
+          });
+        }
+        else {
+          recreate_scheduler();
+        }
+      });
+
+      $('#scheduler_wrapper').on('appointmentChange', '#scheduler', function (event) {
+        var args = event.args;
+        var appointment = args.appointment;
+        //var from = appointment['from'].toString('yyyy-MM-dd');
+        //var resource = $('#scheduler').jqxScheduler('getAppointmentProperty', appointment['id'], 'resourceId');
+        //var from = $('#scheduler').jqxScheduler('getAppointmentProperty', appointment['id'], 'from').toString('yyyy-MM-dd HH:mm:ss');
+        if ($.inArray(appointment['id'], modified_list) == -1){
+          modified_list.push(appointment['id']);
+        }
+        console.log(modified_list);
+      });
+
+      $('#scheduler_update').click(function(){
+        for (var topic_id in modified_list){
+          // Get modified date and resource
+          // Generate json with id, from, to and resource
+          // Send back to the validation function to do validation
+          // Get response from topic/views.py
+          // Reset modified_list to empty
+        }
+      });
+
+      $("#set_filter").trigger('click');
+
+      function recreate_scheduler(){
+        var filter_data = [];
         var content_name = $("#content-filter").find(":selected").text();
         var format_name = $("#format-filter").find(":selected").text();
         var location = $("#location-filter").find(":selected").text();
         if (content_name != "----Any----"){
-          suffix += "content=" + content_name;
+          filter_data.push({'type': 'content', 'value': content_name});
         }
         if (format_name != "--------Any--------"){
-          if (suffix != ""){
-            suffix += '&';
-          }
-          suffix += "format=" + format_name;
+          filter_data.push({'type': 'format', 'value': format_name});
         }
         if (location != "------Any------"){
-          if (suffix != ""){
-            suffix += '&';
-          }
-          suffix += "location=" + location;
+          filter_data.push({'type': 'location', 'value': location});
         }
-        $(window.location).attr('href', '/topic/validate?'+suffix);
-      });
+        $.ajax({
+          type: "POST",
+          contentType: "application/json",
+          dataType: "json",
+          url: "/topic/ajax_schedule",
+          data: JSON.stringify({ "filters": filter_data }),
+          success: function(data){
+            var source =
+              {
+                dataType: "json",
+                dataFields: [
+                  { name: 'topic_id', type: 'string' },
+                  { name: 'contentFormat', type: 'string'},
+                  { name: 'description', type: 'string' },
+                  { name: 'year', type: 'string' },
+                  { name: 'topic_title', type: 'string' },
+                  { name: 'resource', type: 'string' },
+                  { name: 'from', type: 'date' },
+                  { name: 'to', type: 'date' }
+                ],
+                id: 'topic_id',
+                localData: data
+              };
+
+            var data_of_resources = 
+              {
+                dataType: "json",
+                dataFields: [
+                  { name: 'resource', type: 'string' },
+                ],
+                id: 'topic_id',
+                url: '/topic/ajax_resources'
+              };
+
+            var adapter = new $.jqx.dataAdapter(source);
+            $("#scheduler").jqxScheduler('destroy');
+            $("#scheduler_wrapper").append('<div id="scheduler" width="100%"></div>');
+            $("#scheduler").jqxScheduler({
+              date: new $.jqx.date(2015, 12, 28),
+              width: '90%',
+              height: 1200,
+              rowsHeight: 25,
+              dayNameFormat: "abbr",
+              source: adapter,
+              showLegend: true,
+              ready: function () {
+                //$("#scheduler").jqxScheduler('ensureAppointmentVisible', 'id1');
+              },
+              editDialogCreate: function (dialog, fields, editAppointment) {
+                var assigned_content_format = null;
+                if (editAppointment != null){
+                  assigned_content_format = editAppointment.location;
+                }
+                var format_field = "<div><div class='jqx-scheduler-edit-dialog-label'>Format</div><div class='jqx-scheduler-edit-dialog-field'><input class='jqx-widget-content jqx-input jqx-widget jqx-rc-all' style='width:100%;height:25px;' value='" + assigned_content_format + "' disabled /></div></div>";
+                fields.repeatContainer.hide();
+                fields.statusContainer.hide();
+                fields.allDayContainer.hide();
+                fields.colorContainer.hide();
+                fields.timeZoneContainer.hide();
+                fields.locationContainer.hide();
+                fields.resourceLabel.html('Resource');
+                fields.subject.prop('disabled', true);
+                fields.description.prop('disabled', true);
+                fields.description.attr('rows', '8');
+                fields.subject.parent().after(format_field);
+              },
+              editDialogOpen: function (dialog, fields, editAppointment) {
+                if (editAppointment != null){
+                  fields.subject.parent().next().find('input').val(editAppointment.location);
+                }
+                else {
+                  fields.subject.parent().next().find('input').val('');
+                }
+              },
+              resources:
+              {
+                colorScheme: "scheme05",
+                dataField: "resource",
+                orientation: "horizontal",
+                source:  new $.jqx.dataAdapter(data_of_resources)
+              },
+              appointmentDataFields:
+              {
+                from: "from",
+                to: "to",
+                id: "topic_id",
+                description: "description",
+                location: "contentFormat",
+                subject: "topic_title",
+                resourceId: "resource",
+              },
+              view: 'dayView',
+              views:
+              [
+                { type: 'dayView', showWeekends: false, timeRuler: { scaleStartHour: 7, scaleEndHour: 21, scale: "tenMinutes", formatString: "HH:mm" }, appointmentsRenderMode: "exactTime" },
+                { type: 'weekView', showWeekends: false }
+              ]
+            });
+          }
+        });
+      }
+
     });
   </script>
 {% endblock %}
