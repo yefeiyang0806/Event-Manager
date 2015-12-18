@@ -45,6 +45,9 @@ class JoinForm(Form):
     first_name = StringField('First Name', validators=[InputRequired(), Length(max=10)])
     last_name = StringField('Last Name', validators=[InputRequired(), Length(max=10)])
     user_id = StringField('User ID', validators=[InputRequired(), Length(max=10)])
+    title = StringField('Title', [Length(max=20)])
+    job = StringField('Job', [Length(max=60)])
+    country = StringField('Country', [Length(max=20)])
     department = StringField('Department', [InputRequired(), Length(max=40)])
 
 
