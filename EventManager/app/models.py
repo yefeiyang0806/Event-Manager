@@ -5,11 +5,14 @@ class User(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
     user_id = db.Column(db.String(10), index=True, unique = True)
     email = db.Column(db.String(40), index = True, unique = True)
+    title = db.Column(db.String(20))
     password = db.Column(db.String(120))
     first_name = db.Column(db.String(20))
     last_name = db.Column(db.String(20))
     full_name = db.Column(db.String(60))
     department = db.Column(db.String(40))
+    job = db.Column(db.String(60))
+    country = db.Column(db.String(20))
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
     created_topics = db.relationship('Topic', backref='author', lazy='dynamic')
@@ -41,7 +44,7 @@ class User(db.Model):
         return '<User %r>' % (self.username)
 
 
-    def __init__(self, user_id, email, password, first_name, last_name, department, active_code):
+    def __init__(self, user_id, email, password, first_name, last_name, department, active_code, title, job, country):
         self.uuid = str(uuid.uuid1())
         self.user_id = user_id
         self.email = email
@@ -54,6 +57,9 @@ class User(db.Model):
         self.create_date = time.strftime("%Y/%m/%d")
         self.active_code = active_code
         self.status = 0
+        self.title = title
+        self.job = job
+        self.country = country
         related_role = db.session.query(Role).filter(Role.rolename == "normal").first()
         related_role.users.append(self)
 
@@ -78,6 +84,8 @@ class Topic(db.Model):
     speaker1 = db.Column(db.String(10))
     speaker2 = db.Column(db.String(10), nullable=True)
     speaker3 = db.Column(db.String(10), nullable=True)
+    speaker4 = db.Column(db.String(10), nullable=True)
+    speaker5 = db.Column(db.String(10), nullable=True)
     create_by = db.Column(db.String(10), db.ForeignKey('user.user_id'))
     content = db.Column(db.String(40), db.ForeignKey('content.content_id'))
     format = db.Column(db.String(40), db.ForeignKey('format.format_id'))
@@ -95,7 +103,7 @@ class Topic(db.Model):
         return '<Topic %r>' %(self.title)
 
 
-    def __init__(self, title, description, min_attendance, max_attendance, speaker1, speaker2, speaker3, year_start, month_start, day_start, \
+    def __init__(self, title, description, min_attendance, max_attendance, speaker1, speaker2, speaker3, speaker4, speaker5, year_start, month_start, day_start, \
         day_duration, hour_duration, minute_duration, create_by, content_id, format_id, location, link, jamlink):
         self.uuid = str(uuid.uuid1())
         self.title = title
@@ -105,6 +113,8 @@ class Topic(db.Model):
         self.speaker1 = speaker1
         self.speaker2 = speaker2
         self.speaker3 = speaker3
+        self.speaker2 = speaker4
+        self.speaker3 = speaker5
         self.year_start = year_start
         self.month_start = month_start
         self.day_start = day_start

@@ -32,8 +32,8 @@ def index():
         temp_user = db.session.query(User).filter(User.email == form.email.data)[0]
         login_user(temp_user, remember=remember_me)
         next = request.form.get('next')
-        print(next)
-        if next != None:
+        if next != 'None':
+            print(next)
             return redirect(next)
         return redirect(url_for('basic.logged_in'))
 
@@ -257,6 +257,7 @@ def generate_db():
 
 #Only used for generating resources.
 @basic.route('/generate_resources')
+@login_required
 def generate_resource():
     resource1 = Resource('SF_001', 'SF_001', 'Show Floor on the first floor', 20, g.user.user_id, 'Show Floor')
     resource2 = Resource('SF_002', 'SF_002', 'Show Floor on the second floor', 15, g.user.user_id, 'Show Floor')
