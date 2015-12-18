@@ -30,12 +30,14 @@ def create_topic():
         year_start = startdata[0]
         month_start = startdata[1]
         day_start = startdata[2]
+               #print (db.session.query(Content).filter(Content.name == form.content.data).first().topics.count())
         temp = Topic(form.title.data, form.description.data, form.min_attendance.data, form.max_attendance.data,\
                 form.speaker1.data, form.speaker2.data, form.speaker3.data, year_start, month_start, day_start,\
                 form.day_duration.data, form.hour_duration.data, form.minute_duration.data, user_id,\
                 form.content.data, form.format.data, form.location.data, form.link.data, form.jamlink.data)     
         db.session.add(temp)
         db.session.commit()
+        #print (db.session.query(Content).filter(Content.name == form.content.data).first().topics.count())user_email, 
         return redirect(url_for('basic.logged_in'))
     return render_template("topic/create_topic.html", form=form, full_name=full_name, status=status, menus=menus)
 
@@ -47,6 +49,7 @@ def create_topic():
 def delete_topic():
     topic_id = request.args.get('topic_id')
     topic = db.session.query(Topic).filter(Topic.topic_id == topic_id).first()
+
     if topic.is_created_by(g.user.email):
         db.session.delete(topic)
         db.session.commit()
@@ -68,6 +71,7 @@ def modify_topic(topic_id):
     if request.method == 'POST':
         print("POST received")
         if form.validate_on_submit():
+            #topic_id = request.form.get('topic_id')
             topic.title = form.title.data
             topic.description = form.description.data
             topic.min_attendance = form.min_attendance.data
@@ -223,13 +227,16 @@ def validate_topics():
 @topic.route('/ajax_validation', methods=["GET", "POST"])
 @login_required
 def ajax_validation():
+    #print(request.get_json(force=True))
     json_data = request.get_json(force=True)
     results = json_data["Results"]
     for result in results:
         topic = db.session.query(Topic).filter(Topic.topic_id == result['topic_id']).first()
         topic_validation = db.session.query(TopicValidation).filter(TopicValidation.topic_title == topic.title).first()
+        print(topic)
         if topic_validation == None:
             topic_validation = TopicValidation(topic.title, topic.year_start, result['validation'], g.user.user_id)
+            print(topic_validation.topic_title)
             topic.validation.append(topic_validation)
             db.session.add(topic_validation)
             db.session.commit()
@@ -285,6 +292,8 @@ def validate_arrangement():
     if not errors:
         for s in schedule:
             topic = db.session.query(Topic).filter(Topic.topic_id == s['topic_id']).first()
+            #print('--------------------')
+            #print(topic)
             if topic.schedule.first()==None:
                 t_s = TopicSchedule(topic.title, topic.year_start, s['date'], s['date'], \
                 datetime.datetime.strptime(s['time_from'], '%H:%M:%S').time(), datetime.datetime.strptime(s['time_to'], '%H:%M:%S').time(), s['resource'], g.user.user_id)
@@ -307,11 +316,8 @@ def validate_arrangement():
 @login_required
 def ajax_schedule():
     all_schedule = TopicSchedule.query.all()
-    scheduled_topics = list()
     schedule = list()
-
     for s in all_schedule:
-        scheduled_topics.append(s.scheduled_topic)
         each_schedule = dict()
         each_schedule['topic_id'] = s.scheduled_topic.topic_id
         each_schedule['description'] = s.scheduled_topic.description
@@ -356,22 +362,8 @@ def ajax_schedule():
         each_schedule['resource'] = 'TBD'
         each_schedule['contentFormat'] = ut.format_type.name + " (" + ut.content_type.name + ")"
         schedule.append(each_schedule)
-
+        #print (each_schedule)
     return json.dumps(schedule)
-
-
-#Return all the resources info to the place_topic.html through json
-@topic.route('/ajax_resources', methods=['GET', 'POST'])
-@login_required
-def ajax_resources():
-    res = list()
-    all_resources = db.session.query(Resource).all()
-    for r in all_resources:
-        each_r = dict()
-        each_r['resource'] = r.name
-        res.append(each_r)
-    res.append({'resource': 'TBD'})
-    return json.dumps(res)
 
 
 #Required by the LoginManager
@@ -387,6 +379,7 @@ def menus_of_role():
     for m in middles:
         menu = db.session.query(Menu).filter(Menu.menu_id == m.menu_id).first()
         menus.append(menu)
+    #print (menus)
     return menus
 
 
@@ -429,9 +422,15 @@ def speaker_conflict(topic_id, date, time_from, time_to):
 def room_conflict(topic_id, date, time_from, time_to, resource):
     scheduled_topic = db.session.query(Topic).filter(Topic.topic_id == topic_id).first()
     schedule_topic_schedule = db.session.query(TopicSchedule).join(Resource).filter(TopicSchedule.topic_title == scheduled_topic.title).filter(TopicSchedule.topic_year == scheduled_topic.year_start).first()
+    #print(schedule_topic_schedule)
+    #print('resource: ' + resource)
+    #print(schedule_topic_schedule)
+    #print("------------------")
     same_resource_schedule = db.session.query(TopicSchedule).join(Resource).filter(Resource.r_id == resource).all()
+    #print(same_resource_schedule)
     if schedule_topic_schedule!= None and resource == schedule_topic_schedule.resource:
         same_resource_schedule.remove(schedule_topic_schedule)
+    #print(same_resource_schedule)
     if same_resource_schedule == None:
         return False
     for srs in same_resource_schedule:
@@ -442,6 +441,7 @@ def room_conflict(topic_id, date, time_from, time_to, resource):
             if srs.time_from < t_to and srs.time_to > t_from:
                 print("R Conflict!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                 return True
+    #print(same_resource_schedule)
     return False
 
 

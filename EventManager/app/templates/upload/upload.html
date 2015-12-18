@@ -5,43 +5,35 @@
   {{super()}}
   <link href="{{url_for('static', filename='css/register.css')}}" rel="stylesheet">
   {% include 'basic/index_navbar.html' %}
-  <meta name="csrf-token" content="{{ csrf_token() }}">
+
   <form id="form1" action="/upload/upload_file" method="post" enctype="multipart/form-data"> 
-  <input type="file" name="file" /><br />
-  <input type="submit" value="Upload" />
-<!--  <button type="button" class="btn btn-primary btn-login" id="submit">Upload</button>
 
--->
+  {{ wtf.quick_form(form, id='upload_form') }} 
+  {% if not message%}
+  <p>{{message}}</p></br>    
+{% endif%}
+  <button type="button" class="btn btn-primary btn-login" id="submit">Upload</button>
   </form>
-
   <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>
+  <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
   <script>
-var csrftoken = $('meta[name=csrf-token]').attr('content')
-$.ajaxSetup({
-        beforeSend: function (xhr, settings) {
-            if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type) && !this.crossDomain) {
-                xhr.setRequestHeader("X-CSRFToken", csrftoken)
-            }
-        }
-    })
-    $("#form1").load("/upload/upload_file" + patient_no + "/", {
-    "disease": disease
-},function () {
-    }); 
-  </script>
-   
-  
 
-<!--   <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>
-  <script>
     $(document).ready(function() {
-	    
+      
       $("#submit").click(function(){
-		    $("#form1").submit();
-        //alert("Hello Im here");
-	    });
-	
-    });
+        $("#form1").submit();
+      });
+      
+     });  
+   // var upload = $('#upload_form');
+    //upload.height(20);
+  $('#form1').css("position","center");
+  // var upload = document.getElementById('upload_form');
+   //upload.style.position = "center";
+   //upload.style.fontSize = '30px';
+
+    </script>
+  
+    
   </script>
--->
 {% endblock %}
