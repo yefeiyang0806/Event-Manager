@@ -15,7 +15,6 @@ class User(db.Model):
     country = db.Column(db.String(20))
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
-    created_topics = db.relationship('Topic', backref='author', lazy='dynamic')
     status = db.Column(db.Integer, default=0)
     active_code = db.Column(db.String(4))
     role_id = db.Column(db.String(40), db.ForeignKey('role.role_id'))
@@ -87,7 +86,7 @@ class Topic(db.Model):
     speaker3 = db.Column(db.String(10), nullable=True)
     speaker4 = db.Column(db.String(10), nullable=True)
     speaker5 = db.Column(db.String(10), nullable=True)
-    create_by = db.Column(db.String(10), db.ForeignKey('user.user_id'))
+    create_by = db.Column(db.String(40))
     content = db.Column(db.String(40), db.ForeignKey('content.content_id'))
     format = db.Column(db.String(40), db.ForeignKey('format.format_id'))
     link = db.Column(db.String(60), nullable=True)
@@ -104,9 +103,10 @@ class Topic(db.Model):
         return '<Topic %r>' %(self.title)
 
 
-    def __init__(self, title, description, min_attendance, max_attendance, speaker1, speaker2, speaker3, speaker4, speaker5, year_start, month_start, day_start, \
+    def __init__(self, topic_id, title, description, min_attendance, max_attendance, speaker1, speaker2, speaker3, speaker4, speaker5, year_start, month_start, day_start, \
         day_duration, hour_duration, minute_duration, create_by, content_id, format_id, location, link, jamlink, memo):
         self.uuid = str(uuid.uuid1())
+        self.topic_id = topic_id
         self.title = title
         self.description = description
         self.min_attendance = min_attendance
@@ -114,8 +114,8 @@ class Topic(db.Model):
         self.speaker1 = speaker1
         self.speaker2 = speaker2
         self.speaker3 = speaker3
-        self.speaker2 = speaker4
-        self.speaker3 = speaker5
+        self.speaker4 = speaker4
+        self.speaker5 = speaker5
         self.year_start = year_start
         self.month_start = month_start
         self.day_start = day_start
@@ -130,21 +130,15 @@ class Topic(db.Model):
         self.jamlink = jamlink
         self.memo = memo
 
-        create_user = db.session.query(User).filter(User.user_id == create_by).first()
         input_content = db.session.query(Content).filter(Content.content_id == content_id).first()
         input_format = db.session.query(Format).filter(Format.format_id == format_id).first()
         
-        same_format_topic_count = db.session.query(Topic).filter(Topic.format == input_format.format_id).count()
-        self.topic_id = input_format.format_id + "-" + str(same_format_topic_count)
-        
-        create_user.created_topics.append(self)
         input_content.topics.append(self)
         input_format.topics.append(self)
 
 
-
-    def is_created_by(self, user_id):
-        if self.create_by == user_id:
+    def is_created_by(self, user_email):
+        if self.create_by == user_email:
             return True
 
         else:

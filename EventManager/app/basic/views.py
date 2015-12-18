@@ -47,7 +47,7 @@ def index():
 def logged_in():
     full_name = g.user.full_name
     status = g.user.status
-    topics = g.user.created_topics.all()
+    topics = Topic.query().filter(Topic.create_by == g.user.email).all()
     menus = menus_of_role()
     return render_template('basic/member.html', full_name=full_name, topics=topics, status=status, menus=menus)
 

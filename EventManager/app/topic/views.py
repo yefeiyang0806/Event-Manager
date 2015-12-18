@@ -47,7 +47,7 @@ def create_topic():
 def delete_topic():
     topic_id = request.args.get('topic_id')
     topic = db.session.query(Topic).filter(Topic.topic_id == topic_id).first()
-    if topic.is_created_by(g.user.user_id):
+    if topic.is_created_by(g.user.email):
         db.session.delete(topic)
         db.session.commit()
     return redirect(url_for("basic.index"))
@@ -95,7 +95,7 @@ def modify_topic(topic_id):
             return render_template("topic/modify_topic.html", form=form,\
                 full_name=full_name, status=status, topic_id=topic_id, menus=menus)
 
-    if topic.is_created_by(g.user.user_id):
+    if topic.is_created_by(g.user.email):
         form.title.data = topic.title
         form.description.data = topic.description
         form.min_attendance.data = topic.min_attendance
@@ -142,7 +142,7 @@ def view_topic():
     menus = menus_of_role()
     topic_id = request.args.get('topic_id')
     topic = db.session.query(Topic).filter(Topic.topic_id == topic_id).first()
-    if topic.is_created_by(g.user.user_id):
+    if topic.is_created_by(g.user.email):
         mode = 'creator'
     else:
         mode = 'viewer'
