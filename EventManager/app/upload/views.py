@@ -2,7 +2,9 @@ import os
 from flask import Flask, request, render_template, redirect, url_for,Blueprint
 from werkzeug.utils import secure_filename
 from pyexcel_xls import XLBook 
-import  xdrlib ,sys
+from .forms import UploadForm
+from ..models import Topic
+from app import db
 import xlrd
 
 upload = Blueprint('upload', __name__)
@@ -18,71 +20,30 @@ upload = Blueprint('upload', __name__)
 
 
 UPLOAD_FOLDER = '/static/uploads'
-ALLOWED_EXTENSIONS = set(['xlsx'])
 
 @upload.route('/upload_file', methods=['GET', 'POST'])
-def upload_file():
+def upload_file():    
+    form = UploadForm()    
+    if form.validate_on_submit():
+        filename = secure_filename(form.upload.data.filename)
+        print(filename)
+        fpath = 'uploads/' + filename
+        form.upload.data.save(fpath)  
+        print_xls(fpath)
+        message=" import successfully"
+    else:
+        filename = None
+        message=" import failed"
+    return render_template('upload/upload.html', form=form, filename=filename,message=message)
 
-    if request.method == 'GET':
-        return render_template('upload/upload.html')
-    elif request.method == 'POST':
-        f = request.files['file']
-        if f and allowed_file(f.filename):
-            filename = secure_filename(f.filename)
-            print(filename.path)
-            # f.save(os.path.join(UPLOAD_FOLDER, filename))  
-            # return redirect(url_for('uploadtest'))   
-            # return ("upload successfully!")
-
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.',1)[1] in ALLOWED_EXTENSIONS
-
-
-
-
-def open_excel(file):
+def open_excel(path):
     try:
-        data = xlrd.open_workbook(file)
+        data = xlrd.open_workbook(path)
         return (data)
     except Exception as e:
         print (str(e))
 
 
-
-
-def excel_table_byindex(file ,colnameindex=0, by_index=0):
-    data = open_excel(file)
-    table = data.sheets()[by_index]
-    nrows = table.nrows #
-    ncols = table.ncols #
-    colnames =  table.row_values(colnameindex) #某一行数据 
-    list =[]
-    for rownum in range(nrows):
-        row = table.row_values(rownum)
-        if row:
-            app = {}
-            for i in range(len(colnames)):
-                app[colnames[i]] = row[i] 
-                list.append(app)
-    return (list)
-
-
-def uploadtest():
-    print("upload successfully")
-
-
-# def print_xls(path):
-#     data=xlrd.open_workbook(path)   #打开excel
-#     table=data.sheets()[0] #打开excel的第几个sheet
-#     nrows=table.nrows   #捕获到有效数据的行数
-#     books=[]
-#     for i in range(nrows):
-#         ss=table.row_values(i)   #获取一行的所有值，每一列的值以列表项存在
-#         #print ss
-#         for i in range(len(ss)):
-#             print (ss[i])         #输出一行中各个列的值
-#             print ('+++++++++++++++++++')
 
 def print_xls(path):
     data = open_excel(path)   #打开excel
@@ -91,18 +52,47 @@ def print_xls(path):
     books=[]
     for i in range(nrows):
         ss=table.row_values(i)   #获取一行的所有值，每一列的值以列表项存在
-        #print ss
         if i == 0:
             continue
-        temp=Topic(ss)
-        print("111111111111111111111111111")
+        title = ss[0]
+        description = ss[1]
+        min_attendance = ss[2]
+        max_attendance = ss[3]
+        speaker1 = ss[4]
+        speaker2 = ss[5]
+        speaker3 = ss[6]
+        startdata = ss[7].split('-')
+        print(startdata)
+        year_start = startdata[0]
+        print(year_start)
+        month_start = startdata[1]
+        day_start = startdata[2]
+        day_duration = ss[8]
+        hour_duration = ss[9]
+        minute_duration = ss[10]
+        create_by = ss[11]
+        content = ss[12]
+        format = ss[13]
+        print(format)
+        location = ss[14]
+        link = ss[15]
+        jamlink  = ss[16]
+        temp=Topic(title, description, min_attendance, max_attendance, speaker1, speaker2, speaker3,\
+            year_start, month_start, day_start,day_duration,hour_duration,minute_duration, create_by,\
+            content, format, location, link, jamlink )
         db.session.add(temp)
-        # elif:
-        for j in range(len(ss)):
-            print (ss[j])         #输出一行中各个列的值
-            print("++++++++++++++++++++++++++++")
+        db.session.commit()
+       
+
+
+
+
+
+def uploadtest():
+    print("upload successfully")
+
 
 
 @upload.route('/test')
 def test():
-     print_xls('/uploads/test.xlsx')
+     print_xls('uploads/test2.xlsx')
