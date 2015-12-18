@@ -77,6 +77,7 @@ class Topic(db.Model):
     day_duration = db.Column(db.String(3))
     hour_duration = db.Column(db.String(2))
     minute_duration = db.Column(db.String(2))
+    memo = db.Column(db.String(100))
 
     status = db.Column(db.String(2), default='NA')
     create_date = db.Column(db.Date)
@@ -104,7 +105,7 @@ class Topic(db.Model):
 
 
     def __init__(self, title, description, min_attendance, max_attendance, speaker1, speaker2, speaker3, speaker4, speaker5, year_start, month_start, day_start, \
-        day_duration, hour_duration, minute_duration, create_by, content_id, format_id, location, link, jamlink):
+        day_duration, hour_duration, minute_duration, create_by, content_id, format_id, location, link, jamlink, memo):
         self.uuid = str(uuid.uuid1())
         self.title = title
         self.description = description
@@ -127,6 +128,7 @@ class Topic(db.Model):
         self.location=location
         self.link = link
         self.jamlink = jamlink
+        self.memo = memo
 
         create_user = db.session.query(User).filter(User.user_id == create_by).first()
         input_content = db.session.query(Content).filter(Content.content_id == content_id).first()
