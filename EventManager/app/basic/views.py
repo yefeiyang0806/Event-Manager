@@ -47,7 +47,7 @@ def index():
 def logged_in():
     full_name = g.user.full_name
     status = g.user.status
-    topics = Topic.query().filter(Topic.create_by == g.user.email).all()
+    topics = db.session.query(Topic).filter(Topic.create_by == g.user.email).all()
     menus = menus_of_role()
     return render_template('basic/member.html', full_name=full_name, topics=topics, status=status, menus=menus)
 
@@ -61,7 +61,7 @@ def register():
         flash('Passed validation')
         hash_password = generate_password_hash(form.password.data)
         active_code = generate_active_code()
-        temp = User(form.user_id.data, form.email.data, hash_password, form.first_name.data, form.last_name.data, form.department.data, active_code)
+        temp = User(form.user_id.data, form.email.data, hash_password, form.first_name.data, form.last_name.data, form.department.data, active_code, form.title.data, form.job.data, form.country.data)
         db.session.add(temp)
         db.session.commit()
         basic_url = 'http://localhost:5000'
