@@ -5,6 +5,7 @@ class User(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
     user_id = db.Column(db.String(10), index=True, unique = True)
     email = db.Column(db.String(100), index = True, unique = True)
+    speaker_id = db.Column(db.String(20), nullable=True)
     title = db.Column(db.String(20))
     password = db.Column(db.String(120))
     first_name = db.Column(db.String(40))
@@ -43,7 +44,7 @@ class User(db.Model):
         return '<User %r>' % (self.user_id)#change
 
 
-    def __init__(self, user_id, email, password, first_name, last_name, department, active_code, title, job, country, rolename='normal'):
+    def __init__(self, user_id, email, password, first_name, last_name, department, active_code, title, job, country, rolename='normal', speaker_id=''):
         self.uuid = str(uuid.uuid1())
         self.user_id = user_id
         self.email = email
@@ -59,6 +60,7 @@ class User(db.Model):
         self.title = title
         self.job = job
         self.country = country
+        self.speaker_id = speaker_id
         related_role = db.session.query(Role).filter(Role.rolename == rolename).first()
         related_role.users.append(self)
 
@@ -68,15 +70,15 @@ class Topic(db.Model):
     topic_id = db.Column(db.String(10))
     title = db.Column(db.String(255))
     description = db.Column(db.String(400))
-    min_attendance = db.Column(db.Integer)
-    max_attendance = db.Column(db.Integer)
-    year_start = db.Column(db.String(4))
-    month_start = db.Column(db.String(2))
-    day_start = db.Column(db.String(2))
-    day_duration = db.Column(db.String(3))
-    hour_duration = db.Column(db.String(2))
-    minute_duration = db.Column(db.String(2))
-    memo = db.Column(db.String(100))
+    min_attendance = db.Column(db.Integer, nullable=True)
+    max_attendance = db.Column(db.Integer, nullable=True)
+    year_start = db.Column(db.String(4), nullable=True)
+    month_start = db.Column(db.String(2), nullable=True)
+    day_start = db.Column(db.String(2), nullable=True)
+    day_duration = db.Column(db.String(3), nullable=True)
+    hour_duration = db.Column(db.String(2), nullable=True)
+    minute_duration = db.Column(db.String(2), nullable=True)
+    memo = db.Column(db.String(200), nullable=True)
 
     status = db.Column(db.String(2), default='NA')
     create_date = db.Column(db.Date)
@@ -92,7 +94,7 @@ class Topic(db.Model):
     link = db.Column(db.String(60), nullable=True)
     jamlink = db.Column(db.String(60), nullable=True)
 
-    location = db.Column(db.String(30))
+    location = db.Column(db.String(30), nullable=True)
     schedule = db.relationship('TopicSchedule', backref='scheduled_topic', lazy='dynamic')
     validation = db.relationship('TopicValidation', backref='validated_topic', lazy='dynamic')
     
@@ -104,7 +106,7 @@ class Topic(db.Model):
 
 
     def __init__(self, topic_id, title, description, min_attendance, max_attendance, speaker1, speaker2, speaker3, speaker4, speaker5, year_start, month_start, day_start, \
-        day_duration, hour_duration, minute_duration, create_by, content_id, format_id, location, link, jamlink, memo):
+        day_duration, hour_duration, minute_duration, create_by, content_id, format_id, location, link, jamlink, memo=''):
         self.uuid = str(uuid.uuid1())
         self.topic_id = topic_id
         self.title = title
@@ -130,7 +132,7 @@ class Topic(db.Model):
         self.link = link
         self.jamlink = jamlink
         self.memo = memo
-
+        print(content_id)
         input_content = db.session.query(Content).filter(Content.content_id == content_id).first()
         input_format = db.session.query(Format).filter(Format.format_id == format_id).first()
         
