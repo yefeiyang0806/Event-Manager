@@ -69,7 +69,7 @@ class Topic(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
     topic_id = db.Column(db.String(10))
     title = db.Column(db.String(255))
-    description = db.Column(db.String(400))
+    description = db.Column(db.String(2000))
     min_attendance = db.Column(db.Integer, nullable=True)
     max_attendance = db.Column(db.Integer, nullable=True)
     year_start = db.Column(db.String(4), nullable=True)
@@ -106,7 +106,7 @@ class Topic(db.Model):
 
 
     def __init__(self, topic_id, title, description, min_attendance, max_attendance, speaker1, speaker2, speaker3, speaker4, speaker5, year_start, month_start, day_start, \
-        day_duration, hour_duration, minute_duration, create_by, content_id, format_id, location, link, jamlink, memo=''):
+        day_duration, hour_duration, minute_duration, create_by, content_id, format_id, location, link, jamlink, memo='', status='NA'):
         self.uuid = str(uuid.uuid1())
         self.topic_id = topic_id
         self.title = title
@@ -132,10 +132,14 @@ class Topic(db.Model):
         self.link = link
         self.jamlink = jamlink
         self.memo = memo
+        self.status=status
         print(content_id)
         input_content = db.session.query(Content).filter(Content.content_id == content_id).first()
+        if input_content is None:
+            input_content = db.session.query(Content).filter(Content.name == content_id).first()
         input_format = db.session.query(Format).filter(Format.format_id == format_id).first()
-        
+        if input_format is None:
+            input_format = db.session.query(Format).filter(Format.name == format_id).first()        
         input_content.topics.append(self)
         input_format.topics.append(self)
 
@@ -222,7 +226,7 @@ class Role(db.Model):
 
 class ResourceType(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
-    name = db.Column(db.String(20), index=True, unique=True)
+    name = db.Column(db.String(60), index=True, unique=True)
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
     create_by = db.Column(db.String(10))
@@ -244,7 +248,7 @@ class ResourceType(db.Model):
 class Content(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
     content_id = db.Column(db.String(20), unique = True)
-    name = db.Column(db.String(20), index=True, unique=True)
+    name = db.Column(db.String(60), index=True, unique=True)
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
     create_by = db.Column(db.String(10))
@@ -266,7 +270,7 @@ class Content(db.Model):
 
 class Format(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
-    name = db.Column(db.String(20), index=True, unique=True)
+    name = db.Column(db.String(60), index=True, unique=True)
     format_id = db.Column(db.String(20), unique = True)
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
