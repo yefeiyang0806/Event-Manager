@@ -11,8 +11,8 @@ class User(db.Model):
     last_name = db.Column(db.String(20))
     full_name = db.Column(db.String(60))
     department = db.Column(db.String(40))
-    job = db.Column(db.String(60))
-    country = db.Column(db.String(20))
+    job = db.Column(db.String(100))
+    country = db.Column(db.String(40))
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
     status = db.Column(db.Integer, default=0)
@@ -40,7 +40,7 @@ class User(db.Model):
 
 
     def __repr__(self):
-        return '<User %r>' % (self.username)
+        return '<User %r>' % (self.user_id)#change
 
 
     def __init__(self, user_id, email, password, first_name, last_name, department, active_code, title, job, country):
