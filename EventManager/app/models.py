@@ -43,7 +43,7 @@ class User(db.Model):
         return '<User %r>' % (self.user_id)#change
 
 
-    def __init__(self, user_id, email, password, first_name, last_name, department, active_code, title, job, country):
+    def __init__(self, user_id, email, password, first_name, last_name, department, active_code, title, job, country, rolename='normal'):
         self.uuid = str(uuid.uuid1())
         self.user_id = user_id
         self.email = email
@@ -59,7 +59,7 @@ class User(db.Model):
         self.title = title
         self.job = job
         self.country = country
-        related_role = db.session.query(Role).filter(Role.rolename == "normal").first()
+        related_role = db.session.query(Role).filter(Role.rolename == rolename).first()
         related_role.users.append(self)
 
 
