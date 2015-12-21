@@ -65,8 +65,12 @@ def input_user_xls(path):
                 email = tempss[6]
                 s1 = tempss[7]
                 an = re.search(',', s1)
+                title = ''
                 password = hash_password = generate_password_hash("init123")
-                title='manager'
+                if job == 'Mr.' or job == 'Ms.':
+                    title = job
+                    job = ''
+
                 active_code = generate_active_code()
                 print(active_code)
                 if an:
@@ -81,7 +85,7 @@ def input_user_xls(path):
                 usertemp = db.session.query(User).filter(User.user_id == user_id).first()
                 print(usertemp)
 
-                if usertemp is not None or user_id is None:
+                if usertemp is not None or user_id == '' or user_id is None:
                     print('user address already exists')
                 else:  
                     print("*****************************************")              
