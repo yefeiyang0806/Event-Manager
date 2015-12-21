@@ -9,8 +9,8 @@ class CreateTopicForm(Form):
     description = StringField('Description', validators=[InputRequired()])
     content = SelectField('Content')
     format = SelectField('Format')
-    min_attendance = IntegerField('Minimal attendance', default=10)
-    max_attendance = IntegerField('Maximal attendance', default=200)
+    min_attendance = IntegerField('Minimal attendance')
+    max_attendance = IntegerField('Maximal attendance')
     DateStart = StringField("Date Start", id="start_date")
     day_duration = StringField('Day Duration', validators=[InputRequired()], default='0')
     hour_duration = StringField('Hour Duration', validators=[InputRequired()], default='0')
@@ -20,7 +20,10 @@ class CreateTopicForm(Form):
     speaker1 = StringField('Speaker1', validators=[InputRequired()])
     speaker2 = StringField('Speaker2')
     speaker3 = StringField('Speaker3')
+    speaker4 = StringField('Speaker4')
+    speaker5 = StringField('Speaker5')
     location = StringField('Location', validators=[InputRequired()])
+    memo = StringField('Memo')
 
     def set_options(self):
         contents = db.session.query(Content).all()

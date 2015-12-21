@@ -32,9 +32,9 @@ def create_topic():
         day_start = startdata[2]
                #print (db.session.query(Content).filter(Content.name == form.content.data).first().topics.count())
         temp = Topic(form.title.data, form.description.data, form.min_attendance.data, form.max_attendance.data,\
-                form.speaker1.data, form.speaker2.data, form.speaker3.data, year_start, month_start, day_start,\
+                form.speaker1.data, form.speaker2.data, form.speaker3.data, form.speaker4.data, form.speaker5.data, year_start, month_start, day_start,\
                 form.day_duration.data, form.hour_duration.data, form.minute_duration.data, user_id,\
-                form.content.data, form.format.data, form.location.data, form.link.data, form.jamlink.data)     
+                form.content.data, form.format.data, form.location.data, form.link.data, form.jamlink.data, form.memo.data)     
         db.session.add(temp)
         db.session.commit()
         #print (db.session.query(Content).filter(Content.name == form.content.data).first().topics.count())user_email, 
@@ -88,9 +88,12 @@ def modify_topic(topic_id):
             topic.speaker1 = form.speaker1.data
             topic.speaker2 = form.speaker2.data
             topic.speaker3 = form.speaker3.data
+            topic.speaker4 = form.speaker4.data
+            topic.speaker5 = form.speaker5.data
             topic.format = form.format.data
             topic.content = form.content.data            
             topic.location = form.location.data
+            topic.memo = form.memo.data
             db.session.commit()
             return redirect(url_for("basic.index"))
         else:
@@ -112,27 +115,31 @@ def modify_topic(topic_id):
         form.speaker1.data = topic.speaker1
         form.speaker2.data = topic.speaker2
         form.speaker3.data = topic.speaker3
+        form.speaker4.data = topic.speaker4
+        form.speaker5.data = topic.speaker5
         speaker1_name = User.query.filter(User.user_id == topic.speaker1).first().full_name
         speaker2_name = ''
         speaker3_name = ''
+        speaker4_name = ''
+        speaker5_name = ''
         if topic.speaker2 != '':
             speaker2_name = User.query.filter(User.user_id == topic.speaker2).first().full_name
         if topic.speaker3 != '':
             speaker3_name = User.query.filter(User.user_id == topic.speaker3).first().full_name
+        if topic.speaker4 != '':
+            speaker4_name = User.query.filter(User.user_id == topic.speaker4).first().full_name
+        if topic.speaker5 != '':
+            speaker5_name = User.query.filter(User.user_id == topic.speaker5).first().full_name
 
         form.content.data = topic.content
         form.format.data = topic.format
-        form.speaker1.data = topic.speaker1 
-        form.speaker2.data = topic.speaker2
-        form.speaker3.data = topic.speaker3 
-        form.format.data = topic.format 
-        form.content.data = topic.content
         form.link.data = topic.link 
         form.jamlink.data = topic.jamlink 
         form.location.data = topic.location
         menus = menus_of_role()
         return render_template("topic/modify_topic.html", form=form, full_name=full_name, status=status, \
-            topic_id=topic_id, menus=menus, speaker1_name=speaker1_name, speaker2_name=speaker2_name, speaker3_name=speaker3_name)
+            topic_id=topic_id, menus=menus, speaker1_name=speaker1_name, speaker2_name=speaker2_name, \
+            speaker3_name=speaker3_name, speaker4_name=speaker4_name, speaker5_name=speaker5_name)
     return redirect(url_for("basic.index"))
 
 
