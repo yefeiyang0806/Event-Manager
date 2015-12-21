@@ -5,7 +5,7 @@ from pyexcel_xls import XLBook
 from .forms import UploadForm
 from ..models import Topic, User
 from app import db
-import xlrd, re
+import xlrd, re,random
 from werkzeug.security import generate_password_hash
 
 upload = Blueprint('upload', __name__)
@@ -58,7 +58,7 @@ def input_user_xls(path):
                 rolename = tempss[0]
                 last_name = tempss[1]
                 first_name = tempss[2]
-                full_name= last_name + first_name
+                # full_name= last_name + first_name
                 job = tempss[3]
                 department = tempss[4]
                 country = tempss[5]
@@ -67,6 +67,8 @@ def input_user_xls(path):
                 an = re.search(',', s1)
                 password = hash_password = generate_password_hash("init123")
                 title='manager'
+                active_code = generate_active_code()
+                print(active_code)
                 if an:
                     s2 = s1.split(',')
                     user_id = s2[0]
@@ -77,12 +79,13 @@ def input_user_xls(path):
                 print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&7")
                 print(department)
                 usertemp = db.session.query(User).filter(User.user_id == user_id).first()
-                # print(user_id)
-                if usertemp is not None:
+                print(usertemp)
+
+                if usertemp is not None or user_id is None:
                     print('user address already exists')
                 else:  
                     print("*****************************************")              
-                    temp=User(user_id, email, password, first_name, last_name, full_name, department,title, job, country)
+                    temp=User(user_id, email, password, first_name, last_name, department,active_code,title, job, country)
                     db.session.add(temp)
                     db.session.commit()
 
@@ -167,3 +170,9 @@ def uploadtest():
 @upload.route('/test')
 def test():
      input_user_xls('uploads/test2.xlsx')
+
+def generate_active_code():
+    pool = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+    candidate = random.sample(pool, 4)
+    active_code = candidate[0] + candidate[1] + candidate[2] + candidate[3]
+    return str(active_code)

@@ -209,6 +209,9 @@ def ajax_speaker():
 def generate_db():
     normal_role = Role('normal', 'NM', 'default role for testing', 'i325390')
     admin_role = Role('admin', 'AD', 'default role for testing ADMIN', 'i325390')
+    presenter_role = Role('Presenter', 'PS', 'presenter is presenter', 'i325391')
+    demostaff_role = Role('Demo Staff', 'DS', 'Demo Staff is Demo Staff', 'i325391')
+
     em_menu = Menu('Event Management', 'EM',  'Menu/Event Management', 'i325390')
     rm_menu = Menu('Role Management', 'RM',  'Menu/Role Management', 'i325390')
     normal_em = Role_menu('NM', 'EM', 'i325390')
