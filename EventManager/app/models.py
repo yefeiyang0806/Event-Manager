@@ -124,6 +124,7 @@ class Topic(db.Model):
         self.minute_duration = minute_duration
         self.create_time = time.strftime("%H:%M:%S")
         self.create_date = time.strftime("%Y/%m/%d")
+        self.create_by = create_by
         self.status = 0
         self.location=location
         self.link = link

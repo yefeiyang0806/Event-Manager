@@ -21,9 +21,11 @@ def upload_file():
         filename = secure_filename(form.upload.data.filename)
         print(filename)
         fpath = 'uploads/' + filename
-        form.upload.data.save(fpath)  
-        input_user_xls(fpath)
-        # input_topic_xls(fpath)
+        form.upload.data.save(fpath) 
+
+        # input_user_xls(fpath)
+        # input_createuser_xls(path)
+        input_topic_xls(fpath)
         message=" import successfully"
     else:
         filename = None
@@ -36,7 +38,6 @@ def open_excel(path):
         return (data)
     except Exception as e:
         print (str(e))
-
 
 
 def input_user_xls(path):
@@ -64,7 +65,7 @@ def input_user_xls(path):
                 country = tempss[5]
                 email = tempss[6]
                 s1 = tempss[7]
-                an = re.search(',', s1)
+                user_id = ifcomma(s1)
                 title = ''
                 password = hash_password = generate_password_hash("init123")
                 if job == 'Mr.' or job == 'Ms.':
@@ -72,16 +73,7 @@ def input_user_xls(path):
                     job = ''
 
                 active_code = generate_active_code()
-                print(active_code)
-                if an:
-                    s2 = s1.split(',')
-                    user_id = s2[0]
-                else:
-                    user_id = s1
-                    print("%%%%%%%%%%%%%%%%%%%%%%%%%%%%")
-                print(user_id)    
-                print("&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&7")
-                print(department)
+             
                 usertemp = db.session.query(User).filter(User.user_id == user_id).first()
                 print(usertemp)
 
@@ -89,7 +81,7 @@ def input_user_xls(path):
                     print('user address already exists')
                 else:  
                     print("*****************************************")              
-                    temp=User(user_id, email, password, first_name, last_name, department,active_code,title, job, country)
+                    temp=User(user_id, email, password, first_name, last_name, department,active_code,title, job, country, rolename)
                     db.session.add(temp)
                     db.session.commit()
 
@@ -101,32 +93,6 @@ def input_user_xls(path):
         print(i)
         print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 
-        # rolename = ss[0]
-        # last_name = ss[1]
-        # first_name = ss[2]
-        # full_name= last_name + first_name
-        # title = ss[3]
-        # department = ss[4]
-        # country = ss[5]
-        # email = ss[6]
-
-        # s1 = ss[7]
-        # an = re.search(',', s1)
-        # if an:
-        #     s2 = s1.split(',')
-        #     user_id = s2[0]
-        # else:
-        #     user_id = s1
-
-  
-        # temp=Topic(title, description, min_attendance, max_attendance, speaker1, speaker2, speaker3,\
-        #     year_start, month_start, day_start,day_duration,hour_duration,minute_duration, create_by,\
-        #     content, format, location, link, jamlink )
-        # db.session.add(temp)
-        # db.session.commit()
-       
-
-
 
 def input_topic_xls(path):
     data = open_excel(path)   #打开excel
@@ -137,34 +103,42 @@ def input_topic_xls(path):
         ss=table.row_values(i)   #获取一行的所有值，每一列的值以列表项存在
         if i == 0:
             continue
-        title = ss[0]
-        description = ss[1]
-        min_attendance = ss[2]
-        max_attendance = ss[3]
-        speaker1 = ss[4]
-        speaker2 = ss[5]
-        speaker3 = ss[6]
-        startdata = ss[7].split('-')
-        print(startdata)
-        year_start = startdata[0]
-        print(year_start)
-        month_start = startdata[1]
-        day_start = startdata[2]
-        day_duration = ss[8]
-        hour_duration = ss[9]
-        minute_duration = ss[10]
-        create_by = ss[11]
-        content = ss[12]
-        format = ss[13]
-        print(format)
-        location = ss[14]
-        link = ss[15]
-        jamlink  = ss[16]
-        temp=Topic(title, description, min_attendance, max_attendance, speaker1, speaker2, speaker3,\
-            year_start, month_start, day_start,day_duration,hour_duration,minute_duration, create_by,\
-            content, format, location, link, jamlink )
+        topic_id = ss[0]
+        statustemp = ss[1]
+        format = ss[2]
+        content = ss[3]
+        title = ss[4]
+        description = ss[5]
+        memo = ss[6]
+        speaker1 = ifcomma(ss[7])
+        speaker2 = ifcomma(ss[8])
+        speaker3 = ifcomma(ss[9])
+        speaker4 = ifcomma(ss[10])
+        speaker5 = ifcomma(ss[11])
+        create_by = ifcomma(ss[12])    
+        if statustemp == 'Accepted':
+            status = 'AP' 
+        elif statustemp == 'Rejected':
+            status = 'RJ' 
+        temp=Topic(topic_id,title, description, speaker1, speaker2, speaker3, speaker4, speaker5, \
+            create_by, status, memo, content, format)
         db.session.add(temp)
         db.session.commit()
+        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+        print(i)
+        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
+
+
+def ifcomma(data):    
+    an = re.search(',', data)
+    if an:
+        s1 = data.split(',')
+        user_id = s1[0]
+    else:
+        user_id = data
+    return user_id
+
+
 
 def uploadtest():
     print("upload successfully")
