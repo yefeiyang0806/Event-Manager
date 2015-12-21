@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from app import db, lm
 from config import ADMINS
 from flask import render_template, flash, redirect, session, url_for, request, g, request, Blueprint, jsonify
@@ -33,7 +34,7 @@ def index():
         login_user(temp_user, remember=remember_me)
         next = request.form.get('next')
         if next != 'None':
-            print(next)
+            # print(next)
             return redirect(next)
         return redirect(url_for('basic.logged_in'))
 
@@ -200,7 +201,7 @@ def ajax_speaker():
     for speaker in speakers:
         single_record = {'label': speaker.full_name, 'value': speaker.user_id}
         speaker_list.append(single_record)
-    print (speaker_list)
+    # print (speaker_list)
     return json.dumps(speaker_list)
     
     
@@ -265,6 +266,13 @@ def generate_db():
     db.session.add(rt_sb)
     db.session.add(rt_lb)
     db.session.commit()
+
+    user = User('i325390', '85230316@qq.com', generate_password_hash('12345'), 'Feiyang', \
+        'Ye', 'MD office', generate_active_code(), 'Mr.', 'Intern', 'China', 'Presenter')
+
+    db.session.add(user)
+    db.session.commit()
+
     
     return redirect(url_for('basic.index'))
 

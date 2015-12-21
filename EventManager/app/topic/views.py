@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from app import db, lm
 from config import ADMINS
 from flask import render_template, flash, redirect, session, url_for, request, g, request, Blueprint, jsonify
@@ -30,10 +31,9 @@ def create_topic():
         year_start = startdata[0]
         month_start = startdata[1]
         day_start = startdata[2]
-               #print (db.session.query(Content).filter(Content.name == form.content.data).first().topics.count())
-        temp = Topic(form.title.data, form.description.data, form.min_attendance.data, form.max_attendance.data,\
+        temp = Topic(generate_topic_id(), form.title.data, form.description.data, form.min_attendance.data, form.max_attendance.data,\
                 form.speaker1.data, form.speaker2.data, form.speaker3.data, form.speaker4.data, form.speaker5.data, year_start, month_start, day_start,\
-                form.day_duration.data, form.hour_duration.data, form.minute_duration.data, user_id,\
+                form.day_duration.data, form.hour_duration.data, form.minute_duration.data, g.user.email,\
                 form.content.data, form.format.data, form.location.data, form.link.data, form.jamlink.data, form.memo.data)     
         db.session.add(temp)
         db.session.commit()
@@ -69,7 +69,7 @@ def modify_topic(topic_id):
     form.set_options()
     topic = db.session.query(Topic).filter(Topic.topic_id == topic_id).first()
     if request.method == 'POST':
-        print("POST received")
+        # print("POST received")
         if form.validate_on_submit():
             #topic_id = request.form.get('topic_id')
             topic.title = form.title.data
@@ -240,10 +240,10 @@ def ajax_validation():
     for result in results:
         topic = db.session.query(Topic).filter(Topic.topic_id == result['topic_id']).first()
         topic_validation = db.session.query(TopicValidation).filter(TopicValidation.topic_title == topic.title).first()
-        print(topic)
+        # print(topic)
         if topic_validation == None:
             topic_validation = TopicValidation(topic.title, topic.year_start, result['validation'], g.user.user_id)
-            print(topic_validation.topic_title)
+            # print(topic_validation.topic_title)
             topic.validation.append(topic_validation)
             db.session.add(topic_validation)
             db.session.commit()
@@ -352,7 +352,7 @@ def ajax_schedule():
                 location = f['value']
         filtered_results = content_format_location_filter(content_filter, format_filter, location)
         filtered_topics = filtered_results['topics']
-        print(filtered_topics)
+        # print(filtered_topics)
         unscheduled_topics = set(filtered_topics) - set(scheduled_topics)
     else:
         unscheduled_topics = set(Topic.query.all()) - set(scheduled_topics)
@@ -442,7 +442,7 @@ def room_conflict(topic_id, date, time_from, time_to, resource):
         return False
     for srs in same_resource_schedule:
         if srs.day_from.strftime('%Y-%m-%d') == date:
-            print('New Date: ' + date)
+            # print('New Date: ' + date)
             t_to = datetime.datetime.strptime(time_to, '%H:%M:%S').time()
             t_from = datetime.datetime.strptime(time_from, '%H:%M:%S').time()
             if srs.time_from < t_to and srs.time_to > t_from:
@@ -490,3 +490,12 @@ def content_format_location_filter(content_filter, format_filter, location_filte
 @topic.before_request
 def before_request():
     g.user = current_user
+
+
+#Generate the topic id.
+#Topic id is length of 6 with random characters.
+def generate_topic_id():
+    pool = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+    candidate = random.sample(pool, 6)
+    active_code = candidate[0] + candidate[1] + candidate[2] + candidate[3] + candidate[4] + candidate[5]
+    return str(active_code)
