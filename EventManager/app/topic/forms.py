@@ -22,7 +22,7 @@ class CreateTopicForm(Form):
     speaker3 = StringField('Speaker3')
     speaker4 = StringField('Speaker4')
     speaker5 = StringField('Speaker5')
-    location = StringField('Location', validators=[InputRequired()])
+    location = StringField('Location')
     memo = StringField('Memo')
 
     def set_options(self):

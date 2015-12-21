@@ -94,7 +94,7 @@ class Topic(db.Model):
     link = db.Column(db.String(60), nullable=True)
     jamlink = db.Column(db.String(60), nullable=True)
 
-    location = db.Column(db.String(30))
+    location = db.Column(db.String(30), nullable=True)
     schedule = db.relationship('TopicSchedule', backref='scheduled_topic', lazy='dynamic')
     validation = db.relationship('TopicValidation', backref='validated_topic', lazy='dynamic')
     
