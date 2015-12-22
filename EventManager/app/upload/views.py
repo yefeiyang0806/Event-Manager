@@ -13,7 +13,7 @@ upload = Blueprint('upload', __name__)
 
 
 
-UPLOAD_FOLDER = '/static/uploads'
+UPLOAD_FOLDER = 'uploads/'
 
 @upload.route('/upload_file', methods=['GET', 'POST'])
 @login_required
@@ -25,7 +25,9 @@ def upload_file():
     if form.validate_on_submit():
         filename = secure_filename(form.upload.data.filename)
         print(filename)
-        fpath = 'uploads/' + filename
+        fpath = UPLOAD_FOLDER + filename
+        print("444444444444444444444444444444444")
+        print(fpath)
         form.upload.data.save(fpath) 
         if filename == 'users.xlsx':
             input_user_xls(fpath)

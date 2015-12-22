@@ -18,7 +18,7 @@
                  {{ wtf.quick_form(form, id='upload_form') }} 
                     {% if not message%}
                       <p>{{message}}</p></br>    
-                            {% endif%}
+                    {% endif%}
         <button type="button" class="btn btn-primary btn-login" id="submit">Upload</button>
         </form>
       </div>
@@ -35,11 +35,13 @@
       });
       
      });  
-   var upload1 = $('#submit');
+  // var main=$('.main');
+   //main.css("position","center");
+   //var upload1 = $('#submit');
     // upload.height(20);
-upload1.css("position","center");
-   // var upload = document.getElementById('upload_form');
-   // upload.style.position = "absolute";
+//upload1.css("position","absolute");
+   var upload = document.getElementById('upload_form');
+   upload.style.margin = "40%, 40%";
    // upload.style.fontSize = '60px';
 
 
