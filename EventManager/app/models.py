@@ -67,7 +67,7 @@ class User(db.Model):
 
 class Topic(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
-    topic_id = db.Column(db.String(10))
+    topic_id = db.Column(db.String(20), unique=True)
     title = db.Column(db.String(255))
     description = db.Column(db.String(2000))
     min_attendance = db.Column(db.Integer, nullable=True)
@@ -97,8 +97,6 @@ class Topic(db.Model):
     location = db.Column(db.String(30), nullable=True)
     schedule = db.relationship('TopicSchedule', backref='scheduled_topic', lazy='dynamic')
     validation = db.relationship('TopicValidation', backref='validated_topic', lazy='dynamic')
-    
-    __table_args__ = (db.UniqueConstraint('title', 'year_start', name='_title_year_start_uc'),)
 
     
     def __repr__(self):
@@ -324,14 +322,7 @@ class Resource(db.Model):
 
 class TopicSchedule(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
-    topic_title = db.Column(db.String(255))
-    topic_year = db.Column(db.String(4))
-    __table_args__ = (
-        db.ForeignKeyConstraint(
-            ['topic_title', 'topic_year'],
-            ['topic.title', 'topic.year_start'],
-        ),
-    )
+    topic_id = db.Column(db.String(20), db.ForeignKey('topic.topic_id'))
 
     day_from = db.Column(db.Date, nullable=True)
     day_to = db.Column(db.Date, nullable=True)
@@ -348,11 +339,11 @@ class TopicSchedule(db.Model):
         return '<TopicSchedule %r>' %(self.topic_title)
 
 
-    def __init__(self, topic_title, topic_year, day_from, day_to, time_from, time_to, resource, create_by):
+    def __init__(self, topic_id, day_from, day_to, time_from, time_to, resource, create_by):
         self.uuid = str(uuid.uuid1())
         related_resource = db.session.query(Resource).filter(Resource.r_id == resource).first()
         related_resource.schedule.append(self)
-        scheduled_topic = db.session.query(Topic).filter(Topic.title == topic_title).filter(Topic.year_start == topic_year).first()
+        scheduled_topic = db.session.query(Topic).filter(Topic.topic_id == topic_id).first()
         scheduled_topic.schedule.append(self)
 
         self.day_from = day_from
@@ -366,14 +357,7 @@ class TopicSchedule(db.Model):
 
 class TopicValidation(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
-    topic_title = db.Column(db.String(255))
-    topic_year = db.Column(db.String(4))
-    __table_args__ = (
-        db.ForeignKeyConstraint(
-            ['topic_title', 'topic_year'],
-            ['topic.title', 'topic.year_start'],
-        ),
-    )
+    topic_id = db.Column(db.String(20), db.ForeignKey('topic.topic_id'))
     validation =  db.Column(db.Integer)
     agent = db.Column(db.String(10))
     create_time = db.Column(db.Time)
@@ -383,14 +367,14 @@ class TopicValidation(db.Model):
     def __repr__(self):
         return '<TopicValidation %r>' %(self.topic_title)
 
-    def __init__(self, topic_title, topic_year, validation, agent):
+    def __init__(self, topic_id, validation, agent):
         self.uuid = str(uuid.uuid1())
         self.validation = validation
         self.agent = agent
         self.create_time = time.strftime("%H:%M:%S")
         self.create_date = time.strftime("%Y/%m/%d")
 
-        validated_topic = db.session.query(Topic).filter(Topic.title == topic_title).filter(Topic.year_start == topic_year).first()
+        validated_topic = db.session.query(Topic).filter(Topic.topic_id == topic_id).first()
         validated_topic.validation.append(self)
 
         

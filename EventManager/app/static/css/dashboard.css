@@ -134,6 +134,7 @@ body {
   vertical-align: middle;
   font-size: 16px;
   min-width: 30%;
+  max-width: 30%;
 }
 .table tbody>tr>td a {
   width: 100%;
