@@ -1,12 +1,13 @@
 import os
-from flask import Flask, request, render_template, redirect, url_for,Blueprint
+from flask import Flask, request, render_template, redirect, url_for,Blueprint,g
 from werkzeug.utils import secure_filename
 from pyexcel_xls import XLBook 
 from .forms import UploadForm
-from ..models import Topic, User, Format, Content
+from ..models import Topic, User, Format, Content,Role_menu, Menu
 from app import db
 import xlrd, re,random
 from werkzeug.security import generate_password_hash
+from flask.ext.login import login_user, logout_user, current_user, login_required
 
 upload = Blueprint('upload', __name__)
 
@@ -15,7 +16,11 @@ upload = Blueprint('upload', __name__)
 UPLOAD_FOLDER = '/static/uploads'
 
 @upload.route('/upload_file', methods=['GET', 'POST'])
-def upload_file():    
+@login_required
+def upload_file():
+    full_name = g.user.full_name
+    status = g.user.status
+    menus = menus_of_role()
     form = UploadForm()    
     if form.validate_on_submit():
         filename = secure_filename(form.upload.data.filename)
@@ -30,7 +35,7 @@ def upload_file():
     else:
         filename = None
         message=" import failed"
-    return render_template('upload/upload.html', form=form, filename=filename,message=message)
+    return render_template('upload/upload.html', form=form, filename=filename,message=message,full_name=full_name, menus=menus, status=status)
 
 def open_excel(path):
     try:
@@ -158,8 +163,22 @@ def uploadtest():
 def test():
      input_user_xls('uploads/test2.xlsx')
 
+#Refresh the global variable before every request
+@upload.before_request
+def before_request():
+    g.user = current_user
+
 def generate_active_code():
     pool = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
     candidate = random.sample(pool, 4)
     active_code = candidate[0] + candidate[1] + candidate[2] + candidate[3]
     return str(active_code)
+
+def menus_of_role():
+    middles = db.session.query(Role_menu).filter(Role_menu.role_id == g.user.role_id).all()
+    menus = list()
+    for m in middles:
+        menu = db.session.query(Menu).filter(Menu.menu_id == m.menu_id).first()
+        menus.append(menu)
+    print (menus)
+    return menus

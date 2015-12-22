@@ -17,9 +17,8 @@ role = Blueprint('role', __name__)
 @role.route('/create', methods = ['GET', 'POST'])
 @login_required
 def create_role():
-    first_name = g.user.first_name
-    last_name = g.user.last_name
-    create_by = last_name + ' ' + first_name
+    full_name = g.user.full_name
+    create_by = g.user.full_name
     status = g.user.status
     menus = menus_of_role()
     form = CreateRoleForm()
@@ -28,7 +27,7 @@ def create_role():
         db.session.add(temp)
         db.session.commit()
         return redirect(url_for('role.manage_roles'))
-    return render_template("role/create_role.html", form=form, first_name=first_name, menus=menus, status=status)
+    return render_template("role/create_role.html", form=form, full_name=full_name, menus=menus, status=status)
 
 #Responsible for deleting existing roles.
 #Called by jquery in role.view_event.html and basic.member.html
@@ -50,7 +49,7 @@ def delete_role():
 @role.route('/modify/<role_uuid>', methods = ['GET', 'POST'])
 @login_required
 def modify_role(role_uuid):
-    first_name = g.user.first_name
+    full_name = g.user.full_name
     status = g.user.status
     menus = menus_of_role()
     form = CreateRoleForm()
@@ -68,13 +67,13 @@ def modify_role(role_uuid):
             return redirect(url_for("role.manage_roles"))
         else:
             print ("Not validated") 
-            return render_template("role/modify_role.html", form=form, menus=menus, first_name=first_name, status=status, role_uuid=role_uuid)
+            return render_template("role/modify_role.html", form=form, menus=menus, full_name=full_name, status=status, role_uuid=role_uuid)
 
     # if role.is_created_by(g.user.uuid):
     else:
         form.rolename.data = role.rolename
         form.description.data = role.description         
-        return render_template("role/modify_role.html", form=form, menus=menus, first_name=first_name, status=status, role_uuid=role_uuid)
+        return render_template("role/modify_role.html", form=form, menus=menus, full_name=full_name, status=status, role_uuid=role_uuid)
     return redirect(url_for("role.manage_roles"))
 
 
@@ -83,11 +82,11 @@ def modify_role(role_uuid):
 @role.route('/manage')
 @login_required
 def manage_roles():
-    first_name = g.user.first_name
+    full_name = g.user.full_name
     status = g.user.status
     menus = menus_of_role()
     roles = db.session.query(Role).all()
-    return render_template('role/manage_roles.html', roles=roles, first_name=first_name, status=status, menus=menus)
+    return render_template('role/manage_roles.html', roles=roles, full_name=full_name, status=status, menus=menus)
 
 
 #Required by the LoginManager
