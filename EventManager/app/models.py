@@ -78,7 +78,7 @@ class Topic(db.Model):
     day_duration = db.Column(db.String(3), nullable=True)
     hour_duration = db.Column(db.String(2), nullable=True)
     minute_duration = db.Column(db.String(2), nullable=True)
-    memo = db.Column(db.String(200), nullable=True)
+    memo = db.Column(db.String(800), nullable=True)
 
     status = db.Column(db.String(2), default='NA')
     create_date = db.Column(db.Date)
