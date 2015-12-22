@@ -3,7 +3,7 @@ from flask import Flask, request, render_template, redirect, url_for,Blueprint
 from werkzeug.utils import secure_filename
 from pyexcel_xls import XLBook 
 from .forms import UploadForm
-from ..models import Topic, User
+from ..models import Topic, User, Format, Content
 from app import db
 import xlrd, re,random
 from werkzeug.security import generate_password_hash
@@ -22,10 +22,10 @@ def upload_file():
         print(filename)
         fpath = 'uploads/' + filename
         form.upload.data.save(fpath) 
-
-        # input_user_xls(fpath)
-        # input_createuser_xls(path)
-        input_topic_xls(fpath)
+        if filename == 'users.xlsx':
+            input_user_xls(fpath)
+        elif filename == 'topic.xlsx':
+            input_topic_xls(fpath)
         message=" import successfully"
     else:
         filename = None
@@ -55,16 +55,16 @@ def input_user_xls(path):
         for s in ss:
             tempss.append(s)
             index = index + 1            
-            if index == 8:
-                rolename = tempss[0]
-                last_name = tempss[1]
-                first_name = tempss[2]
-                # full_name= last_name + first_name
-                job = tempss[3]
-                department = tempss[4]
-                country = tempss[5]
-                email = tempss[6]
-                s1 = tempss[7]
+            if index == 9:
+                speaker_id = tempss[0]
+                rolename = tempss[1]
+                last_name = tempss[2]
+                first_name = tempss[3]
+                job = tempss[4]
+                department = tempss[5]
+                country = tempss[6]
+                email = tempss[7]
+                s1 = tempss[8]
                 user_id = ifcomma(s1)
                 title = ''
                 password = hash_password = generate_password_hash("init123")
@@ -79,19 +79,16 @@ def input_user_xls(path):
 
                 if usertemp is not None or user_id == '' or user_id is None:
                     print('user address already exists')
-                else:  
-                    print("*****************************************")              
-                    temp=User(user_id, email, password, first_name, last_name, department,active_code,title, job, country, rolename)
+                else:           
+                    temp=User(user_id, email, password, first_name, last_name, department,active_code,title, job, country, rolename, speaker_id)
                     db.session.add(temp)
                     db.session.commit()
-
-                # result.append(tempss)
-                print(tempss)
                 tempss = []
                 index = 0
         print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
         print(i)
         print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+
 
 
 def input_topic_xls(path):
@@ -120,8 +117,20 @@ def input_topic_xls(path):
             status = 'AP' 
         elif statustemp == 'Rejected':
             status = 'RJ' 
-        temp=Topic(topic_id,title, description, speaker1, speaker2, speaker3, speaker4, speaker5, \
-            create_by, status, memo, content, format)
+        min_attendance = 0
+        max_attendance = 0
+        day_duration = ''
+        hour_duration = ''
+        minute_duration = ''
+        year_start = ''
+        month_start = ''
+        day_start = ''
+        location = ''
+        link = ''
+        jamlink = ''
+        temp=Topic(topic_id,title, description, min_attendance, max_attendance, speaker1, speaker2, speaker3, speaker4, speaker5, \
+              year_start, month_start, day_start,day_duration, hour_duration, minute_duration ,create_by,\
+              content, format, location, link, jamlink, memo, status)
         db.session.add(temp)
         db.session.commit()
         print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
