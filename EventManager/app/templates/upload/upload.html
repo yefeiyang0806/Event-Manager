@@ -3,17 +3,27 @@
 {% block title %}Upload Page{% endblock %}
 {% block body %}
   {{super()}}
-  <link href="{{url_for('static', filename='css/register.css')}}" rel="stylesheet">
-  {% include 'basic/index_navbar.html' %}
+  <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+    <style>
+    .form-group {width:50%;}
+  </style>
+  {% set active_list = 'upload_files' %}
+  {% include 'public/navbar.html' %}
+  <div class="container-fluid">
+    {% include 'public/side_bar.html' %}
+      <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+        <form id="form1" action="/upload/upload_file" method="post" enctype="multipart/form-data"> 
 
-  <form id="form1" action="/upload/upload_file" method="post" enctype="multipart/form-data"> 
-
-  {{ wtf.quick_form(form, id='upload_form') }} 
-  {% if not message%}
-  <p>{{message}}</p></br>    
-{% endif%}
-  <button type="button" class="btn btn-primary btn-login" id="submit">Upload</button>
-  </form>
+                 {{ wtf.quick_form(form, id='upload_form') }} 
+                    {% if not message%}
+                      <p>{{message}}</p></br>    
+                            {% endif%}
+        <button type="button" class="btn btn-primary btn-login" id="submit">Upload</button>
+        </form>
+      </div>
+    </div>
+  </div>
   <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>
   <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
   <script>
@@ -27,12 +37,12 @@
      });  
    // var upload = $('#upload_form');
     //upload.height(20);
-  $('#form1').css("position","center");
-  // var upload = document.getElementById('upload_form');
-   //upload.style.position = "center";
-   //upload.style.fontSize = '30px';
+  //$('#form1').css("position","center");
+   var upload = document.getElementById('upload_form');
+   upload.style.position = "absolute";
+   upload.style.fontSize = '30px';
 
-    </script>
+  </script>
   
     
   </script>
