@@ -66,6 +66,7 @@
           <p>Unsaved Modifications have been detected on the current scheduler.<br />
             Refreshing the scheduler would discard these changes.</p>
         </div>
+        <div style='display:none;' id='err_msgs' title='Conflicts Detected'></div>
         <meta name="csrf-token" content="{{ csrf_token() }}"></meta>
       </div>
     </div>
@@ -144,13 +145,50 @@
       });
 
       $('#scheduler_update').click(function(){
-        for (var topic_id in modified_list){
-          // Get modified date and resource
-          // Generate json with id, from, to and resource
-          // Send back to the validation function to do validation
-          // Get response from topic/views.py
-          // Reset modified_list to empty
-        }
+        var data = [];
+        $.each(modified_list, function(key, value){
+          var scheduler_ele = $("#scheduler_wrapper").find('#scheduler');
+          var res = scheduler_ele.jqxScheduler('getAppointmentProperty', value, 'resourceId');
+          var from = scheduler_ele.jqxScheduler('getAppointmentProperty', value, 'from').toString('HH:mm:ss');
+          var to = scheduler_ele.jqxScheduler('getAppointmentProperty', value, 'to').toString('HH:mm:ss');
+          var date = scheduler_ele.jqxScheduler('getAppointmentProperty', value, 'to').toString('yyyy-MM-dd');
+          var record = {'topic_id': value, 'resource': res, 'time_from': from, 'time_to': to, 'date': date};
+          if (res != 'TBD'){
+            data.push(record);  
+          }
+          // Get modified date and resource ---- Done!
+          // Generate json with id, from, to and resource ---- Done!
+          // Send back to the validation function to do validation ---- Done!
+          // Get response from topic/views.py ---- Done!
+          // Reset modified_list to empty ---- Done!
+        });
+        console.log(data);
+        $.ajax({
+          type: "POST",
+          contentType: "application/json",
+          dataType: "json",
+          url: "/topic/validate_arrangement",
+          data: JSON.stringify({ "schedule": data }),
+          success: function(data){
+            if (data['status']){
+              alert("Topic schedule updating status: " + data['status']);
+              modified_list = [];
+            }
+            else if (data['ErrorMessage']){
+              err_msg = data['ErrorMessage'];
+              $('#err_msgs').empty();
+              $.each(err_msg, function(key, value){
+                $('#err_msgs').append("<div><b>'"+value['title']+"'</b>: "+value['message']+'</div>');
+              });
+              $('#err_msgs').append('<br /><div>Please fix the conflicts before update the schedule.</div>');
+              $('#err_msgs').dialog({
+                width:480,
+                height:240,
+                modal: true
+              });
+            }
+          }
+        });
       });
 
       $("#set_filter").trigger('click');
