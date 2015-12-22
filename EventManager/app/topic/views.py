@@ -241,12 +241,12 @@ def ajax_validation():
     json_data = request.get_json(force=True)
     results = json_data["Results"]
     for result in results:
-        topic = db.session.query(Topic).filter(Topic.topic_id == result['topic_id']).first()
-        topic_validation = db.session.query(TopicValidation).filter(TopicValidation.topic_title == topic.title).first()
+        topic_validation = db.session.query(TopicValidation).filter(TopicValidation.topic_id == result['topic_id']).first()
         # print(topic)
         if topic_validation == None:
-            topic_validation = TopicValidation(topic.title, topic.year_start, result['validation'], g.user.user_id)
+            topic_validation = TopicValidation(result['topic_id'], result['validation'], g.user.user_id)
             # print(topic_validation.topic_title)
+            topic = db.session.query(Topic).filter(Topic.topic_id == result['topic_id']).first()
             topic.validation.append(topic_validation)
             db.session.add(topic_validation)
             db.session.commit()
@@ -318,7 +318,7 @@ def validate_arrangement():
             #print('--------------------')
             #print(topic)
             if topic.schedule.first()==None:
-                t_s = TopicSchedule(topic.title, topic.year_start, s['date'], s['date'], \
+                t_s = TopicSchedule(topic.topic_id, s['date'], s['date'], \
                 datetime.datetime.strptime(s['time_from'], '%H:%M:%S').time(), datetime.datetime.strptime(s['time_to'], '%H:%M:%S').time(), s['resource'], g.user.user_id)
                 db.session.add(t_s)
             else:
@@ -345,10 +345,10 @@ def ajax_schedule():
     for s in all_schedule:
         each_schedule = dict()
         scheduled_topics.append(s.scheduled_topic)
-        each_schedule['topic_id'] = s.scheduled_topic.topic_id
+        each_schedule['topic_id'] = s.topic_id
         each_schedule['description'] = s.scheduled_topic.description
-        each_schedule['topic_title'] = s.topic_title
-        each_schedule['year'] = s.topic_year
+        each_schedule['topic_title'] = s.scheduled_topic.title
+        each_schedule['year'] = s.scheduled_topic.year_start
         from_str = datetime.datetime.combine(s.day_from,s.time_from)
         to_str = datetime.datetime.combine(s.day_from,s.time_to)
         each_schedule['from'] = datetime.datetime.strftime(from_str, "%Y-%m-%d %H:%M:%S")
@@ -447,7 +447,7 @@ def speaker_conflict(topic_id, date, time_from, time_to):
     if same_speaker_topics == None:
         return False
     for sst in same_speaker_topics:
-        sst_schedules = db.session.query(TopicSchedule).filter(TopicSchedule.topic_title == sst.title).filter(TopicSchedule.topic_year == sst.year_start).all()
+        sst_schedules = db.session.query(TopicSchedule).filter(TopicSchedule.topic_id == sst.topic_id).all()
         for schedule in sst_schedules:
             if schedule.day_from.strftime('%Y-%m-%d') == date:
                 t_to = datetime.datetime.strptime(time_to, '%H:%M:%S').time()
@@ -461,11 +461,7 @@ def speaker_conflict(topic_id, date, time_from, time_to):
 #Check if the resource has been conflicted
 def room_conflict(topic_id, date, time_from, time_to, resource):
     scheduled_topic = db.session.query(Topic).filter(Topic.topic_id == topic_id).first()
-    schedule_topic_schedule = db.session.query(TopicSchedule).join(Resource).filter(TopicSchedule.topic_title == scheduled_topic.title).filter(TopicSchedule.topic_year == scheduled_topic.year_start).first()
-    #print(schedule_topic_schedule)
-    #print('resource: ' + resource)
-    #print(schedule_topic_schedule)
-    #print("------------------")
+    schedule_topic_schedule = db.session.query(TopicSchedule).join(Resource).filter(TopicSchedule.topic_id == scheduled_topic.topic_id).first()
     same_resource_schedule = db.session.query(TopicSchedule).join(Resource).filter(Resource.r_id == resource).all()
     #print(same_resource_schedule)
     if schedule_topic_schedule!= None and resource == schedule_topic_schedule.resource:
