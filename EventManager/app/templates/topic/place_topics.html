@@ -248,13 +248,17 @@
               date: new $.jqx.date(2015, 12, 28),
               width: '90%',
               height: 1200,
-              rowsHeight: 25,
+              rowsHeight: 40,
               dayNameFormat: "abbr",
               source: adapter,
               showLegend: true,
               ready: function () {
-                //$("#scheduler").jqxScheduler('ensureAppointmentVisible', 'id1');
-              },
+                    // gets scrollbable height.
+                    var scrollHeight = $("#scheduler").jqxScheduler('scrollHeight');
+                    // scroll 700px.
+                    alert(scrollHeight);
+                    $("#scheduler").jqxScheduler('scrollTop', 700);
+                },
               editDialogCreate: function (dialog, fields, editAppointment) {
                 var assigned_content_format = null;
                 if (editAppointment != null){
@@ -301,7 +305,7 @@
               view: 'dayView',
               views:
               [
-                { type: 'dayView', showWeekends: false, timeRuler: { scaleStartHour: 7, scaleEndHour: 21, scale: "tenMinutes", formatString: "HH:mm" }, appointmentsRenderMode: "exactTime" },
+                { type: 'dayView', showWeekends: false, timeRuler: { scaleStartHour: 8, scaleEndHour: 21, scale: "tenMinutes", formatString: "HH:mm" }, appointmentsRenderMode: "exactTime" },
                 { type: 'weekView', showWeekends: false }
               ]
             });
