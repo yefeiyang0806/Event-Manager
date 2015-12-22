@@ -76,14 +76,10 @@ def input_user_xls(path):
                 if job == 'Mr.' or job == 'Ms.':
                     title = job
                     job = ''
-
-                active_code = generate_active_code()
-             
+                active_code = generate_active_code()             
                 usertemp = db.session.query(User).filter(User.user_id == user_id).first()
-                print(usertemp)
-
                 if usertemp is not None or user_id == '' or user_id is None:
-                    print('user address already exists')
+                    print('user'+user_id+' already exists')
                 else:           
                     temp=User(user_id, email, password, first_name, last_name, department,active_code,title, job, country, rolename, speaker_id)
                     db.session.add(temp)
@@ -124,20 +120,24 @@ def input_topic_xls(path):
             status = 'RJ' 
         min_attendance = 0
         max_attendance = 0
-        day_duration = ''
-        hour_duration = ''
-        minute_duration = ''
-        year_start = ''
+        day_duration = '0'
+        hour_duration = '0'
+        minute_duration = '20'
+        year_start = '2016'
         month_start = ''
         day_start = ''
         location = ''
         link = ''
         jamlink = ''
-        temp=Topic(topic_id,title, description, min_attendance, max_attendance, speaker1, speaker2, speaker3, speaker4, speaker5, \
+        topictemp = db.session.query(Topic).filter(Topic.topic_id == topic_id).first()
+        if topictemp is not None or topic_id == '' or topic_id is None:
+            print(topic_id+'Topic already exists')
+        else:           
+            temp=Topic(topic_id,title, description, min_attendance, max_attendance, speaker1, speaker2, speaker3, speaker4, speaker5, \
               year_start, month_start, day_start,day_duration, hour_duration, minute_duration ,create_by,\
               content, format, location, link, jamlink, memo, status)
-        db.session.add(temp)
-        db.session.commit()
+            db.session.add(temp)
+            db.session.commit()
         print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
         print(i)
         print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
