@@ -31,7 +31,10 @@ def create_topic():
         year_start = startdata[0]
         month_start = startdata[1]
         day_start = startdata[2]
-        temp = Topic(generate_topic_id(), form.title.data, form.description.data, form.min_attendance.data, form.max_attendance.data,\
+        new_topic_id = generate_topic_id()
+        while db.session.query(Topic).filter(Topic.topic_id == new_topic_id).first() is not None:
+            new_topic_id = generate_topic_id()
+        temp = Topic(new_topic_id, form.title.data, form.description.data, form.min_attendance.data, form.max_attendance.data,\
                 form.speaker1.data, form.speaker2.data, form.speaker3.data, form.speaker4.data, form.speaker5.data, year_start, month_start, day_start,\
                 form.day_duration.data, form.hour_duration.data, form.minute_duration.data, g.user.email,\
                 form.content.data, form.format.data, form.location.data, form.link.data, form.jamlink.data, form.memo.data)     
@@ -286,18 +289,31 @@ def validate_arrangement():
     s_conflict = "Each spaker can only give at most one speech at the same time."
     errors = list()
     for s in schedule:
-        if speaker_conflict(s['topic_id'], s['date'], s['time_from'], s['time_to']):
+        #Remove schedule results of modified topics
+        topic = db.session.query(Topic).filter(Topic.topic_id == s['topic_id']).first()
+        already_schedule = db.session.query(TopicSchedule).filter(TopicSchedule.scheduled_topic==topic).all()
+        if already_schedule is not None:
+            for als in already_schedule:
+                db.session.delete(als)
+                print('----------------schedule deleted------------')
+            db.session.commit()
+    # Do validations on modifications of schedule
+    for s in schedule:
+        conflict_speaker = speaker_conflict(s['topic_id'], s['date'], s['time_from'], s['time_to'])
+        conflict_room = room_conflict(s['topic_id'], s['date'], s['time_from'], s['time_to'], s['resource'])
+        if conflict_speaker:
             error_msg = dict()
             error_msg['topic_id'] = s['topic_id']
+            error_msg['title'] = db.session.query(Topic).filter(Topic.topic_id == s['topic_id']).first().title
             error_msg['message'] = s_conflict
             errors.append(error_msg)
-        if room_conflict(s['topic_id'], s['date'], s['time_from'], s['time_to'], s['resource']):
+        if conflict_room:
             error_msg = dict()
             error_msg['topic_id'] = s['topic_id']
+            error_msg['title'] = db.session.query(Topic).filter(Topic.topic_id == s['topic_id']).first().title
             error_msg['message'] = r_conflict
             errors.append(error_msg)
-    if not errors:
-        for s in schedule:
+        if (not conflict_speaker) and (not conflict_room):
             topic = db.session.query(Topic).filter(Topic.topic_id == s['topic_id']).first()
             #print('--------------------')
             #print(topic)
@@ -312,7 +328,8 @@ def validate_arrangement():
                 t_s.time_from = datetime.datetime.strptime(s['time_from'], '%H:%M:%S').time()
                 t_s.time_to = datetime.datetime.strptime(s['time_to'], '%H:%M:%S').time()
                 t_s.resource = s['resource']
-        db.session.commit()
+            db.session.commit()
+    if not errors:
         return jsonify({'status':'success'})
     else:
         return jsonify({'ErrorMessage': errors})
@@ -324,8 +341,10 @@ def validate_arrangement():
 def ajax_schedule():
     all_schedule = TopicSchedule.query.all()
     schedule = list()
+    scheduled_topics = list()
     for s in all_schedule:
         each_schedule = dict()
+        scheduled_topics.append(s.scheduled_topic)
         each_schedule['topic_id'] = s.scheduled_topic.topic_id
         each_schedule['description'] = s.scheduled_topic.description
         each_schedule['topic_title'] = s.topic_title
@@ -371,6 +390,20 @@ def ajax_schedule():
         schedule.append(each_schedule)
         #print (each_schedule)
     return json.dumps(schedule)
+
+
+#Return all the resources info to the place_topic.html through json
+@topic.route('/ajax_resources', methods=['GET', 'POST'])
+@login_required
+def ajax_resources():
+    res = list()
+    all_resources = db.session.query(Resource).all()
+    for r in all_resources:
+        each_r = dict()
+        each_r['resource'] = r.name
+        res.append(each_r)
+    res.append({'resource': 'TBD'})
+    return json.dumps(res)
 
 
 #Required by the LoginManager
@@ -419,7 +452,7 @@ def speaker_conflict(topic_id, date, time_from, time_to):
             if schedule.day_from.strftime('%Y-%m-%d') == date:
                 t_to = datetime.datetime.strptime(time_to, '%H:%M:%S').time()
                 t_from = datetime.datetime.strptime(time_from, '%H:%M:%S').time()
-                if schedule.time_from < t_to and schedule.time_to > t_from:
+                if (schedule.time_from < t_to) and (schedule.time_to > t_from):
                     print("S Conflict!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                     return True
     return False
@@ -445,7 +478,7 @@ def room_conflict(topic_id, date, time_from, time_to, resource):
             # print('New Date: ' + date)
             t_to = datetime.datetime.strptime(time_to, '%H:%M:%S').time()
             t_from = datetime.datetime.strptime(time_from, '%H:%M:%S').time()
-            if srs.time_from < t_to and srs.time_to > t_from:
+            if (srs.time_from < t_to) and (srs.time_to > t_from):
                 print("R Conflict!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                 return True
     #print(same_resource_schedule)
