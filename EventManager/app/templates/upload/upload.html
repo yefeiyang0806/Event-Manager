@@ -18,8 +18,8 @@
                  {{ wtf.quick_form(form, id='upload_form') }} 
                     {% if not message%}
                       <p>{{message}}</p></br>    
-                            {% endif%}
-        <button type="button" class="btn btn-primary btn-login" id="submit">Upload</button>
+                    {% endif%}
+        <button type="button" class="btn btn-primary btn-login" id="upload_submit" style='margin:20px 30% 0 45%;'>Upload</button>
         </form>
       </div>
     </div>
@@ -30,17 +30,14 @@
 
     $(document).ready(function() {
       
-      $("#submit").click(function(){
+      $("#upload_submit").click(function(){
         $("#form1").submit();
       });
       
      });  
-   var upload1 = $('#submit');
-    // upload.height(20);
-upload1.css("position","center");
-   // var upload = document.getElementById('upload_form');
-   // upload.style.position = "absolute";
-   // upload.style.fontSize = '60px';
+
+   var form1 = document.getElementById('form1');
+   form1.style.margin ="20px 30% 0 45%";
 
 
   </script>

@@ -13,7 +13,7 @@ upload = Blueprint('upload', __name__)
 
 
 
-UPLOAD_FOLDER = '/static/uploads'
+UPLOAD_FOLDER = 'uploads/'
 
 @upload.route('/upload_file', methods=['GET', 'POST'])
 @login_required
@@ -24,8 +24,7 @@ def upload_file():
     form = UploadForm()    
     if form.validate_on_submit():
         filename = secure_filename(form.upload.data.filename)
-        print(filename)
-        fpath = 'uploads/' + filename
+        fpath = UPLOAD_FOLDER + filename
         form.upload.data.save(fpath) 
         if filename == 'users.xlsx':
             input_user_xls(fpath)
@@ -46,12 +45,12 @@ def open_excel(path):
 
 
 def input_user_xls(path):
-    data = open_excel(path)   #打开excel
-    table=data.sheets()[0] #打开excel的第几个sheet
-    nrows=table.nrows   #捕获到有效数据的行数
+    data = open_excel(path)   
+    table=data.sheets()[0] 
+    nrows=table.nrows 
     books=[]
     for i in range(nrows):
-        ss=table.row_values(i)   #获取一行的所有值，每一列的值以列表项存在
+        ss=table.row_values(i)  
         if i == 0:
             continue
         # result = []
