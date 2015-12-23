@@ -4,6 +4,8 @@
     <li id='available_topics'><a href="/topic/available">Available Topics</a></li>
     <li id='register_topics'><a href="/topic/create">Register Topics</a></li>
     <li id='upload_files'><a href="/upload/upload_file"> Upload Files</a></li>
+    <li id='upload_files'><a href="/upload/send_emails"> Send Emails</a></li>
+
     {% for m in menus %}
       {% include m.menu_path + '/side_bar.html' %}
     {% endfor %}

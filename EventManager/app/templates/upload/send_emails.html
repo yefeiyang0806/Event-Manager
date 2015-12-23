@@ -1,0 +1,47 @@
+{% extends "bootstrap/base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+{% block title %}Send Page{% endblock %}
+{% block body %}
+  {{super()}}
+  <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+    <style>
+    .form-group {width:50%;}
+  </style>
+  {% set active_list = 'send_emails' %}
+  {% include 'public/navbar.html' %}
+  <div class="container-fluid">
+    {% include 'public/side_bar.html' %}
+      <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+        <form id="form1" action="/upload/send_emails" method="post" enctype="multipart/form-data"> 
+
+                 {{ wtf.quick_form(form, id='send_emails') }} 
+                    {% if not message%}
+                      <p>{{message}}</p></br>    
+                    {% endif%}
+        <button type="button" class="btn btn-primary btn-login" id="upload_submit" style='margin:20px 30% 0 45%;'>Upload</button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>
+  <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  <script>
+
+    $(document).ready(function() {
+      
+      $("#upload_submit").click(function(){
+        $("#form1").submit();
+      });
+      
+     });  
+
+   var form1 = document.getElementById('form1');
+   form1.style.margin ="20px 30% 0 45%";
+
+
+  </script>
+  
+    
+  </script>
+{% endblock %}
