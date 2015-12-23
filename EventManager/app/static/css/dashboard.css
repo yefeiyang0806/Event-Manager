@@ -130,12 +130,10 @@ body {
 .table {
   width: 100%;
 }
-.table tbody>tr>td {
+.table tbody>tr>td:not(:last-child) {
   vertical-align: middle;
   font-size: 16px;
-  /*min-width: 30%;*/
-  /*max-width: 30%;*/
-  width: 25%;
+  width: 30%;
 }
 .table tbody>tr>td a {
   width: 100%;
@@ -152,8 +150,8 @@ body {
 .table-arrange {
   width: 100%;
 }
-.table-arrange tr>td {
-  width: 25%;
+.table-arrange tr>td:not(:first-child) {
+  width: 22%;
 }
 #scrollable {
   overflow-x:scroll;

@@ -495,9 +495,9 @@ def content_format_location_filter(content_filter, format_filter, location_filte
     locations = list()
     results = dict()
     for c in contents:
-        content_names.append(str(c.name))
+        content_names.append({'name': str(c.name), 'id': str(c.content_id)})
     for f in formats:
-        format_names.append(str(f.name))
+        format_names.append({'name': str(f.name), 'id': str(f.format_id)})
     for l in locations_set:
         l_name = str(l[0])
         if l_name not in locations:
@@ -505,9 +505,9 @@ def content_format_location_filter(content_filter, format_filter, location_filte
 
     topics_content = topics_format = topics_location = db.session.query(Topic).all()
     if content_filter != None:
-        topics_content = db.session.query(Content).filter(Content.name == content_filter).first().topics.all()
+        topics_content = db.session.query(Content).filter(Content.content_id == content_filter).first().topics.all()
     if format_filter != None:
-        topics_format = db.session.query(Format).filter(Format.name == format_filter).first().topics.all()
+        topics_format = db.session.query(Format).filter(Format.format_id == format_filter).first().topics.all()
     if location_filter != None:
         topics_location = db.session.query(Topic).filter(Topic.location == location_filter).all()
     topics = set(topics_format).intersection(topics_content).intersection(topics_location)

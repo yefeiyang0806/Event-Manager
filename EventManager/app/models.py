@@ -321,7 +321,7 @@ class Resource(db.Model):
 
 
 class TopicSchedule(db.Model):
-    uuid = db.Column(db.String(40), primary_key = True)
+    uuid = db.Column(db.String(40), primary_key=True)
     topic_id = db.Column(db.String(20), db.ForeignKey('topic.topic_id'))
 
     day_from = db.Column(db.Date, nullable=True)
@@ -356,7 +356,7 @@ class TopicSchedule(db.Model):
 
 
 class TopicValidation(db.Model):
-    uuid = db.Column(db.String(40), primary_key = True)
+    uuid = db.Column(db.String(40), primary_key=True)
     topic_id = db.Column(db.String(20), db.ForeignKey('topic.topic_id'))
     validation =  db.Column(db.Integer)
     agent = db.Column(db.String(10))
@@ -377,4 +377,56 @@ class TopicValidation(db.Model):
         validated_topic = db.session.query(Topic).filter(Topic.topic_id == topic_id).first()
         validated_topic.validation.append(self)
 
-        
+
+class Event(db.Model):
+    uuid = db.Column(db.String(40), primary_key=True)
+    event_id = db.Column(db.String(20), unique=True)
+    description = db.Column(db.String(400), nullable=True)
+    start_date = db.Column(db.Date)
+    end_date = db.Column(db.Date)
+    email_template = db.Column(db.String(200), nullable=True)
+    reserve_1 = db.Column(db.String(255), nullable=True)
+    reserve_2 = db.Column(db.String(255), nullable=True)
+
+    create_date = db.Column(db.Date)
+    create_time = db.Column(db.Time)
+    create_by = db.Column(db.String(10))
+    attenders = db.relationship('EventAttender', backref='attending_event', lazy='dynamic')
+
+
+    def __repr__(self):
+        return '<Event %r>' %(self.event_id)
+
+
+    def __init__(self, event_id, description, start_date, end_date, email_template, create_by):
+        self.uuid = str(uuid.uuid1())
+        self.event_id = event_id
+        self.description = description
+        self.start_date = start_date
+        self.end_date = end_date
+        self.email_template = email_template
+        self.create_by = create_by
+        self.create_time = time.strftime("%H:%M:%S")
+        self.create_date = time.strftime("%Y/%m/%d")
+
+
+class EventAttender(db.Model):
+    uuid = db.Column(db.String(40), primary_key=True)
+    event_id = db.Column(db.String(20), db.ForeignKey('event.event_id'))
+    full_name = db.Column(db.String(100))
+    email = db.Column(db.String(100))
+    create_date = db.Column(db.Date)
+    create_time = db.Column(db.Time)
+
+
+    def __repr__(self):
+        return '<Event %r>' %(self.event_id)
+
+
+    def __init__(self, event_id, full_name, email):
+        self.uuid = str(uuid.uuid1())
+        self.full_name = full_name
+        self.email = email
+
+        related_event = db.session.query(Event).filter(Event.event_id==event_id).first()
+        related_event.attenders.append(self)
