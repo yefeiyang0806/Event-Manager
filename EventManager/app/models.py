@@ -381,6 +381,7 @@ class TopicValidation(db.Model):
 class Event(db.Model):
     uuid = db.Column(db.String(40), primary_key=True)
     event_id = db.Column(db.String(20), unique=True)
+    name = db.Column(db.String(60), nullable=True)
     description = db.Column(db.String(400), nullable=True)
     start_date = db.Column(db.Date)
     end_date = db.Column(db.Date)
@@ -398,9 +399,10 @@ class Event(db.Model):
         return '<Event %r>' %(self.event_id)
 
 
-    def __init__(self, event_id, description, start_date, end_date, email_template, create_by):
+    def __init__(self, event_id, name, description, start_date, end_date, email_template, create_by):
         self.uuid = str(uuid.uuid1())
         self.event_id = event_id
+        self.name = name
         self.description = description
         self.start_date = start_date
         self.end_date = end_date
