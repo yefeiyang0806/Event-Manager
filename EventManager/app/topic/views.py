@@ -190,7 +190,7 @@ def arrange_topics():
     content_names = results['content_names']
     format_names = results['format_names']
     locations = results['locations']
-    rejected_topics = db.session.query(Topic).filter(Topic.status=='AP').all()
+    rejected_topics = db.session.query(Topic).filter(Topic.status=='RJ').all()
     topics = results['topics']
     topics = set(topics).difference(set(rejected_topics))
     
@@ -372,7 +372,9 @@ def ajax_schedule():
             if f['type'] == 'location':
                 location = f['value']
         filtered_results = content_format_location_filter(content_filter, format_filter, location)
-        filtered_topics = filtered_results['topics']-set(db.session.query(Topic).filter(Topic.status=='AP').all())
+        rejected_topics = db.session.query(Topic).filter(Topic.status=='RJ').all()
+        filtered_topics = filtered_results['topics']
+        filtered_topics = set(filtered_topics).difference(set(rejected_topics))
         # print(filtered_topics)
         unscheduled_topics = set(filtered_topics) - set(scheduled_topics)
     else:
