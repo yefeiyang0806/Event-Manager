@@ -135,13 +135,13 @@
       $('#scheduler_wrapper').on('appointmentChange', '#scheduler', function (event) {
         var args = event.args;
         var appointment = args.appointment;
-        //var from = appointment['from'].toString('yyyy-MM-dd');
-        //var resource = $('#scheduler').jqxScheduler('getAppointmentProperty', appointment['id'], 'resourceId');
-        //var from = $('#scheduler').jqxScheduler('getAppointmentProperty', appointment['id'], 'from').toString('yyyy-MM-dd HH:mm:ss');
         if ($.inArray(appointment['id'], modified_list) == -1){
           modified_list.push(appointment['id']);
         }
-        // console.log(modified_list);
+        
+        $("#scheduler").jqxScheduler('beginAppointmentsUpdate');
+        // $("#scheduler").jqxScheduler('setAppointmentProperty', appointment['id'], 'borderColor', 'red');
+        $("#scheduler").jqxScheduler('endAppointmentsUpdate');
       });
 
       $('#scheduler_update').click(function(){
@@ -248,13 +248,13 @@
               date: new $.jqx.date(2015, 12, 28),
               width: '90%',
               height: 1200,
-              rowsHeight: 25,
+              rowsHeight: 30,
               dayNameFormat: "abbr",
               source: adapter,
               showLegend: true,
               ready: function () {
-                //$("#scheduler").jqxScheduler('ensureAppointmentVisible', 'id1');
-              },
+                    
+                },
               editDialogCreate: function (dialog, fields, editAppointment) {
                 var assigned_content_format = null;
                 if (editAppointment != null){
@@ -301,7 +301,7 @@
               view: 'dayView',
               views:
               [
-                { type: 'dayView', showWeekends: false, timeRuler: { scaleStartHour: 7, scaleEndHour: 21, scale: "tenMinutes", formatString: "HH:mm" }, appointmentsRenderMode: "exactTime" },
+                { type: 'dayView', showWeekends: false, timeRuler: { scaleStartHour: 8, scaleEndHour: 21, scale: "tenMinutes", formatString: "HH:mm" }, appointmentsRenderMode: "exactTime" },
                 { type: 'weekView', showWeekends: false }
               ]
             });
