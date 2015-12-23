@@ -130,7 +130,7 @@ body {
 .table {
   width: 100%;
 }
-.table tbody>tr>td:not(:last-child) {
+.table tbody>tr>td:not(:last-of-type) {
   vertical-align: middle;
   font-size: 16px;
   width: 30%;
@@ -150,7 +150,7 @@ body {
 .table-arrange {
   width: 100%;
 }
-.table-arrange tr>td:not(:first-child) {
+.table-arrange tr>td:not(:first-of-type) {
   width: 22%;
 }
 #scrollable {

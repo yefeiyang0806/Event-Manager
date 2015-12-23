@@ -6,8 +6,121 @@
   <link href="{{url_for('static', filename='css/register.css')}}" rel="stylesheet">
   {% include 'basic/index_navbar.html' %}
   <div class="container">
-    {{wtf.quick_form(form, action="/register", method="post", extra_classes="form-reg", button_map="primary", id="reg_form")}}
-    <button type="button" class="btn btn-primary btn-login" id="submit">Register</button>
+    <!-- {{wtf.quick_form(form, action="/register", method="post", extra_classes="form-reg", button_map="primary", id="reg_form")}} -->
+    <div class="col-xs-12 col-sm-8 col-md-6 col-sm-offset-2 col-md-offset-3">
+      <form action='/register' method='post' id='reg_form'>
+        {{ form.csrf_token }}
+        <h2><font color='SteelBlue'>Create New User </font><small>(fields with * is required)</small></h2>
+        <hr class="colorgraph">
+        <!-- First Line -->
+        <div class="row">
+          <div class="col-xs-12 col-sm-6 col-md-6">
+            <div class="form-group">
+              <div class='input-group'>
+                <span class="input-group-addon" id="sizing-addon2">*</span>
+                {{ form.first_name(placeholder='First Name', class='form-control input-lg') }}
+              </div>
+            </div>
+          </div>
+          <div class="col-xs-12 col-sm-6 col-md-6">
+            <div class="form-group">
+              <div class='input-group'>
+                <span class="input-group-addon" id="sizing-addon2">*</span>
+                {{ form.last_name(placeholder='Last Name', class='form-control input-lg') }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Second Line -->
+        <div class="row">
+          <div class="col-xs-12 col-sm-6 col-md-6">
+            <div class="form-group">
+              <div class='input-group'>
+                <span class="input-group-addon" id="sizing-addon2">*</span>
+                {{ form.password(placeholder='Password', class='form-control input-lg') }}
+              </div>
+            </div>
+          </div>
+          <div class="col-xs-12 col-sm-6 col-md-6">
+            <div class="form-group">
+              <div class='input-group'>
+                <span class="input-group-addon" id="sizing-addon2">*</span>
+                {{ form.confirm_password(placeholder='Confirm password', class='form-control input-lg') }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Third Line -->
+        <div class="row">
+          <!-- <div class="col-xs-6 col-sm-3 col-md-3"> -->
+            <label class='control-label col-xs-6 col-sm-3 col-md-3' for='confirm_password'>
+              <font size='6' color='CadetBlue'>Event:</font>
+            </label>
+          <!-- </div> -->
+          <div class="col-xs-18 col-sm-9 col-md-9">
+            <div class="form-group">
+              <div class='input-group'>
+                <span class="input-group-addon" id="sizing-addon2">*</span>
+                {{ form.confirm_password(placeholder='Select Event (TBD)', class='form-control input-lg') }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Fourth Line -->
+        <div class="row">
+          <div class="col-xs-6 col-sm-3 col-md-3">
+            <div class="form-group">
+              <div class='input-group'>
+                <span class="input-group-addon" id="sizing-addon2">*</span>
+                {{ form.user_id(placeholder='Empl. ID', class='form-control input-lg') }}
+              </div>
+            </div>
+          </div>
+          <div class="col-xs-18 col-sm-9 col-md-9">
+            <div class="form-group">
+              <div class='input-group'>
+                <span class="input-group-addon" id="sizing-addon2">*</span>
+                {{ form.email(placeholder='Email', class='form-control input-lg') }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <hr class="colorgraph">
+        <!-- Fifth Line -->
+        <div class="row">
+          <div class="col-xs-6 col-sm-3 col-md-3">
+            <div class="form-group">
+              {{ form.title(placeholder='Title', class='form-control input-lg') }}
+            </div>
+          </div>
+          <div class="col-xs-18 col-sm-9 col-md-9">
+            <div class="form-group">
+              {{ form.job(placeholder='Job/Position', class='form-control input-lg') }}
+            </div>
+          </div>
+        </div>
+        <!-- Sixth Line -->
+        <div class="row">
+          <div class="col-xs-12 col-sm-6 col-md-6">
+            <div class="form-group">
+              {{ form.department(placeholder='Company', class='form-control input-lg') }}
+            </div>
+          </div>
+          <div class="col-xs-12 col-sm-6 col-md-6">
+            <div class="form-group">
+              {{ form.country(placeholder='Country', class='form-control input-lg') }}
+            </div>
+          </div>
+        </div>
+        <hr class="colorgraph">
+      </form>
+      <div class="col-xs-12 col-md-6 col-md-offset-3">
+        <button type="button" class="btn btn-primary btn-block btn-lg" id="submit">Register</button>
+        <br />
+        <br />
+        <br />
+      </div>
+    </div>
   </div>
 
   <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>

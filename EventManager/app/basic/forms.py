@@ -47,8 +47,8 @@ class JoinForm(Form):
     user_id = StringField('User ID', validators=[InputRequired(), Length(max=10)])
     title = StringField('Title', [Length(max=20)])
     job = StringField('Job', [Length(max=100)])
-    country = StringField('Country', [Length(max=20)])
-    department = StringField('Department', [InputRequired(), Length(max=60)])
+    country = StringField('Country', [Length(max=40)])
+    department = StringField('Department', [Length(max=60)])
 
 
 class RetrievePwdForm(Form):
