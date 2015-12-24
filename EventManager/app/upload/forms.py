@@ -14,10 +14,15 @@ class SendEmailsForm(Form):
     upload = FileField('', validators=[
         FileRequired(),
         FileAllowed(['xlsx', 'xls'], 'excel only!')
+<<<<<<< HEAD
 	])
     event = SelectField('Event') 
 
 
+=======
+        ])
+    event = SelectField('Event')
+>>>>>>> 32f03a8c789b4b0073a061fceb3bccabf058998e
     
 
     def set_options(self):
