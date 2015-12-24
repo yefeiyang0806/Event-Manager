@@ -5,7 +5,7 @@ from flask import render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from flask.ext.mail import Message
 from .forms import LoginForm, JoinForm, RetrievePwdForm, PwdResetForm
-from ..models import User, Topic, Menu, Role, Role_menu, Content, Format, ResourceType, Resource, Event
+from ..models import User, Topic, Menu, Role, Role_menu, Content, Format, ResourceType, Resource, Event, EventAttender
 from ..emails import send_email
 from werkzeug.security import generate_password_hash
 
@@ -58,11 +58,17 @@ def logged_in():
 @basic.route('/register', methods = ['GET', 'POST'])
 def register():
     form = JoinForm()
+    form.set_options()
     if form.validate_on_submit():
         flash('Passed validation')
         hash_password = generate_password_hash(form.password.data)
         active_code = generate_active_code()
         temp = User(form.user_id.data, form.email.data, hash_password, form.first_name.data, form.last_name.data, form.department.data, active_code, form.title.data, form.job.data, form.country.data)
+        if form.events.data is not None:
+            for e_id in form.events.data:
+                fullname = form.first_name.data + ' ' + form.last_name.data
+                new_attender = EventAttender(e_id, fullname, form.email.data)
+                db.session.add(new_attender)
         db.session.add(temp)
         db.session.commit()
         basic_url = 'http://localhost:5000'
