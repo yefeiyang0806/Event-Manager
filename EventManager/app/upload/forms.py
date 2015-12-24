@@ -15,15 +15,15 @@ class SendEmailsForm(Form):
     upload = FileField('', validators=[
         FileRequired(),
         FileAllowed(['xlsx', 'xls'], 'excel only!')
-    event = SelectField('Event')
-    ])
+	])
+    event = SelectField('Event') 
 
     def set_options(self):
-    	events = db.session.query(Event).all()
-        radio_list = list()
-        for e in events:
-            tup = (e.event_id, e.name)
-            radio_list.append(tup)
-        self.event.choices = radio_list
+		events = db.session.query(Event).all()
+		radio_list = list()
+		for e in events:
+			tup = (e.event_id, e.name)
+			radio_list.append(tup)
+		self.event.choices = radio_list
         
       
