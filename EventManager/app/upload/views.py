@@ -4,7 +4,7 @@ from flask import Flask, request, render_template, redirect, url_for,Blueprint,g
 from werkzeug.utils import secure_filename
 from pyexcel_xls import XLBook 
 from .forms import UploadForm,SendEmailsForm
-from ..models import Topic, User, Format, Content,Role_menu, Menu
+from ..models import Topic, User, Format, Content,Role_menu, Menu,Event
 from app import db
 import xlrd, re,random
 from werkzeug.security import generate_password_hash
@@ -48,19 +48,22 @@ def send_emails():
     user_id = g.user.user_id
     menus = menus_of_role()
     form = SendEmailsForm() 
-    # form.set_options()   
+    form.set_options()   
     if form.validate_on_submit():
         filename = secure_filename(form.upload.data.filename)
         fpath = UPLOAD_FOLDER + filename
+        event_id = form.event_id.data
+        event = db.session.query(Event).filter(Event.event_id == event_id).first()
+        template = event.email_template
         form.upload.data.save(fpath) 
-        send_email_to_user(fpath)  
+        send_email_to_user(fpath, template)  
         message=" import successfully"
     else:
         filename = None
         message=" import failed"
     return render_template('upload/send_emails.html', form=form, filename=filename,message=message,full_name=full_name, menus=menus, status=status)
 
-def send_email_to_user(path):
+def send_email_to_user(path,template):
     data = open_excel(path)   
     table=data.sheets()[0] 
     nrows=table.nrows 
@@ -71,12 +74,8 @@ def send_email_to_user(path):
             continue
         email = ss[0]
         full_name = ss[1]
-        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^6")
-        print(email)
-        print(full_name)
-        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^6")
         send_email('Event Manager', ADMINS[0], [email], "Hello just for testing", \
-            render_template('upload/email/D-com.html', full_name=full_name))
+            render_template(template, full_name=full_name))
 
 
 
