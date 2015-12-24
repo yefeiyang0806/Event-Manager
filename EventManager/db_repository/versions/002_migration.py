@@ -20,28 +20,17 @@ event = Table('event', post_meta,
     Column('create_by', String(length=10)),
 )
 
-event_attender = Table('event_attender', post_meta,
-    Column('uuid', String(length=40), primary_key=True, nullable=False),
-    Column('event_id', String(length=20)),
-    Column('full_name', String(length=100)),
-    Column('email', String(length=100)),
-    Column('create_date', Date),
-    Column('create_time', Time),
-)
-
 
 def upgrade(migrate_engine):
     # Upgrade operations go here. Don't create your own engine; bind
     # migrate_engine to your metadata
     pre_meta.bind = migrate_engine
     post_meta.bind = migrate_engine
-    post_meta.tables['event'].create()
-    post_meta.tables['event_attender'].create()
+    post_meta.tables['event'].columns['name'].create()
 
 
 def downgrade(migrate_engine):
     # Operations to reverse the above upgrade go here.
     pre_meta.bind = migrate_engine
     post_meta.bind = migrate_engine
-    post_meta.tables['event'].drop()
-    post_meta.tables['event_attender'].drop()
+    post_meta.tables['event'].columns['name'].drop()

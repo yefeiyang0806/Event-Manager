@@ -5,12 +5,12 @@ from flask import render_template, flash, redirect, session, url_for, request, g
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from flask.ext.mail import Message
 from .forms import LoginForm, JoinForm, RetrievePwdForm, PwdResetForm
-from ..models import User, Topic, Menu, Role, Role_menu, Content, Format, ResourceType, Resource
+from ..models import User, Topic, Menu, Role, Role_menu, Content, Format, ResourceType, Resource, Event
 from ..emails import send_email
 from werkzeug.security import generate_password_hash
 
 
-import random, json
+import random, json, datetime
 
 
 basic = Blueprint('basic', __name__)
@@ -313,6 +313,26 @@ def generate_resource():
     db.session.add(resource5)
     db.session.commit()
 
+    return redirect(url_for('basic.index'))
+
+
+#Only used for generating events.
+@basic.route('/generate_events')
+@login_required
+def generate_events():
+    e1_from = datetime.datetime.strptime('2016-01-15', '%Y-%m-%d')
+    e1_to = datetime.datetime.strptime('2016-01-18', '%Y-%m-%d')
+    e2_from = datetime.datetime.strptime('2016-01-25', '%Y-%m-%d')
+    e2_to = datetime.datetime.strptime('2016-01-28', '%Y-%m-%d')
+    e3_from = datetime.datetime.strptime('2016-01-19', '%Y-%m-%d')
+    e3_to = datetime.datetime.strptime('2016-01-21', '%Y-%m-%d')
+    event1 = Event('12345', 'dkom', 'Developer kick-off meeting', e1_from, e1_to, 'Email/dkom', g.user.user_id)
+    event2 = Event('23456', 'buss-meeting', 'Global business meeting', e2_from, e2_to, 'Email/buss-meeting', g.user.user_id)
+    event3 = Event('34567', 't-build', 'Team building', e3_from, e3_to, 'Email/t-build', g.user.user_id)
+    db.session.add(event1)
+    db.session.add(event2)
+    db.session.add(event3)
+    db.session.commit()
     return redirect(url_for('basic.index'))
 
 
