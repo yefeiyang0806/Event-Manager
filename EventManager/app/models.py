@@ -429,6 +429,8 @@ class EventAttender(db.Model):
         self.uuid = str(uuid.uuid1())
         self.full_name = full_name
         self.email = email
+        self.create_time = time.strftime("%H:%M:%S")
+        self.create_date = time.strftime("%Y/%m/%d")
 
         related_event = db.session.query(Event).filter(Event.event_id==event_id).first()
         related_event.attenders.append(self)

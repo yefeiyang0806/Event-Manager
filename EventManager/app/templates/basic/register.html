@@ -52,23 +52,7 @@
         </div>
         <!-- Third Line -->
         <div class="row">
-          <!-- <div class="col-xs-6 col-sm-3 col-md-3"> -->
-            <label class='control-label col-xs-6 col-sm-3 col-md-3' for='confirm_password'>
-              <font size='6' color='CadetBlue'>Event:</font>
-            </label>
-          <!-- </div> -->
-          <div class="col-xs-18 col-sm-9 col-md-9">
-            <div class="form-group">
-              <div class='input-group'>
-                <span class="input-group-addon" id="sizing-addon2">*</span>
-                {{ form.confirm_password(placeholder='Select Event (TBD)', class='form-control input-lg') }}
-              </div>
-            </div>
-          </div>
-        </div>
-        <!-- Fourth Line -->
-        <div class="row">
-          <div class="col-xs-6 col-sm-3 col-md-3">
+          <div class="col-xs-8 col-sm-4 col-md-4">
             <div class="form-group">
               <div class='input-group'>
                 <span class="input-group-addon" id="sizing-addon2">*</span>
@@ -76,11 +60,27 @@
               </div>
             </div>
           </div>
-          <div class="col-xs-18 col-sm-9 col-md-9">
+          <div class="col-xs-16 col-sm-8 col-md-8">
             <div class="form-group">
               <div class='input-group'>
                 <span class="input-group-addon" id="sizing-addon2">*</span>
                 {{ form.email(placeholder='Email', class='form-control input-lg') }}
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Fourth Line -->
+        <div class="row">
+          <!-- <div class="col-xs-6 col-sm-3 col-md-3"> -->
+            <label class='control-label col-xs-8 col-sm-4 col-md-4' for='confirm_password'>
+              <font size='6' color='CadetBlue'>Event:</font>
+            </label>
+          <!-- </div> -->
+          <div class="col-xs-16 col-sm-8 col-md-8">
+            <div class="form-group">
+              <div class='input-group'>
+                <span class="input-group-addon" id="sizing-addon2">*</span>
+                {{ form.events(class='form-control  input-lg', size='2') }}
               </div>
             </div>
           </div>
