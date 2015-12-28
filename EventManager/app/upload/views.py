@@ -4,7 +4,7 @@ from flask import Flask, request, render_template, redirect, url_for,Blueprint,g
 from werkzeug.utils import secure_filename
 from pyexcel_xls import XLBook 
 from .forms import UploadForm,SendEmailsForm
-from ..models import Topic, User, Format, Content,Role_menu, Menu,Event
+from ..models import Topic, User, Format, Content,Role_menu, Menu,Event,EventAttender
 from app import db
 import xlrd, re,random
 from werkzeug.security import generate_password_hash
@@ -56,30 +56,57 @@ def send_emails():
         event = db.session.query(Event).filter(Event.event_id == event_id).first()
         template = event.email_template
         form.upload.data.save(fpath) 
-        send_email_to_user(fpath, template)  
+        send_email_to_user(fpath, template, event_id)  
         message=" import successfully"
     else:
         filename = None
         message=" import failed"
     return render_template('upload/send_emails.html', form=form, filename=filename,message=message,full_name=full_name, menus=menus, status=status)
 
-def send_email_to_user(path,template):
+def send_email_to_user(path, template, event_id):
     data = open_excel(path)   
     table=data.sheets()[0] 
     nrows=table.nrows 
     books=[]
+    basic_url = 'http://localhost:5000'
+    accept = "accept"
+    reject = "reject"
     for i in range(nrows):
         ss=table.row_values(i)  
         if i == 0:
             continue
         email = ss[0]
         full_name = ss[1]
+        accept_link = basic_url + url_for('upload.user_status') + '?event_id=' + event_id +'&email='+email+'&full_name='+full_name+'&choose=' + accept 
+        reject_link = basic_url + url_for('upload.user_status') + '?event_id=' + event_id + '&email='+email+'&full_name='+full_name+'&choose=' + reject
         send_email('Event Manager', ADMINS[0], [email], "Hello just for testing", \
-            render_template(template, full_name=full_name))
+            render_template(template, full_name=full_name, accept_link= accept_link, reject_link= reject_link))
 
 
-
-
+@upload.route('/user_status')
+def user_status():
+    full_name = request.args.get("full_name")
+    event_id = request.args.get("event_id")
+    choose = request.args.get("choose")
+    email = request.args.get("email")
+    print("**************************************")
+    print(full_name)
+    print(choose)
+    print("**************************************")
+    event = db.session.query(Event).filter(Event.event_id == event_id).first()
+    if event is not None and choose == "accept":
+        temp = EventAttender(event_id, full_name ,email)
+        db.session.add(temp)
+        db.session.commit()
+        send_email('Event Manager', ADMINS[0], [email], "reply", \
+            render_template("upload/accept_reply.html", full_name=full_name))
+        msg = 'Thank you for joining ' + event.name
+        result = 'Succeeded'
+    else:
+        msg = 'Thank you'
+        result = 'Failed'
+    return render_template('upload/reply_result.html', msg=msg, result=result, full_name= full_name)
+    
 
 
 
