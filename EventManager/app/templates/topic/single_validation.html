@@ -39,7 +39,11 @@
               <td class='col-content'>{{ topic.description }}</td>
             </tr>
               <td class='col-header'>Speaker:</td>
-              <td class='col-content'>{{ topic.speaker1 }}</td>
+              <td class='col-content'>
+                {% for s in speakers_list %}
+                  {{ s.full_name }}, 
+                {% endfor %}
+              </td>
             </tr>
               <td class='col-header'>Content:</td>
               <td class='col-content'>{{ topic.content_type.name }}</td>
