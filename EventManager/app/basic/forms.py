@@ -38,11 +38,6 @@ class LoginForm(Form):
     remember_me = BooleanField('Remember me', default=False)
 
 
-class MultiCheckboxField(SelectMultipleField):
-	widget = widgets.ListWidget(prefix_label=False)
-	option_widget = widgets.CheckboxInput()
-
-
 #registering form
 class JoinForm(Form):
     email = StringField('Email', validators=[InputRequired(), Length(max=100), unique_email, Email(message="Please input a valid Email address")])
@@ -51,21 +46,10 @@ class JoinForm(Form):
     first_name = StringField('First Name', validators=[InputRequired(), Length(max=40)])
     last_name = StringField('Last Name', validators=[InputRequired(), Length(max=40)])
     user_id = StringField('User ID', validators=[InputRequired(), Length(max=10)])
-    events = SelectMultipleField('Events', validators=[InputRequired()])
     title = StringField('Title', [Length(max=20)])
     job = StringField('Job', [Length(max=100)])
     country = StringField('Country', [Length(max=40)])
     department = StringField('Department', [Length(max=60)])
-
-
-    def set_options(self):
-    	current_date = datetime.datetime.now().date()
-    	events = db.session.query(Event).filter(Event.end_date > current_date).all()
-    	option_list = list()
-    	for e in events:
-    		tup = (e.event_id, e.name)
-    		option_list.append(tup)
-    	self.events.choices = option_list
 
 
 class RetrievePwdForm(Form):

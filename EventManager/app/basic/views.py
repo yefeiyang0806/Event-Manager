@@ -58,14 +58,15 @@ def logged_in():
 @basic.route('/register', methods = ['GET', 'POST'])
 def register():
     form = JoinForm()
-    form.set_options()
     if form.validate_on_submit():
         flash('Passed validation')
         hash_password = generate_password_hash(form.password.data)
         active_code = generate_active_code()
         temp = User(form.user_id.data, form.email.data, hash_password, form.first_name.data, form.last_name.data, form.department.data, active_code, form.title.data, form.job.data, form.country.data)
-        if form.events.data is not None:
-            for e_id in form.events.data:
+        selected_events = request.form.getlist('selected_events')
+        if selected_events is not None:
+            for e_id in selected_events:
+                print (e_id)
                 fullname = form.first_name.data + ' ' + form.last_name.data
                 new_attender = EventAttender(e_id, fullname, form.email.data)
                 db.session.add(new_attender)
@@ -79,7 +80,9 @@ def register():
         temp_user = db.session.query(User).filter(User.email == form.email.data)[0]
         login_user(temp_user)
         return redirect(url_for('basic.index'))
-    return render_template("basic/register.html", form=form)
+    current_date = datetime.datetime.now().date()
+    events = db.session.query(Event).filter(Event.end_date > current_date).all()
+    return render_template("basic/register.html", form=form, events=events)
 
 
 #Send password reset link to the provided email address
