@@ -19,7 +19,7 @@
                     {% if not message%}
                       <p>{{message}}</p></br>    
                     {% endif%}
-        <button type="button" class="btn btn-primary btn-login" id="upload_submit" style='margin:20px 30% 0 45%;'>Upload</button>
+        <button type="button" class="btn btn-primary btn-login" id="upload_submit" style='margin:40px 45% 0 30%;'>Upload</button>
         </form>
       </div>
     </div>
@@ -33,11 +33,10 @@
       $("#upload_submit").click(function(){
         $("#form1").submit();
       });
-      
+      $("#form1").css({ "margin": "40px 45% 0 30%"});
      });  
 
-   var form1 = document.getElementById('form1');
-   form1.style.margin ="20px 30% 0 45%";
+
 
 
   </script>
