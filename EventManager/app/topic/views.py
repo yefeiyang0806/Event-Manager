@@ -231,6 +231,8 @@ def validate_topics():
     format_names = results['format_names']
     locations = results['locations']
     topics = results['topics']
+    unvalidated_topics = db.session.query(Topic).filter(Topic.status != 'RJ').filter(Topic.status != 'AP').all()
+    topics = topics.intersection(set(unvalidated_topics))
     return render_template('topic/validate_topics.html', topics=topics, full_name=full_name, status=status, \
         menus=menus, content_names=content_names, format_names=format_names, locations=locations)
         
@@ -263,7 +265,23 @@ def ajax_validation():
 @login_required
 def single_validation(topic_id):
     selected_topic = db.session.query(Topic).filter(Topic.topic_id == topic_id).first()
-    return render_template('topic/single_validation.html', topic=selected_topic)
+    speakers_list = list()
+    speaker1 = db.session().query(User).filter(User.user_id == selected_topic.speaker1).first()
+    speaker2 = db.session().query(User).filter(User.user_id == selected_topic.speaker2).first()
+    speaker3 = db.session().query(User).filter(User.user_id == selected_topic.speaker3).first()
+    speaker4 = db.session().query(User).filter(User.user_id == selected_topic.speaker4).first()
+    speaker5 = db.session().query(User).filter(User.user_id == selected_topic.speaker5).first()
+    if speaker1 is not None:
+        speakers_list.append(speaker1)
+    if speaker2 is not None:
+        speakers_list.append(speaker2)
+    if speaker3 is not None:
+        speakers_list.append(speaker3)
+    if speaker4 is not None:
+        speakers_list.append(speaker4)
+    if speaker5 is not None:
+        speakers_list.append(speaker5)
+    return render_template('topic/single_validation.html', topic=selected_topic, speakers_list=speakers_list)
 
 
 #Responsible for sending filtered resources back to templates of arrange_topics

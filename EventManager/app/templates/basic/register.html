@@ -4,6 +4,18 @@
 {% block body %}
   {{super()}}
   <link href="{{url_for('static', filename='css/register.css')}}" rel="stylesheet">
+  <style>
+    #dropdown-content > ul > li {
+      list-style-type: none;
+    }
+    #dropdown-content > ul > li input {
+      margin-right: 10px;
+      font-family: Sans-serif;
+      font-size: 150%;
+    }
+
+
+  </style>
   {% include 'basic/index_navbar.html' %}
   <div class="container">
     <!-- {{wtf.quick_form(form, action="/register", method="post", extra_classes="form-reg", button_map="primary", id="reg_form")}} -->
@@ -69,6 +81,7 @@
             </div>
           </div>
         </div>
+        <hr class="colorgraph">
         <!-- Fourth Line -->
         <div class="row">
           <!-- <div class="col-xs-6 col-sm-3 col-md-3"> -->
@@ -78,14 +91,32 @@
           <!-- </div> -->
           <div class="col-xs-16 col-sm-8 col-md-8">
             <div class="form-group">
-              <div class='input-group'>
-                <span class="input-group-addon" id="sizing-addon2">*</span>
-                {{ form.events(class='form-control  input-lg', size='2') }}
+              <div class='form-control input-lg dropdown-checkbox'>
+                <div id='dropdown-trigger'>
+                  <a href="javascript:void(0)">
+                    <span class="hida">Select Events</span>    
+                    <p class="multiSel"></p>  
+                  </a>
+                </div>
+              
+                <div class='dropdown-content' id='dropdown-content' style='position:relative;z-index:2;'>
+                  <ul style='background-color:Bisque;'>
+                    {% if events %}
+                      {% for e in events %}
+                        <li>
+                          <input type='checkbox' name='selected_events' value='{{ e.event_id}}'><font size='5px' color='DarkSlateGray'>{{ e.name }}</font>
+                        </li>
+                      {% endfor %}
+                    {% else %}
+                      <li>No events currently</li>
+                    {% endif %}
+                  </ul>
+                </div>
+
               </div>
-            </div>
+            </div>  
           </div>
         </div>
-        <hr class="colorgraph">
         <!-- Fifth Line -->
         <div class="row">
           <div class="col-xs-6 col-sm-3 col-md-3">
@@ -126,11 +157,51 @@
   <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>
   <script>
     $(document).ready(function() {
+
+      $('#dropdown-content ul').css('display', 'none');
+
+      $('input[type="checkbox"]').each(function(){
+        if ($(this).is(':checked')) {
+          if ($('.hida').length){
+            $(".hida").remove();
+          }
+          var clicked = $(this).closest('li').text();
+          clicked = $.trim(clicked) + ', ';
+          var html = '<span title="' + clicked + '">' + clicked + '</span>';
+          $('.multiSel').append(html);
+        }
+      });
 	    
       $("#submit").click(function(){
 		    $("#reg_form").submit();
 	    });
 	
+      $('#dropdown-trigger').click(function(){
+        $('#dropdown-content ul').slideToggle('fast');
+      });
+
+      $('#dropdown-content input[type="checkbox"]').click(function(){
+        var clicked = $(this).closest('li').text();
+        clicked = $.trim(clicked) + ', ';
+        if ($(this).is(':checked')) {
+          var html = '<span title="' + clicked + '">' + clicked + '</span>';
+          $('.multiSel').append(html);
+          $(".hida").remove();
+        }
+        else{
+          $('span[title="' + clicked + '"]').remove();
+          if ($('.multiSel').children().length==0){
+            $('#dropdown-trigger a').prepend('<span class="hida">Select Events</span>');
+          }
+        }
+      });
+
+      $(document).bind('click', function(e) {
+        var $clicked = $(e.target);
+        if (!$clicked.parents().hasClass("dropdown-checkbox") && !$clicked.parents().hasClass("dropdown-content")){
+          $("#dropdown-content ul").hide();
+        }
+      });
     });
   </script>
   

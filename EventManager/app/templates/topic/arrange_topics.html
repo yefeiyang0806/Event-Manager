@@ -137,12 +137,12 @@
         }
       });
       $("#content-filter").find("option").each(function(){
-        if ($(this).text() == url_content){
+        if ($(this).val() == url_content){
           $(this).prop('selected', true);
         }
       });
       $("#format-filter").find("option").each(function(){
-        if ($(this).text() == url_format){
+        if ($(this).val() == url_format){
           $(this).prop('selected', true);
         }
       });
