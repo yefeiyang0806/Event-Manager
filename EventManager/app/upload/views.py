@@ -89,10 +89,6 @@ def user_status():
     event_id = request.args.get("event_id")
     choose = request.args.get("choose")
     email = request.args.get("email")
-    print("**************************************")
-    print(full_name)
-    print(choose)
-    print("**************************************")
     event = db.session.query(Event).filter(Event.event_id == event_id).first()
     if event is not None and choose == "accept":
         temp = EventAttender(event_id, full_name ,email)
@@ -159,9 +155,6 @@ def input_user_xls(path):
                     db.session.commit()
                 tempss = []
                 index = 0
-        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-        print(i)
-        print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
 
 
 
