@@ -25,6 +25,13 @@ def unique_email(form, field):
 		raise ValidationError('Email address already exists')
 
 
+#make sure the employee ID is unique before registering
+def unique_empId(form, field):
+	exist_empId = db.session.query(User).filter(User.user_id == form.user_id.data).first()
+	if exist_empId is not None:
+		raise ValidationError('Employee ID already exists')
+
+
 #When retrieve the forgot password, check if the given email address existed in the database
 def email_check(form, field):
 	fetched_email = db.session.query(User.email).filter(User.email == field.data).first()
@@ -45,7 +52,7 @@ class JoinForm(Form):
     confirm_password = PasswordField('Confirm password', validators=[InputRequired()])
     first_name = StringField('First Name', validators=[InputRequired(), Length(max=40)])
     last_name = StringField('Last Name', validators=[InputRequired(), Length(max=40)])
-    user_id = StringField('User ID', validators=[InputRequired(), Length(max=10)])
+    user_id = StringField('User ID', validators=[InputRequired(), Length(max=10), unique_empId])
     title = StringField('Title', [Length(max=20)])
     job = StringField('Job', [Length(max=100)])
     country = StringField('Country', [Length(max=40)])

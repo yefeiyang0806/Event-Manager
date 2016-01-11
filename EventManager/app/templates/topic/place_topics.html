@@ -177,10 +177,12 @@
             else if (data['ErrorMessage']){
               err_msg = data['ErrorMessage'];
               $('#err_msgs').empty();
+              $('#err_msgs').append('<ul>');
               $.each(err_msg, function(key, value){
-                $('#err_msgs').append("<div><b>'"+value['title']+"'</b>: "+value['message']+'</div>');
+                $('#err_msgs').append("<li><b>'"+value['title']+"'</b>: "+value['message']+'</li>');
               });
-              $('#err_msgs').append('<br /><div>Please fix the conflicts before update the schedule.</div>');
+              $('#err_msgs').append('</ul>');
+              $('#err_msgs').append('<br /><div><font style="text-decoration:underline;">Please fix the conflicts before updating the schedule.</font></div>');
               $('#err_msgs').dialog({
                 width:480,
                 height:240,

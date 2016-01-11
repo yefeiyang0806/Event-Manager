@@ -2,6 +2,7 @@ import os
 
 CSRF_ENABLED = True
 SECRET_KEY = 'feeeeeiyang'
+SQLALCHEMY_TRACK_MODIFICATIONS = True
 
 basedir = os.path.abspath(os.path.dirname(__file__))
 
