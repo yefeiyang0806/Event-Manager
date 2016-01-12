@@ -325,6 +325,68 @@ def generate_resource():
     return redirect(url_for('basic.index'))
 
 
+#Only used for generating real resources.
+@basic.route('/generate_real_resources')
+@login_required
+def generate_real_resource():
+    rt_st = ResourceType('SAP Talk', 'i325390')
+    rt_db = ResourceType('Downtown Block', 'i325390')
+    rt_dfb = ResourceType('Developer Faire Booth', 'i325390')
+    rt_iz = ResourceType('Interactive Zone', 'i325390')
+    db.session.add(rt_st)
+    db.session.add(rt_db)
+    db.session.add(rt_dfb)
+    db.session.add(rt_iz)
+    db.session.commit()
+
+    resource1 = Resource('SAP Talk 1', 'ST_01', 'SAP Talk 1', 100, g.user.user_id, 'SAP Talk')
+    resource2 = Resource('SAP Talk 2', 'ST_02', 'SAP Talk 2', 100, g.user.user_id, 'SAP Talk')
+    resource3 = Resource('SAP Talk 3', 'ST_03', 'SAP Talk 3', 100, g.user.user_id, 'SAP Talk')
+    resource4 = Resource('Downtown Block 1', 'DB_01', 'Downtown Block 1', 100, g.user.user_id, 'Downtown Block')
+    resource5 = Resource('Downtown Block 2', 'DB_02', 'Downtown Block 2', 100, g.user.user_id, 'Downtown Block')
+    resource6 = Resource('Downtown Block 3', 'DB_03', 'Downtown Block 3', 100, g.user.user_id, 'Downtown Block')
+    resource7 = Resource('Downtown Block 4', 'DB_04', 'Downtown Block 4', 100, g.user.user_id, 'Downtown Block')
+    resource8 = Resource('Downtown Block 5', 'DB_05', 'Downtown Block 5', 100, g.user.user_id, 'Downtown Block')
+    resource9 = Resource('Downtown Block 6', 'DB_06', 'Downtown Block 6', 100, g.user.user_id, 'Downtown Block')
+    resource10 = Resource('Dev. Faire Booth 1', 'DFB_01', 'Developer Faire Booth 1', 100, g.user.user_id, 'Developer Faire Booth')
+    resource11 = Resource('Dev. Faire Booth 2', 'DFB_02', 'Developer Faire Booth 2', 100, g.user.user_id, 'Developer Faire Booth')
+    resource12 = Resource('Dev. Faire Booth 3', 'DFB_03', 'Developer Faire Booth 3', 100, g.user.user_id, 'Developer Faire Booth')
+    resource13 = Resource('Dev. Faire Booth 4', 'DFB_04', 'Developer Faire Booth 4', 100, g.user.user_id, 'Developer Faire Booth')
+    resource14 = Resource('Dev. Faire Booth 5', 'DFB_05', 'Developer Faire Booth 5', 100, g.user.user_id, 'Developer Faire Booth')
+    resource15 = Resource('Dev. Faire Booth 6', 'DFB_06', 'Developer Faire Booth 6', 100, g.user.user_id, 'Developer Faire Booth')
+    resource16 = Resource('Dev. Faire Booth 7', 'DFB_07', 'Developer Faire Booth 7', 100, g.user.user_id, 'Developer Faire Booth')
+    resource17 = Resource('Dev. Faire Booth 8', 'DFB_08', 'Developer Faire Booth 8', 100, g.user.user_id, 'Developer Faire Booth')
+    resource18 = Resource('Interactive Zone 1', 'IZ_01', 'Interactive Zone 1', 100, g.user.user_id, 'Interactive Zone')
+    resource19 = Resource('Interactive Zone 2', 'IZ_02', 'Interactive Zone 2', 100, g.user.user_id, 'Interactive Zone')
+    resource20 = Resource('Interactive Zone 3', 'IZ_03', 'Interactive Zone 3', 100, g.user.user_id, 'Interactive Zone')
+    resource21 = Resource('Interactive Zone 4', 'IZ_04', 'Interactive Zone 4', 100, g.user.user_id, 'Interactive Zone')
+
+    db.session.add(resource1)
+    db.session.add(resource2)
+    db.session.add(resource3)
+    db.session.add(resource4)
+    db.session.add(resource5)
+    db.session.add(resource6)
+    db.session.add(resource7)
+    db.session.add(resource8)
+    db.session.add(resource9)
+    db.session.add(resource10)
+    db.session.add(resource11)
+    db.session.add(resource12)
+    db.session.add(resource13)
+    db.session.add(resource14)
+    db.session.add(resource15)
+    db.session.add(resource16)
+    db.session.add(resource17)
+    db.session.add(resource18)
+    db.session.add(resource19)
+    db.session.add(resource20)
+    db.session.add(resource21)
+    db.session.commit()
+
+    return redirect(url_for('basic.index'))
+
+
 #Only used for generating events.
 @basic.route('/generate_events')
 @login_required

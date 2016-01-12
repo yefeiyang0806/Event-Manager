@@ -8,7 +8,7 @@ from .forms import CreateTopicForm
 from ..models import User, Topic, Role, Menu, Role_menu, Content, Format, ResourceType, Resource, TopicValidation, TopicSchedule
 from ..emails import send_email
 from werkzeug.security import generate_password_hash
-import random, json, datetime
+import random, json, datetime, math
 import re
 
 
@@ -169,11 +169,18 @@ def view_topic():
 @topic.route('/available')
 @login_required
 def available_topics():
+    page_number = request.args.get('page', None)
     full_name = g.user.full_name
     status = g.user.status
     menus = menus_of_role()
-    topics = db.session.query(Topic).all()
-    return render_template('topic/available_topics.html', topics=topics, full_name=full_name, status=status, menus=menus)
+    topic_number = db.session.query(Topic).count()
+    page_count = math.ceil(topic_number/10)
+    if page_number is None:
+        topics = db.session.query(Topic).order_by(Topic.format).limit(10)
+    else:
+        offset_pages = int(page_number)-1
+        topics = db.session.query(Topic).order_by(Topic.format).offset(offset_pages*10).limit(10)
+    return render_template('topic/available_topics.html', topics=topics, full_name=full_name, status=status, menus=menus, page_count=page_count)
 
 
 #Show the page of scheduling all the approved topics. The page is reached by the "Arrange topic link in the topic management side bar"
@@ -191,7 +198,7 @@ def arrange_topics():
     format_names = results['format_names']
     locations = results['locations']
     rejected_topics = db.session.query(Topic).filter(Topic.status=='RJ').all()
-    topics = results['topics']
+    topics = set(results['topics'].all())
     topics = set(topics).difference(set(rejected_topics))
     
     return render_template('topic/arrange_topics.html', topics=topics, full_name=full_name, status=status, \
@@ -223,6 +230,7 @@ def validate_topics():
     full_name = g.user.full_name
     status = g.user.status
     menus = menus_of_role()
+    page_number = request.args.get('page', None)
     content_filter = request.args.get('content', None)
     format_filter = request.args.get('format', None)
     location_filter = request.args.get('location', None)
@@ -231,10 +239,18 @@ def validate_topics():
     format_names = results['format_names']
     locations = results['locations']
     topics = results['topics']
-    unvalidated_topics = db.session.query(Topic).filter(Topic.status != 'RJ').filter(Topic.status != 'AP').all()
-    topics = topics.intersection(set(unvalidated_topics))
+    rejected_topics = db.session.query(Topic.topic_id).filter(Topic.status == 'RJ')
+    approved_topics = db.session.query(Topic.topic_id).filter(Topic.status == 'AP')
+    #topics = topics.filter(~Topic.topic_id.in_(rejected_topics)).filter(~Topic.topic_id.in_(approved_topics))
+    topic_count = topics.count()
+    page_count = math.ceil(topic_count/10)
+    if page_number is None:
+        topics = topics.order_by(Topic.format).limit(10)
+    else:
+        offset_pages = int(page_number)-1
+        topics = topics.order_by(Topic.format).offset(offset_pages*10).limit(10)
     return render_template('topic/validate_topics.html', topics=topics, full_name=full_name, status=status, \
-        menus=menus, content_names=content_names, format_names=format_names, locations=locations)
+        menus=menus, content_names=content_names, format_names=format_names, locations=locations, page_count=page_count)
         
 
 # Handle the content sent from the templates to insert validation result into db.
@@ -521,14 +537,13 @@ def content_format_location_filter(content_filter, format_filter, location_filte
         if l_name not in locations:
             locations.append(l_name)
 
-    topics_content = topics_format = topics_location = db.session.query(Topic).all()
+    topics = db.session.query(Topic)
     if content_filter != None:
-        topics_content = db.session.query(Content).filter(Content.content_id == content_filter).first().topics.all()
+        topics = topics.filter(~Topic.topic_id.in_(db.session.query(Topic.topic_id).filter(Topic.content != content_filter)))
     if format_filter != None:
-        topics_format = db.session.query(Format).filter(Format.format_id == format_filter).first().topics.all()
+        topics = topics.filter(~Topic.topic_id.in_(db.session.query(Topic.topic_id).filter(Topic.format != format_filter)))
     if location_filter != None:
-        topics_location = db.session.query(Topic).filter(Topic.location == location_filter).all()
-    topics = set(topics_format).intersection(topics_content).intersection(topics_location)
+        topics = topics.filter(~Topic.topic_id.in_(db.session.query(Topic.topic_id).filter(Topic.location != location_filter)))
 
     results['content_names'] = content_names
     results['format_names'] = format_names

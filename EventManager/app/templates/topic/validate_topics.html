@@ -18,7 +18,8 @@
   	<div class="row">
   		{% include 'public/side_bar.html' %}
     	<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-        <h1 class="page-header">Validate Topics</h1>
+        <h1 class="page-header" style='display:inline;'>Validate Topics</h1>
+        {% include 'public/pagination.html' %}
         <br />
 
         <div class='row' style='text-align:center;'>
@@ -142,10 +143,12 @@
   <div style='display:none;'>
     <iframe id='card_view' width='900px' height='550px'></iframe>
   </div>
+  <input type='hidden' id='page_count' value='{{ page_count }}' />
   <meta name="csrf-token" content="{{ csrf_token() }}"></meta>
   
   <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>
   <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  <script src="{{url_for('static', filename='js/pagination.js')}}"></script>
   <script src="{{url_for('static', filename='jquery-timepicker/jquery.timepicker.js')}}"></script>
   <script>
     $(document).ready(function() {

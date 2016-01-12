@@ -10,9 +10,10 @@
   	<div class="row">
   		{% include 'public/side_bar.html' %}
     	<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-        <h1 class="page-header">Available Topics</h1>
+        <h1 class="page-header" style='display:inline;'>Available Topics</h1>
+        {% include 'public/pagination.html' %}
         <br />
-        <div class="table-responsive">
+        <div class="table-responsive" style="clear:both;">
           {% if not topics %}
 			      <div class="panel panel-warning">
             	<div class="panel-heading">
@@ -22,7 +23,7 @@
               	You can <a href="/topic/create">register new topics here</a>.
               </div>
           	</div>
-		  	 {% else %}
+          {% else %}
           	{% for topic in topics %}
           	  <h3 class="topic_title text-muted"><a href="/topic/view?topic_id={{ topic.topic_id }}">{{ topic.title }}</a></h3>
           	  <table class="table">
@@ -44,6 +45,7 @@
           	{% endfor %}
           {% endif %}
         </div>
+        <input type='hidden' id='page_count' value='{{ page_count }}' />
         <div style="display:none" id='confirm' title='Delete the selected topic?'>
           <p>Do you want to delete the selected topic?</p>
         </div>
@@ -52,4 +54,5 @@
   </div>
   <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>
   <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  <script src="{{url_for('static', filename='js/pagination.js')}}"></script>
 {% endblock %}
