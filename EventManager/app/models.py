@@ -180,7 +180,10 @@ class Menu(db.Model):
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
     create_by = db.Column(db.String(10))
-
+    # category_name = db.Column(db.String(40))
+    # category_id = db.Column(db.String(40))
+    # menu_name = db.Column(db.String(40), index = True, unique = True)
+    # url = db.Column(db.String(100))
 
     def __repr__(self):
         return '<User %r>' % (self.menu)

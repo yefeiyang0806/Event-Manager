@@ -1,0 +1,14 @@
+{% for cat in menu_categories %}
+  <li class="collapse collapsed-title" style="background-color:#B6B6B4;">
+  	<a class='collapsed' href="#{{ cat.category_id }}" data-toggle="collapse"><strong>{{ cat.category_name }}</strong>&nbsp;&nbsp;&nbsp;&nbsp;
+  	  <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+  	</a>
+  </li>
+  <li>
+  	<ul class="nav nav-sidebar list-unstyled collapse collapsed-menu" style="margin-left:10%;width:80%;" id='{{ cat.category_id }}'>
+  	  {% for menu in cat.menus %}
+      	<li id='{{ menu.menu_id }}'><a href="{{ menu.url }}">{{ menu.menu_name }}</a></li>
+      {% endfor %}
+  	</ul>
+  </li>
+{% endfor %}

@@ -14,6 +14,8 @@ import random, json, datetime
 
 
 basic = Blueprint('basic', __name__)
+full_name = ''
+status = ''
 
 
 #Home page of the website, ask for login
@@ -46,8 +48,6 @@ def index():
 @basic.route('/member', methods = ['GET', 'POST'])
 @login_required
 def logged_in():
-    full_name = g.user.full_name
-    status = g.user.status
     topics = db.session.query(Topic).filter(Topic.create_by == g.user.email).all()
     menus = menus_of_role()
     return render_template('basic/member.html', full_name=full_name, topics=topics, status=status, menus=menus)
@@ -89,7 +89,6 @@ def register():
 @basic.route('/send_activate')
 @login_required
 def send_activate_link():
-    full_name = g.user.full_name
     email = g.user.email
     active_code = refresh_active_code(email)
     basic_url = 'http://localhost:5000'
@@ -105,7 +104,6 @@ def send_activate_link():
 @basic.route('/activate_user')
 @login_required
 def activate_user():
-    full_name = g.user.full_name
     user_id = g.user.user_id
     menus = menus_of_role()
     active_code = request.args.get("active_code")
@@ -128,7 +126,6 @@ def activate_user():
     else:
         msg = "Sorry, your activation code is invalid. Please try again."
         result = 'Failed'
-    status = g.user.status
     return render_template('basic/activate_result.html', msg=msg, result=result, full_name= full_name, status=status, menus=menus)
 
 
@@ -417,6 +414,11 @@ def load_user(id):
 @basic.before_request
 def before_request():
     g.user = current_user
+    global full_name, status
+    if hasattr(g.user, 'full_name'):
+        full_name = g.user.full_name
+    if hasattr(g.user, 'status'):
+        status = g.user.status
 
 
 #Return the corresponding menus of a certain user's role

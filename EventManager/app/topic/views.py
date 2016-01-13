@@ -13,14 +13,14 @@ import re
 
 
 topic = Blueprint('topic', __name__)
+full_name = ''
+status = ''
 
 
 # Responsible for creating topics.
 @topic.route('/create', methods = ['GET', 'POST'])
 @login_required
 def create_topic():
-    full_name = g.user.full_name
-    status = g.user.status
     user_id = g.user.user_id
     menus = menus_of_role()
     form = CreateTopicForm()
@@ -66,15 +66,11 @@ def delete_topic():
 @topic.route('/modify/<topic_id>', methods = ['GET', 'POST'])
 @login_required
 def modify_topic(topic_id):
-    full_name = g.user.full_name
-    status = g.user.status
     form = CreateTopicForm()
     form.set_options()
     topic = db.session.query(Topic).filter(Topic.topic_id == topic_id).first()
     if request.method == 'POST':
-        # print("POST received")
         if form.validate_on_submit():
-            #topic_id = request.form.get('topic_id')
             topic.title = form.title.data
             topic.description = form.description.data
             topic.min_attendance = form.min_attendance.data
@@ -151,8 +147,6 @@ def modify_topic(topic_id):
 @topic.route('/view')
 @login_required
 def view_topic():
-    full_name = g.user.full_name
-    status = g.user.status
     menus = menus_of_role()
     topic_id = request.args.get('topic_id')
     topic = db.session.query(Topic).filter(Topic.topic_id == topic_id).first()
@@ -170,8 +164,6 @@ def view_topic():
 @login_required
 def available_topics():
     page_number = request.args.get('page', None)
-    full_name = g.user.full_name
-    status = g.user.status
     menus = menus_of_role()
     topic_number = db.session.query(Topic).count()
     page_count = math.ceil(topic_number/10)
@@ -187,8 +179,6 @@ def available_topics():
 @topic.route('/arrange')
 @login_required
 def arrange_topics():
-    full_name = g.user.full_name
-    status = g.user.status
     menus = menus_of_role()
     content_filter = request.args.get('content', None)
     format_filter = request.args.get('format', None)
@@ -209,8 +199,6 @@ def arrange_topics():
 @topic.route('/place')
 @login_required
 def place_topics():
-    full_name = g.user.full_name
-    status = g.user.status
     menus = menus_of_role()
     content_filter = request.args.get('content', None)
     format_filter = request.args.get('format', None)
@@ -227,8 +215,6 @@ def place_topics():
 @topic.route('/validate')
 @login_required
 def validate_topics():
-    full_name = g.user.full_name
-    status = g.user.status
     menus = menus_of_role()
     page_number = request.args.get('page', None)
     content_filter = request.args.get('content', None)
@@ -257,15 +243,12 @@ def validate_topics():
 @topic.route('/ajax_validation', methods=["GET", "POST"])
 @login_required
 def ajax_validation():
-    #print(request.get_json(force=True))
     json_data = request.get_json(force=True)
     results = json_data["Results"]
     for result in results:
         topic_validation = db.session.query(TopicValidation).filter(TopicValidation.topic_id == result['topic_id']).first()
-        # print(topic)
         if topic_validation == None:
             topic_validation = TopicValidation(result['topic_id'], result['validation'], g.user.user_id)
-            # print(topic_validation.topic_title)
             topic = db.session.query(Topic).filter(Topic.topic_id == result['topic_id']).first()
             topic.validation.append(topic_validation)
             db.session.add(topic_validation)
@@ -351,8 +334,6 @@ def validate_arrangement():
             errors.append(error_msg)
         if (not conflict_speaker) and (not conflict_room):
             topic = db.session.query(Topic).filter(Topic.topic_id == s['topic_id']).first()
-            #print('--------------------')
-            #print(topic)
             if topic.schedule.first()==None:
                 t_s = TopicSchedule(topic.topic_id, s['date'], s['date'], \
                 datetime.datetime.strptime(s['time_from'], '%H:%M:%S').time(), datetime.datetime.strptime(s['time_to'], '%H:%M:%S').time(), s['resource'], g.user.user_id)
@@ -556,6 +537,9 @@ def content_format_location_filter(content_filter, format_filter, location_filte
 @topic.before_request
 def before_request():
     g.user = current_user
+    global full_name, status
+    full_name = g.user.full_name
+    status = g.user.status
 
 
 #Generate the topic id.

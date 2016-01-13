@@ -11,15 +11,15 @@ import random
 
 
 role = Blueprint('role', __name__)
+full_name = ''
+status = ''
 
 
 # Responsible for creating Roles.
 @role.route('/create', methods = ['GET', 'POST'])
 @login_required
 def create_role():
-    full_name = g.user.full_name
     create_by = g.user.full_name
-    status = g.user.status
     menus = menus_of_role()
     form = CreateRoleForm()
     if form.validate_on_submit():
@@ -49,8 +49,6 @@ def delete_role():
 @role.route('/modify/<role_uuid>', methods = ['GET', 'POST'])
 @login_required
 def modify_role(role_uuid):
-    full_name = g.user.full_name
-    status = g.user.status
     menus = menus_of_role()
     form = CreateRoleForm()
     role = Role.query.get(role_uuid)
@@ -82,8 +80,6 @@ def modify_role(role_uuid):
 @role.route('/manage')
 @login_required
 def manage_roles():
-    full_name = g.user.full_name
-    status = g.user.status
     menus = menus_of_role()
     roles = db.session.query(Role).all()
     return render_template('role/manage_roles.html', roles=roles, full_name=full_name, status=status, menus=menus)
@@ -99,6 +95,9 @@ def load_user(id):
 @role.before_request
 def before_request():
     g.user = current_user
+    global full_name, status
+    full_name = g.user.full_name
+    status = g.user.status
 
 
 #Return the corresponding menus of a certain user's role
