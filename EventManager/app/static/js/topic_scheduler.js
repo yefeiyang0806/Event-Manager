@@ -35,6 +35,7 @@
         else {
           recreate_scheduler();
         }
+        $("#filter_notice").remove();
       });
 
       $("#reset_schedule").click(function(){
