@@ -370,7 +370,7 @@ def ajax_schedule():
         to_str = datetime.datetime.combine(s.day_from,s.time_to)
         each_schedule['from'] = datetime.datetime.strftime(from_str, "%Y-%m-%d %H:%M:%S")
         each_schedule['to'] = datetime.datetime.strftime(to_str, "%Y-%m-%d %H:%M:%S")
-        each_schedule['resource'] = s.assigned_resource.name
+        each_schedule['resource'] = s.assigned_resource.r_id
         each_schedule['contentFormat'] = s.scheduled_topic.format_type.name + \
             " (" + s.scheduled_topic.content_type.name + ")"
         schedule.append(each_schedule)
@@ -411,15 +411,46 @@ def ajax_schedule():
     return json.dumps(schedule)
 
 
+#Remove all the schedule records based on the passed filter conditions
+@topic.route('/reset_schedule', methods=['GET', 'POST'])
+@login_required
+def reset_schedule():
+    json_data = request.get_json(force=True)
+    conditions = json_data["remove_conditions"]
+    content_filter = format_filter = location = None
+    for f in conditions:
+        if f['type'] == 'content':
+            content_filter = f['value']
+        if f['type'] == 'format':
+            format_filter = f['value']
+        if f['type'] == 'location':
+            location = f['value']
+    filtered_results = content_format_location_filter(content_filter, format_filter, location)
+    filtered_topics = filtered_results['topics'].all()
+    related_topic_id = list()
+    for t in filtered_topics:
+        related_topic_id.append(t.topic_id)
+    related_schedules = db.session.query(TopicSchedule).filter(TopicSchedule.topic_id.in_(related_topic_id)).all()
+    for rs in related_schedules:
+        db.session.delete(rs)
+    db.session.commit()
+    return 'success'
+
+
 #Return all the resources info to the place_topic.html through json
+@topic.route('/ajax_resources/<format>', methods=['GET', 'POST'])
 @topic.route('/ajax_resources', methods=['GET', 'POST'])
 @login_required
-def ajax_resources():
+def ajax_resources(format=None):
     res = list()
-    all_resources = db.session.query(Resource).all()
-    for r in all_resources:
+    if format is None:
+        selected_resources = db.session.query(Resource).all()
+    else:
+        format_name = db.session.query(Format).filter(Format.format_id == format).first().name
+        selected_resources = db.session.query(Resource).filter(Resource.r_type == format_name).all()
+    for r in selected_resources:
         each_r = dict()
-        each_r['resource'] = r.name
+        each_r['resource'] = r.r_id
         res.append(each_r)
     res.append({'resource': 'TBD'})
     return json.dumps(res)

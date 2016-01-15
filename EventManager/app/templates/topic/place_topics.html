@@ -25,7 +25,7 @@
               <td align='center'>
                 <label class='control-label' for='content-filter'>Content: </label>
                 <select id='content-filter'>
-                    <option selected>----Any----</option>
+                    <option value='any' selected>----Any----</option>
                   {% for c_name in content_names %}
                     <option value='{{ c_name.id }}'>{{ c_name.name }}</option>
                   {% endfor %}
@@ -34,7 +34,7 @@
               <td align='center'>
                 <label class='control-label' for='format-filter'>Format: </label>
                 <select id='format-filter'>
-                  <option selected>--------Any--------</option>
+                  <option value='any' selected>--------Any--------</option>
                   {% for f_name in format_names %}
                     <option value='{{ f_name.id }}'>{{ f_name.name }}</option>
                   {% endfor %}
@@ -53,18 +53,30 @@
                 <button class='btn btn-primary' id='set_filter'>Search</button>
               </td>
             </tr>
+            <tr><td colspan=4 style='padding-left:15px;'><hr></td></tr>
+            <tr><td colspan=4><button class='btn btn-info' id='reset_schedule'>Reset schedule records</button></td></tr>
           </table>
         </div>
         <br>
         <div id='scheduler_wrapper'>
           <div id='scheduler' width='100%'></div>
         </div>
-        <div id='scheduler_btn' style='margin:20px 45% 0 45%;'>
-          <button class='btn btn-info' id='scheduler_update' >Update Schedule</button>
+        <div class='row' style='text-align:center;margin-top:20px;'>
+          <table width="90%">
+            <tr>
+              <td>
+                <button class='btn btn-info' id='scheduler_update' >Update Schedule</button>
+              </td>
+            </tr>
+          </table>
         </div>
         <div id="dialog" style='display:none;' title="Modifications are detected!">
           <p>Unsaved Modifications have been detected on the current scheduler.<br />
             Refreshing the scheduler would discard these changes.</p>
+        </div>
+        <div id="dialog_reset" style='display:none;' title="Do you want to reset the scheduler?">
+          <p>Once reset, all records in the current scheduler would be removed.<br />
+            Are you sure you want to reset the scheduler?</p>
         </div>
         <div style='display:none;' id='err_msgs' title='Conflicts Detected'></div>
         <meta name="csrf-token" content="{{ csrf_token() }}"></meta>
@@ -95,224 +107,6 @@
   <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxinput.js')}}"></script>
   <script src="{{url_for('static',filename='jqwidgets/jqwidgets/globalization/globalize.js')}}"></script>
   <script src="{{url_for('static',filename='jqwidgets/jqwidgets/globalization/globalize.culture.de-DE.js')}}"></script>
-  <script>
-    $(document).ready(function() {
-
-      var appointments = new Array();
-      var csrftoken = $('meta[name=csrf-token]').attr('content');
-      $.ajaxSetup({
-        beforeSend: function(xhr, settings) {
-          if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
-            xhr.setRequestHeader("X-CSRFToken", csrftoken);
-          }
-        }
-      });
-
-      var modified_list = [];
-
-      $("#set_filter").click(function(){
-        if (modified_list.length>0){
-          $('#dialog').dialog({
-            width:400,
-            height:240,
-            modal: true,
-            buttons: {
-              Confirm: function() {
-                $( this ).dialog( "close" );
-                recreate_scheduler();
-              },
-              Cancel: function() {
-                $( this ).dialog( "close" );
-              }
-            }
-          });
-        }
-        else {
-          recreate_scheduler();
-        }
-      });
-
-      $('#scheduler_wrapper').on('appointmentChange', '#scheduler', function (event) {
-        var args = event.args;
-        var appointment = args.appointment;
-        if ($.inArray(appointment['id'], modified_list) == -1){
-          modified_list.push(appointment['id']);
-        }
-        
-        $("#scheduler").jqxScheduler('beginAppointmentsUpdate');
-        // $("#scheduler").jqxScheduler('setAppointmentProperty', appointment['id'], 'borderColor', 'red');
-        $("#scheduler").jqxScheduler('endAppointmentsUpdate');
-      });
-
-      $('#scheduler_update').click(function(){
-        var data = [];
-        $.each(modified_list, function(key, value){
-          var scheduler_ele = $("#scheduler_wrapper").find('#scheduler');
-          var res = scheduler_ele.jqxScheduler('getAppointmentProperty', value, 'resourceId');
-          var from = scheduler_ele.jqxScheduler('getAppointmentProperty', value, 'from').toString('HH:mm:ss');
-          var to = scheduler_ele.jqxScheduler('getAppointmentProperty', value, 'to').toString('HH:mm:ss');
-          var date = scheduler_ele.jqxScheduler('getAppointmentProperty', value, 'to').toString('yyyy-MM-dd');
-          var record = {'topic_id': value, 'resource': res, 'time_from': from, 'time_to': to, 'date': date};
-          if (res != 'TBD'){
-            data.push(record);  
-          }
-          // Get modified date and resource ---- Done!
-          // Generate json with id, from, to and resource ---- Done!
-          // Send back to the validation function to do validation ---- Done!
-          // Get response from topic/views.py ---- Done!
-          // Reset modified_list to empty ---- Done!
-        });
-        // console.log(data);
-        $.ajax({
-          type: "POST",
-          contentType: "application/json",
-          dataType: "json",
-          url: "/topic/validate_arrangement",
-          data: JSON.stringify({ "schedule": data }),
-          success: function(data){
-            if (data['status']){
-              alert("Topic schedule updating status: " + data['status']);
-              modified_list = [];
-            }
-            else if (data['ErrorMessage']){
-              err_msg = data['ErrorMessage'];
-              $('#err_msgs').empty();
-              $('#err_msgs').append('<ul>');
-              $.each(err_msg, function(key, value){
-                $('#err_msgs').append("<li><b>'"+value['title']+"'</b>: "+value['message']+'</li>');
-              });
-              $('#err_msgs').append('</ul>');
-              $('#err_msgs').append('<br /><div><font style="text-decoration:underline;">Please fix the conflicts before updating the schedule.</font></div>');
-              $('#err_msgs').dialog({
-                width:480,
-                height:240,
-                modal: true
-              });
-            }
-          }
-        });
-      });
-
-     // $("#set_filter").trigger('click');
-
-      function recreate_scheduler(){
-        var filter_data = [];
-        var content_name = $("#content-filter").find(":selected").val();
-        var format_name = $("#format-filter").find(":selected").val();
-        var location = $("#location-filter").find(":selected").text();
-        if (content_name != "----Any----"){
-          filter_data.push({'type': 'content', 'value': content_name});
-        }
-        if (format_name != "--------Any--------"){
-          filter_data.push({'type': 'format', 'value': format_name});
-        }
-        if (location != "------Any------"){
-          filter_data.push({'type': 'location', 'value': location});
-        }
-        $.ajax({
-          type: "POST",
-          contentType: "application/json",
-          dataType: "json",
-          url: "/topic/ajax_schedule",
-          data: JSON.stringify({ "filters": filter_data }),
-          success: function(data){
-            var source =
-              {
-                dataType: "json",
-                dataFields: [
-                  { name: 'topic_id', type: 'string' },
-                  { name: 'contentFormat', type: 'string'},
-                  { name: 'description', type: 'string' },
-                  { name: 'year', type: 'string' },
-                  { name: 'topic_title', type: 'string' },
-                  { name: 'resource', type: 'string' },
-                  { name: 'from', type: 'date' },
-                  { name: 'to', type: 'date' }
-                ],
-                id: 'topic_id',
-                localData: data
-              };
-
-            var data_of_resources = 
-              {
-                dataType: "json",
-                dataFields: [
-                  { name: 'resource', type: 'string' },
-                ],
-                id: 'topic_id',
-                url: '/topic/ajax_resources'
-              };
-
-            var adapter = new $.jqx.dataAdapter(source);
-            $("#scheduler").jqxScheduler('destroy');
-            $("#scheduler_wrapper").append('<div id="scheduler" width="100%"></div>');
-            $("#scheduler").jqxScheduler({
-              date: new $.jqx.date(2015, 12, 28),
-              width: '90%',
-              height: 1200,
-              rowsHeight: 30,
-              dayNameFormat: "abbr",
-              source: adapter,
-              showLegend: true,
-              legendHeight: 100,
-              ready: function () {
-                    
-                },
-              editDialogCreate: function (dialog, fields, editAppointment) {
-                var assigned_content_format = null;
-                if (editAppointment != null){
-                  assigned_content_format = editAppointment.location;
-                }
-                var format_field = "<div><div class='jqx-scheduler-edit-dialog-label'>Format</div><div class='jqx-scheduler-edit-dialog-field'><input class='jqx-widget-content jqx-input jqx-widget jqx-rc-all' style='width:100%;height:25px;' value='" + assigned_content_format + "' disabled /></div></div>";
-                fields.repeatContainer.hide();
-                fields.statusContainer.hide();
-                fields.allDayContainer.hide();
-                fields.colorContainer.hide();
-                fields.timeZoneContainer.hide();
-                fields.locationContainer.hide();
-                fields.resourceLabel.html('Resource');
-                fields.subject.prop('disabled', true);
-                fields.description.prop('disabled', true);
-                fields.description.attr('rows', '8');
-                fields.subject.parent().after(format_field);
-              },
-              editDialogOpen: function (dialog, fields, editAppointment) {
-                if (editAppointment != null){
-                  fields.subject.parent().next().find('input').val(editAppointment.location);
-                }
-                else {
-                  fields.subject.parent().next().find('input').val('');
-                }
-              },
-              resources:
-              {
-                colorScheme: "scheme05",
-                dataField: "resource",
-                orientation: "horizontal",
-                resourceColumnWidth: 120,
-                source:  new $.jqx.dataAdapter(data_of_resources)
-              },
-              appointmentDataFields:
-              {
-                from: "from",
-                to: "to",
-                id: "topic_id",
-                description: "description",
-                location: "contentFormat",
-                subject: "topic_title",
-                resourceId: "resource",
-              },
-              view: 'dayView',
-              views:
-              [
-                { type: 'dayView', showWeekends: false, timeRuler: { scaleStartHour: 8, scaleEndHour: 21, scale: "tenMinutes", formatString: "HH:mm" }, appointmentsRenderMode: "exactTime" },
-                { type: 'weekView', showWeekends: false }
-              ]
-            });
-          }
-        });
-      }
-
-    });
-  </script>
+  <script src="{{url_for('static',filename='js/topic_scheduler.js')}}"></script>
+    
 {% endblock %}
