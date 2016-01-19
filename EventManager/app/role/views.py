@@ -13,7 +13,7 @@ import random
 role = Blueprint('role', __name__)
 full_name = ''
 status = ''
-
+menu_categories = list()
 
 # Responsible for creating Roles.
 @role.route('/create', methods = ['GET', 'POST'])
@@ -27,7 +27,7 @@ def create_role():
         db.session.add(temp)
         db.session.commit()
         return redirect(url_for('role.manage_roles'))
-    return render_template("role/create_role.html", form=form, full_name=full_name, menus=menus, status=status)
+    return render_template("role/create_role.html", form=form, full_name=full_name, menu_categories=menu_categories, status=status)
 
 #Responsible for deleting existing roles.
 #Called by jquery in role.view_event.html and basic.member.html
@@ -65,13 +65,13 @@ def modify_role(role_uuid):
             return redirect(url_for("role.manage_roles"))
         else:
             print ("Not validated") 
-            return render_template("role/modify_role.html", form=form, menus=menus, full_name=full_name, status=status, role_uuid=role_uuid)
+            return render_template("role/modify_role.html", form=form, menu_categories=menu_categories, full_name=full_name, status=status, role_uuid=role_uuid)
 
     # if role.is_created_by(g.user.uuid):
     else:
         form.rolename.data = role.rolename
         form.description.data = role.description         
-        return render_template("role/modify_role.html", form=form, menus=menus, full_name=full_name, status=status, role_uuid=role_uuid)
+        return render_template("role/modify_role.html", form=form, menu_categories=menu_categories, full_name=full_name, status=status, role_uuid=role_uuid)
     return redirect(url_for("role.manage_roles"))
 
 
@@ -82,7 +82,7 @@ def modify_role(role_uuid):
 def manage_roles():
     menus = menus_of_role()
     roles = db.session.query(Role).all()
-    return render_template('role/manage_roles.html', roles=roles, full_name=full_name, status=status, menus=menus)
+    return render_template('role/manage_roles.html', roles=roles, full_name=full_name, status=status, menu_categories=menu_categories)
 
 
 #Required by the LoginManager
@@ -95,17 +95,39 @@ def load_user(id):
 @role.before_request
 def before_request():
     g.user = current_user
-    global full_name, status
-    full_name = g.user.full_name
-    status = g.user.status
+    global full_name, status, menu_categories
+    if hasattr(g.user, 'full_name'):
+        full_name = g.user.full_name
+    if hasattr(g.user, 'status'):
+        status = g.user.status
+        menu_categories = menus_of_role()
 
 
 #Return the corresponding menus of a certain user's role
 def menus_of_role():
     middles = db.session.query(Role_menu).filter(Role_menu.role_id == g.user.role_id).all()
-    menus = list()
+    menu_categories = list()
+    cat_grouped_menus = list()
+    category_ids = list()
     for m in middles:
-        menu = db.session.query(Menu).filter(Menu.menu_id == m.menu_id).first()
-        menus.append(menu)
-    print (menus)
-    return menus
+        certain_menu = db.session.query(Menu).filter(Menu.menu_id == m.menu_id).first()
+        if certain_menu.category_id not in category_ids:
+            category_ids.append(certain_menu.category_id)
+            cat_grouped_menus.append(certain_menu)
+    for c in cat_grouped_menus:
+        c_menus = list()
+        cat = dict()
+        cat['category_id'] = c.category_id
+        cat['category_name'] = c.category_name
+        menus = db.session.query(Menu).filter(Menu.category_id == c.category_id).all()
+        for m in menus:
+            each_menu = dict()
+            each_menu['menu_id'] = m.menu_id
+            each_menu['menu_name'] = m.menu_name
+            each_menu['url'] = m.url
+            c_menus.append(each_menu)
+        cat['menus'] = c_menus
+        menu_categories.append(cat)
+
+    # print (menu_categories)
+    return menu_categories

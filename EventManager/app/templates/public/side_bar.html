@@ -6,9 +6,7 @@
     <li id='upload_files'><a href="/upload/upload_file"> Upload Files</a></li>
     <li id='send_emails'><a href="/upload/send_emails"> Send Emails</a></li>
 
-    {% for m in menus %}
-      {% include m.menu_path + '/side_bar.html' %}
-    {% endfor %}
+    {% include 'Menu/menu_template.html' %}
   </ul>
 </div>
 <input type="hidden" id='temp_list_name' value='{{ active_list }}' />

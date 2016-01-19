@@ -15,6 +15,7 @@ import re
 topic = Blueprint('topic', __name__)
 full_name = ''
 status = ''
+menu_categories = list()
 
 
 # Responsible for creating topics.
@@ -22,7 +23,7 @@ status = ''
 @login_required
 def create_topic():
     user_id = g.user.user_id
-    menus = menus_of_role()
+    # menus = menus_of_role()
     form = CreateTopicForm()
     form.set_options()   
     
@@ -42,7 +43,7 @@ def create_topic():
         db.session.commit()
         #print (db.session.query(Content).filter(Content.name == form.content.data).first().topics.count())user_email, 
         return redirect(url_for('basic.logged_in'))
-    return render_template("topic/create_topic.html", form=form, full_name=full_name, status=status, menus=menus)
+    return render_template("topic/create_topic.html", form=form, full_name=full_name, status=status, menu_categories=menu_categories)
 
 
 #Responsible for deleting existing topics.
@@ -97,9 +98,9 @@ def modify_topic(topic_id):
             return redirect(url_for("basic.index"))
         else:
             print ("Not validated")
-            menus = menus_of_role()
+            # menus = menus_of_role()
             return render_template("topic/modify_topic.html", form=form,\
-                full_name=full_name, status=status, topic_id=topic_id, menus=menus)
+                full_name=full_name, status=status, topic_id=topic_id, menu_categories=menu_categories)
 
     if topic.is_created_by(g.user.email):
         form.title.data = topic.title
@@ -135,9 +136,9 @@ def modify_topic(topic_id):
         form.link.data = topic.link 
         form.jamlink.data = topic.jamlink 
         form.location.data = topic.location
-        menus = menus_of_role()
+        # menus = menus_of_role()
         return render_template("topic/modify_topic.html", form=form, full_name=full_name, status=status, \
-            topic_id=topic_id, menus=menus, speaker1_name=speaker1_name, speaker2_name=speaker2_name, \
+            topic_id=topic_id, menu_categories=menu_categories, speaker1_name=speaker1_name, speaker2_name=speaker2_name, \
             speaker3_name=speaker3_name, speaker4_name=speaker4_name, speaker5_name=speaker5_name)
     return redirect(url_for("basic.index"))
 
@@ -147,7 +148,7 @@ def modify_topic(topic_id):
 @topic.route('/view')
 @login_required
 def view_topic():
-    menus = menus_of_role()
+    # menus = menus_of_role()
     topic_id = request.args.get('topic_id')
     topic = db.session.query(Topic).filter(Topic.topic_id == topic_id).first()
     if topic.is_created_by(g.user.email):
@@ -155,7 +156,7 @@ def view_topic():
     else:
         mode = 'viewer'
     return render_template('topic/view_topic.html', topic=topic, mode=mode, full_name=full_name,\
-        status=status, menus=menus)
+        status=status, menu_categories=menu_categories)
 
 
 #Show all the available topics in the website.
@@ -164,7 +165,7 @@ def view_topic():
 @login_required
 def available_topics():
     page_number = request.args.get('page', None)
-    menus = menus_of_role()
+    # menus = menus_of_role()
     topic_number = db.session.query(Topic).count()
     page_count = math.ceil(topic_number/10)
     if page_number is None:
@@ -172,14 +173,14 @@ def available_topics():
     else:
         offset_pages = int(page_number)-1
         topics = db.session.query(Topic).order_by(Topic.format).offset(offset_pages*10).limit(10)
-    return render_template('topic/available_topics.html', topics=topics, full_name=full_name, status=status, menus=menus, page_count=page_count)
+    return render_template('topic/available_topics.html', topics=topics, full_name=full_name, status=status, menu_categories=menu_categories, page_count=page_count)
 
 
 #Show the page of scheduling all the approved topics. The page is reached by the "Arrange topic link in the topic management side bar"
 @topic.route('/arrange')
 @login_required
 def arrange_topics():
-    menus = menus_of_role()
+    # menus = menus_of_role()
     content_filter = request.args.get('content', None)
     format_filter = request.args.get('format', None)
     location_filter = request.args.get('location', None)
@@ -192,14 +193,14 @@ def arrange_topics():
     topics = set(topics).difference(set(rejected_topics))
     
     return render_template('topic/arrange_topics.html', topics=topics, full_name=full_name, status=status, \
-        menus=menus, content_names=content_names, format_names=format_names, locations=locations)
+        menu_categories=menu_categories, content_names=content_names, format_names=format_names, locations=locations)
 
 
 #Show the page of scheduling all the approved topics. The page is reached by the "Place topic link in the topic management side bar"
 @topic.route('/place')
 @login_required
 def place_topics():
-    menus = menus_of_role()
+    # menus = menus_of_role()
     content_filter = request.args.get('content', None)
     format_filter = request.args.get('format', None)
     location_filter = request.args.get('location', None)
@@ -208,14 +209,14 @@ def place_topics():
     format_names = results['format_names']
     locations = results['locations']
     return render_template('topic/place_topics.html', full_name=full_name, status=status, \
-        menus=menus, content_names=content_names, format_names=format_names, locations=locations)
+        menu_categories=menu_categories, content_names=content_names, format_names=format_names, locations=locations)
 
 
 #Show the page of scheduling all the approved topics. The page is reached by the "validate topic" link in the topic management side bar"
 @topic.route('/validate')
 @login_required
 def validate_topics():
-    menus = menus_of_role()
+    # menus = menus_of_role()
     page_number = request.args.get('page', None)
     content_filter = request.args.get('content', None)
     format_filter = request.args.get('format', None)
@@ -236,7 +237,7 @@ def validate_topics():
         offset_pages = int(page_number)-1
         topics = topics.order_by(Topic.format).offset(offset_pages*10).limit(10)
     return render_template('topic/validate_topics.html', topics=topics, full_name=full_name, status=status, \
-        menus=menus, content_names=content_names, format_names=format_names, locations=locations, page_count=page_count)
+        menu_categories=menu_categories, content_names=content_names, format_names=format_names, locations=locations, page_count=page_count)
         
 
 # Handle the content sent from the templates to insert validation result into db.
@@ -462,15 +463,33 @@ def load_user(id):
     return User.query.get(str(id))
 
 
-#Return the corresponding menus of a certain user's role
 def menus_of_role():
     middles = db.session.query(Role_menu).filter(Role_menu.role_id == g.user.role_id).all()
-    menus = list()
+    menu_categories = list()
+    cat_grouped_menus = list()
+    category_ids = list()
     for m in middles:
-        menu = db.session.query(Menu).filter(Menu.menu_id == m.menu_id).first()
-        menus.append(menu)
-    #print (menus)
-    return menus
+        certain_menu = db.session.query(Menu).filter(Menu.menu_id == m.menu_id).first()
+        if certain_menu.category_id not in category_ids:
+            category_ids.append(certain_menu.category_id)
+            cat_grouped_menus.append(certain_menu)
+    for c in cat_grouped_menus:
+        c_menus = list()
+        cat = dict()
+        cat['category_id'] = c.category_id
+        cat['category_name'] = c.category_name
+        menus = db.session.query(Menu).filter(Menu.category_id == c.category_id).all()
+        for m in menus:
+            each_menu = dict()
+            each_menu['menu_id'] = m.menu_id
+            each_menu['menu_name'] = m.menu_name
+            each_menu['url'] = m.url
+            c_menus.append(each_menu)
+        cat['menus'] = c_menus
+        menu_categories.append(cat)
+
+    # print (menu_categories)
+    return menu_categories
 
 
 #Check if the speaker has been conflicted
@@ -568,9 +587,12 @@ def content_format_location_filter(content_filter, format_filter, location_filte
 @topic.before_request
 def before_request():
     g.user = current_user
-    global full_name, status
-    full_name = g.user.full_name
-    status = g.user.status
+    global full_name, status, menu_categories
+    if hasattr(g.user, 'full_name'):
+        full_name = g.user.full_name
+    if hasattr(g.user, 'status'):
+        status = g.user.status
+        menu_categories = menus_of_role()
 
 
 #Generate the topic id.

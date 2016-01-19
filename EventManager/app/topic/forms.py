@@ -17,7 +17,7 @@ class CreateTopicForm(Form):
     minute_duration = StringField('Minute Duration', validators=[InputRequired()], default='15')
     link = StringField("Link")
     jamlink = StringField("Jam Link")
-    speaker1 = StringField('Speaker1', validators=[InputRequired()])
+    speaker1 = StringField('Speaker1')
     speaker2 = StringField('Speaker2')
     speaker3 = StringField('Speaker3')
     speaker4 = StringField('Speaker4')

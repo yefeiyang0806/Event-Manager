@@ -12,7 +12,9 @@ from ..emails import send_email
 from flask.ext.login import login_user, logout_user, current_user, login_required
 
 upload = Blueprint('upload', __name__)
-
+full_name = ''
+status = ''
+menu_categories = list()
 
 
 UPLOAD_FOLDER = 'uploads/'
@@ -20,9 +22,9 @@ UPLOAD_FOLDER = 'uploads/'
 @upload.route('/upload_file', methods=['GET', 'POST'])
 @login_required
 def upload_file():
-    full_name = g.user.full_name
-    status = g.user.status
-    menus = menus_of_role()
+    # full_name = g.user.full_name
+    # status = g.user.status
+    # menus = menus_of_role()
     form = UploadForm()    
     if form.validate_on_submit():
         filename = secure_filename(form.upload.data.filename)
@@ -36,17 +38,17 @@ def upload_file():
     else:
         filename = None
         message=" import failed"
-    return render_template('upload/upload.html', form=form, filename=filename,message=message,full_name=full_name, menus=menus, status=status)
+    return render_template('upload/upload.html', form=form, filename=filename,message=message,full_name=full_name, menu_categories=menu_categories, status=status)
 
 
 
 @upload.route('/send_emails', methods=['GET', 'POST'])
 @login_required
 def send_emails():
-    full_name = g.user.full_name
-    status = g.user.status
+    # full_name = g.user.full_name
+    # status = g.user.status
     user_id = g.user.user_id
-    menus = menus_of_role()
+    # menus = menus_of_role()
     form = SendEmailsForm() 
     form.set_options()   
     if form.validate_on_submit():
@@ -61,7 +63,7 @@ def send_emails():
     else:
         filename = None
         message=" import failed"
-    return render_template('upload/send_emails.html', form=form, filename=filename,message=message,full_name=full_name, menus=menus, status=status)
+    return render_template('upload/send_emails.html', form=form, filename=filename,message=message,full_name=full_name, menu_categories=menu_categories, status=status)
 
 def send_email_to_user(path, template, event_id):
     data = open_excel(path)   
@@ -233,6 +235,12 @@ def test():
 @upload.before_request
 def before_request():
     g.user = current_user
+    global full_name, status, menu_categories
+    if hasattr(g.user, 'full_name'):
+        full_name = g.user.full_name
+    if hasattr(g.user, 'status'):
+        status = g.user.status
+        menu_categories = menus_of_role()
 
 def generate_active_code():
     pool = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
@@ -242,9 +250,28 @@ def generate_active_code():
 
 def menus_of_role():
     middles = db.session.query(Role_menu).filter(Role_menu.role_id == g.user.role_id).all()
-    menus = list()
+    menu_categories = list()
+    cat_grouped_menus = list()
+    category_ids = list()
     for m in middles:
-        menu = db.session.query(Menu).filter(Menu.menu_id == m.menu_id).first()
-        menus.append(menu)
-    print (menus)
-    return menus
+        certain_menu = db.session.query(Menu).filter(Menu.menu_id == m.menu_id).first()
+        if certain_menu.category_id not in category_ids:
+            category_ids.append(certain_menu.category_id)
+            cat_grouped_menus.append(certain_menu)
+    for c in cat_grouped_menus:
+        c_menus = list()
+        cat = dict()
+        cat['category_id'] = c.category_id
+        cat['category_name'] = c.category_name
+        menus = db.session.query(Menu).filter(Menu.category_id == c.category_id).all()
+        for m in menus:
+            each_menu = dict()
+            each_menu['menu_id'] = m.menu_id
+            each_menu['menu_name'] = m.menu_name
+            each_menu['url'] = m.url
+            c_menus.append(each_menu)
+        cat['menus'] = c_menus
+        menu_categories.append(cat)
+
+    # print (menu_categories)
+    return menu_categories

@@ -16,6 +16,7 @@ import random, json, datetime
 basic = Blueprint('basic', __name__)
 full_name = ''
 status = ''
+menu_categories = list()
 
 
 #Home page of the website, ask for login
@@ -49,8 +50,9 @@ def index():
 @login_required
 def logged_in():
     topics = db.session.query(Topic).filter(Topic.create_by == g.user.email).all()
-    menus = menus_of_role()
-    return render_template('basic/member.html', full_name=full_name, topics=topics, status=status, menus=menus)
+    # menu_categories = menus_of_role()
+    print(menu_categories)
+    return render_template('basic/member.html', full_name=full_name, topics=topics, status=status, menu_categories=menu_categories)
 
 
 #Register a new account
@@ -105,7 +107,7 @@ def send_activate_link():
 @login_required
 def activate_user():
     user_id = g.user.user_id
-    menus = menus_of_role()
+    # menus = menus_of_role()
     active_code = request.args.get("active_code")
     fetched_user = db.session.query(User).filter(User.active_code == active_code).first()
     if fetched_user != None:
@@ -126,7 +128,7 @@ def activate_user():
     else:
         msg = "Sorry, your activation code is invalid. Please try again."
         result = 'Failed'
-    return render_template('basic/activate_result.html', msg=msg, result=result, full_name= full_name, status=status, menus=menus)
+    return render_template('basic/activate_result.html', msg=msg, result=result, full_name= full_name, status=status, menu_categories=menu_categories)
 
 
 #Logout user
@@ -219,16 +221,22 @@ def generate_db():
     presenter_role = Role('Presenter', 'PS', 'presenter is presenter', 'i325391')
     demostaff_role = Role('Demo Staff', 'DS', 'Demo Staff is Demo Staff', 'i325391')
 
-    em_menu = Menu('Event Management', 'EM',  'Menu/Event Management', 'i325390')
-    rm_menu = Menu('Role Management', 'RM',  'Menu/Role Management', 'i325390')
-    normal_em = Role_menu('NM', 'EM', 'i325390')
-    normal_rm = Role_menu('NM', 'RM', 'i325390')
-    admin_em = Role_menu('AD', 'EM', 'i325390')
-    admin_rm = Role_menu('AD', 'RM', 'i325390')
-    presenter_em = Role_menu('PS', 'EM', 'i325391')
-    presenter_rm = Role_menu('PS', 'RM', 'i325391')
-    demostaff_em = Role_menu('DS', 'EM', 'i325391')
-    demostaff_rm = Role_menu('DS', 'RM', 'i325391')
+    em_menu1 = Menu('Place Topics','PT', 'Event Management', 'EM',  'Menu/Event Management', 'i325390')
+    em_menu2 = Menu('Validate Topics','VT', 'Event Management', 'EM',  'Menu/Event Management', 'i325390')
+    em_menu3 = Menu('Arrange Topics','AT', 'Event Management', 'EM',  'Menu/Event Management', 'i325390')
+    # rm_menu = Menu('Role Management', 'RM',  'Menu/Role Management', 'i325390')
+    normal_em1 = Role_menu('NM', 'VT', 'i325390')
+    normal_em2 = Role_menu('NM', 'PT', 'i325390')
+    normal_em3 = Role_menu('NM', 'AT', 'i325390')
+    admin_em1 = Role_menu('AD', 'PT', 'i325390')
+    admin_em2 = Role_menu('AD', 'AT', 'i325390')
+    admin_em3 = Role_menu('AD', 'VT', 'i325390')
+    presenter_em1 = Role_menu('PS', 'VT', 'i325391')
+    presenter_em2 = Role_menu('PS', 'PT', 'i325391')
+    presenter_em3 = Role_menu('PS', 'AT', 'i325391')
+    demostaff_em1 = Role_menu('DS', 'VT', 'i325391')
+    demostaff_em2 = Role_menu('DS', 'PT', 'i325391')
+    demostaff_em3 = Role_menu('DS', 'AT', 'i325391')
 
     c_hana = Content('S/4HANA', 'S4HANA', 'i325391')
     c_ue = Content('User Experience', 'UE', 'i325391')
@@ -252,23 +260,26 @@ def generate_db():
     rt_lb = ResourceType('Large Ballroom', 'i325390')
 
 
-
-    
     db.session.add(normal_role)
     db.session.add(admin_role)
     db.session.add(presenter_role)
     db.session.add(demostaff_role)
 
-    db.session.add(em_menu)
-    db.session.add(rm_menu)
-    db.session.add(normal_em)
-    db.session.add(normal_rm)
-    db.session.add(admin_em)
-    db.session.add(admin_rm)
-    db.session.add(presenter_em)
-    db.session.add(presenter_rm)
-    db.session.add(demostaff_em)
-    db.session.add(demostaff_rm)
+    db.session.add(em_menu1)
+    db.session.add(em_menu2)
+    db.session.add(em_menu3)
+    db.session.add(normal_em1)
+    db.session.add(normal_em2)
+    db.session.add(normal_em3)
+    db.session.add(admin_em1)
+    db.session.add(admin_em2)
+    db.session.add(admin_em3)
+    db.session.add(presenter_em1)
+    db.session.add(presenter_em2)
+    db.session.add(presenter_em3)
+    db.session.add(demostaff_em1)
+    db.session.add(demostaff_em2)
+    db.session.add(demostaff_em3)
 
     db.session.add(c_hana)
     db.session.add(c_ue)
@@ -414,21 +425,42 @@ def load_user(id):
 @basic.before_request
 def before_request():
     g.user = current_user
-    global full_name, status
+    global full_name, status, menu_categories
     if hasattr(g.user, 'full_name'):
         full_name = g.user.full_name
     if hasattr(g.user, 'status'):
         status = g.user.status
+        menu_categories = menus_of_role()
 
 
 #Return the corresponding menus of a certain user's role
 def menus_of_role():
     middles = db.session.query(Role_menu).filter(Role_menu.role_id == g.user.role_id).all()
-    menus = list()
+    menu_categories = list()
+    cat_grouped_menus = list()
+    category_ids = list()
     for m in middles:
-        menu = db.session.query(Menu).filter(Menu.menu_id == m.menu_id).first()
-        menus.append(menu)
-    return menus
+        certain_menu = db.session.query(Menu).filter(Menu.menu_id == m.menu_id).first()
+        if certain_menu.category_id not in category_ids:
+            category_ids.append(certain_menu.category_id)
+            cat_grouped_menus.append(certain_menu)
+    for c in cat_grouped_menus:
+        c_menus = list()
+        cat = dict()
+        cat['category_id'] = c.category_id
+        cat['category_name'] = c.category_name
+        menus = db.session.query(Menu).filter(Menu.category_id == c.category_id).all()
+        for m in menus:
+            each_menu = dict()
+            each_menu['menu_id'] = m.menu_id
+            each_menu['menu_name'] = m.menu_name
+            each_menu['url'] = m.url
+            c_menus.append(each_menu)
+        cat['menus'] = c_menus
+        menu_categories.append(cat)
+
+    # print (menu_categories)
+    return menu_categories
 
 
 #Generate the active code.

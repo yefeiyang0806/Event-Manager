@@ -83,12 +83,12 @@ class Topic(db.Model):
     status = db.Column(db.String(2), default='NA')
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
-    speaker1 = db.Column(db.String(10))
+    speaker1 = db.Column(db.String(10), nullable=True)
     speaker2 = db.Column(db.String(10), nullable=True)
     speaker3 = db.Column(db.String(10), nullable=True)
     speaker4 = db.Column(db.String(10), nullable=True)
     speaker5 = db.Column(db.String(10), nullable=True)
-    create_by = db.Column(db.String(40))
+    create_by = db.Column(db.String(40), nullable=True)
     content = db.Column(db.String(40), db.ForeignKey('content.content_id'))
     format = db.Column(db.String(40), db.ForeignKey('format.format_id'))
     link = db.Column(db.String(60), nullable=True)
@@ -174,26 +174,29 @@ class Role_menu(db.Model):
 
 class Menu(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
-    menu = db.Column(db.String(40), index = True, unique = True)
+    # menu = db.Column(db.String(40), index = True, unique = True)
+    menu_name = db.Column(db.String(40), index = True, unique = True)
     menu_id = db.Column(db.String(10), index = True, unique = True)
-    menu_path = db.Column(db.String(40))
+    category_name = db.Column(db.String(40))
+    category_id = db.Column(db.String(40))
+    url = db.Column(db.String(100))
+    # menu_path = db.Column(db.String(40))
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)
     create_by = db.Column(db.String(10))
-    # category_name = db.Column(db.String(40))
-    # category_id = db.Column(db.String(40))
-    # menu_name = db.Column(db.String(40), index = True, unique = True)
-    # url = db.Column(db.String(100))
+
 
     def __repr__(self):
-        return '<User %r>' % (self.menu)
+        return '<User %r>' % (self.menu_name)
 
 
-    def __init__(self, menu, menu_id, menu_path, create_by):
+    def __init__(self, menu_name, menu_id, category_name, category_id, url, create_by):
         self.uuid = str(uuid.uuid1())
-        self.menu = menu
+        self.menu_name = menu_name
         self.menu_id = menu_id
-        self.menu_path = menu_path
+        self.category_name = category_name
+        self.category_id = category_id
+        self.url = url
         self.create_time = time.strftime("%H:%M:%S")
         self.create_date = time.strftime("%Y/%m/%d")
         self.create_by = create_by
