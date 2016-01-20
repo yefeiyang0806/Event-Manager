@@ -49,10 +49,14 @@
                   {% endfor %}
                 </select>
               </td>
-              <td>
+              <td rowspan=2>
                 <button class='btn btn-primary' id='set_filter'>Search</button>
               </td>
             </tr>
+            <tr>
+              <td colspan=3>Title:
+                <input type='text' />
+              </td>
             <tr><td colspan=4 style='padding-left:15px;'><hr></td></tr>
             <tr id='filter_notice'>
               <td colspan=4 style='padding-left:15px;'>
@@ -80,6 +84,12 @@
               <td>
                 <button class='btn btn-info' id='scheduler_update' >Update Schedule</button>
               </td>
+              <td>
+                <input type="button" value="Export to XML" id='xmlExport' />
+              </td>
+              <td>
+                <input type="button" value="Export to iCal" id='icalExport' />
+              </td>
             </tr>
           </table>
         </div>
@@ -104,6 +114,7 @@
   <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxbuttons.js')}}"></script>
   <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxscrollbar.js')}}"></script>
   <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxdata.js')}}"></script>
+  <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxdata.export.js')}}"></script>
   <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxdate.js')}}"></script>
   <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxscheduler.js')}}"></script>
   <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxscheduler.api.js')}}"></script>

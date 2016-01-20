@@ -119,6 +119,17 @@
         });
       });
 
+      $("#xmlExport").jqxButton();
+      $("#icalExport").jqxButton();
+
+      $("#xmlExport").click(function () {
+        $("#scheduler").jqxScheduler('exportData', 'xml');
+      });
+
+      $("#icalExport").click(function () {
+        $("#scheduler").jqxScheduler('exportData', 'ics');
+      });
+
      // $("#set_filter").trigger('click');
 
       function remove_schedule_records(){
@@ -251,6 +262,7 @@
                 id: "topic_id",
                 description: "description",
                 location: "contentFormat",
+                // location: "resource",
                 subject: "topic_title",
                 resourceId: "resource",
               },
@@ -258,7 +270,7 @@
               views:
               [
                 { type: 'dayView', showWeekends: false, timeRuler: { scaleStartHour: 8, scaleEndHour: 21, scale: "tenMinutes", formatString: "HH:mm" }, appointmentsRenderMode: "exactTime" },
-                { type: 'weekView', showWeekends: false }
+                // { type: 'agendaView' }
               ]
             });
           }

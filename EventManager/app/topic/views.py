@@ -433,6 +433,7 @@ def reset_schedule():
         related_topic_id.append(t.topic_id)
     related_schedules = db.session.query(TopicSchedule).filter(TopicSchedule.topic_id.in_(related_topic_id)).all()
     for rs in related_schedules:
+        # print(rs.topic_id)
         db.session.delete(rs)
     db.session.commit()
     return 'success'
@@ -455,6 +456,50 @@ def ajax_resources(format=None):
         res.append(each_r)
     res.append({'resource': 'TBD'})
     return json.dumps(res)
+
+
+#Go to the page to show the results of schedule
+@topic.route('/schedule_output')
+@login_required
+def schedule_output():
+    return render_template('topic/schedule_output.html')
+
+#Output the schedule to a new page
+@topic.route('/schedule_output_ajax')
+@login_required
+def schedule_output_ajax():
+    schedules = db.session.query(TopicSchedule).order_by(TopicSchedule.resource, TopicSchedule.time_from).all()
+    current_res = schedules[0].resource
+    results = list()
+    res_bucket = dict()
+    schedules_ajax = list()
+    for s in schedules:
+        related_topic = db.session.query(Topic).filter(Topic.topic_id == s.topic_id).first()
+        from_str = datetime.datetime.combine(s.day_from,s.time_from)
+        to_str = datetime.datetime.combine(s.day_from,s.time_to)
+        delta = to_str - from_str
+        appointment = dict()
+        appointment['title'] = related_topic.title
+        appointment['topic_id'] = related_topic.topic_id
+        appointment['resource'] = s.resource
+        appointment['from_hour'] = int(s.time_from.hour)
+        appointment['from_minute'] = int(s.time_from.minute)
+        appointment['duration'] = int(delta.seconds/60)
+        print (appointment['topic_id'])
+        print (appointment['title'])
+        if hasattr(res_bucket, 'res_id') and s.resource == res_bucket['res_id']:
+            schedules_ajax.append(appointment)
+        else:
+            if hasattr(res_bucket, 'res_id') and s.resource != res_bucket['res_id']:
+                res_bucket['schedules'] = schedules_ajax
+                results.append(res_bucket)
+                res_bucket = dict()
+                schedules_ajax = list()
+            res_bucket['res_id'] = s.resource
+            schedules_ajax.append(appointment)
+        res_bucket['schedules'] = schedules_ajax
+        results.append(res_bucket)
+    return json.dumps(schedule_ajax)
 
 
 #Required by the LoginManager

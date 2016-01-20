@@ -1,0 +1,34 @@
+{% extends "bootstrap/base.html" %}
+{% block title %}{{ full_name }}'s Home Page{% endblock %}
+{% block body %}
+  {{super()}}
+
+
+  <meta name="csrf-token" content="{{ csrf_token() }}"></meta>
+
+  <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>
+  <script>
+  	$(document).ready(function() {
+  	  var csrftoken = $('meta[name=csrf-token]').attr('content');
+      $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+          if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+          }
+        }
+      });
+
+      $.ajax({
+        type: "GET",
+        dataType: "json",
+        url: "/topic/schedule_output_ajax",
+        success: function(data){
+          for (var i=0; i < data.length; i++){
+          	console.log(data[i]);
+          }
+      	}
+      });
+
+  	});
+  </script>
+{% endblock %}
