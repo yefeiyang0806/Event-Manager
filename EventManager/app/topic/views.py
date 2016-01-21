@@ -184,7 +184,7 @@ def arrange_topics():
     content_filter = request.args.get('content', None)
     format_filter = request.args.get('format', None)
     location_filter = request.args.get('location', None)
-    results = content_format_location_filter(content_filter, format_filter, location_filter)
+    results = topic_filters(content_filter, format_filter, location_filter, keyword)
     content_names = results['content_names']
     format_names = results['format_names']
     locations = results['locations']
@@ -204,7 +204,8 @@ def place_topics():
     content_filter = request.args.get('content', None)
     format_filter = request.args.get('format', None)
     location_filter = request.args.get('location', None)
-    results = content_format_location_filter(content_filter, format_filter, location_filter)
+    keyword = None
+    results = topic_filters(content_filter, format_filter, location_filter, keyword)
     content_names = results['content_names']
     format_names = results['format_names']
     locations = results['locations']
@@ -221,7 +222,7 @@ def validate_topics():
     content_filter = request.args.get('content', None)
     format_filter = request.args.get('format', None)
     location_filter = request.args.get('location', None)
-    results = content_format_location_filter(content_filter, format_filter, location_filter)
+    results = topic_filters(content_filter, format_filter, location_filter, keyword)
     content_names = results['content_names']
     format_names = results['format_names']
     locations = results['locations']
@@ -379,15 +380,17 @@ def ajax_schedule():
     if request.method == 'POST':
         json_data = request.get_json(force=True)
         filter_data = json_data["filters"]
-        content_filter = format_filter = location = None
+        content_filter = format_filter = location = keyword = None
         for f in filter_data:
             if f['type'] == 'content':
                 content_filter = f['value']
             if f['type'] == 'format':
                 format_filter = f['value']
             if f['type'] == 'location':
-                location = f['value']
-        filtered_results = content_format_location_filter(content_filter, format_filter, location)
+                location_filter = f['value']
+            if f['type'] == 'keyword':
+                keyword = f['value']
+        filtered_results = topic_filters(content_filter, format_filter, location_filter, keyword)
         rejected_topics = db.session.query(Topic).filter(Topic.status=='RJ').all()
         filtered_topics = filtered_results['topics']
         filtered_topics = set(filtered_topics).difference(set(rejected_topics))
@@ -425,8 +428,10 @@ def reset_schedule():
         if f['type'] == 'format':
             format_filter = f['value']
         if f['type'] == 'location':
-            location = f['value']
-    filtered_results = content_format_location_filter(content_filter, format_filter, location)
+            location_filter = f['value']
+        if f['type'] == 'keyword':
+            keyword = f['value']
+    filtered_results = topic_filters(content_filter, format_filter, location_filter, keyword)
     filtered_topics = filtered_results['topics'].all()
     related_topic_id = list()
     for t in filtered_topics:
@@ -448,8 +453,17 @@ def ajax_resources(format=None):
     if format is None:
         selected_resources = db.session.query(Resource).all()
     else:
-        format_name = db.session.query(Format).filter(Format.format_id == format).first().name
-        selected_resources = db.session.query(Resource).filter(Resource.r_type == format_name).all()
+        formats = format.split(',')
+        formats_names = list()
+        for f in formats:
+            if f != '':
+                name = db.session.query(Format).filter(Format.format_id == f).first().name
+                formats_names.append(name)
+        # formats_names = db.session.query(Format).filter(Format.format_id.in_(formats)).all()
+        print ("-------------------------")
+        print(formats)
+        print (formats_names[0])
+        selected_resources = db.session.query(Resource).filter(Resource.r_type.in_(formats_names)).all()
     for r in selected_resources:
         each_r = dict()
         each_r['resource'] = r.r_id
@@ -596,7 +610,7 @@ def room_conflict(topic_id, date, time_from, time_to, resource):
 
 
 #Return topics based on the content, format and location
-def content_format_location_filter(content_filter, format_filter, location_filter):
+def topic_filters(content_filter, format_filter, location_filter, keyword):
     contents = db.session.query(Content).all()
     formats = db.session.query(Format).all()
     locations_set = db.session.query(Topic.location).all()
@@ -615,11 +629,30 @@ def content_format_location_filter(content_filter, format_filter, location_filte
 
     topics = db.session.query(Topic)
     if content_filter != None:
-        topics = topics.filter(~Topic.topic_id.in_(db.session.query(Topic.topic_id).filter(Topic.content != content_filter)))
+        cfs = content_filter.split(',')
+        q_cfs = db.session.query(Topic.topic_id).filter(db.false())
+        for cf in cfs:
+            q_cf = db.session.query(Topic.topic_id).filter(Topic.content == cf)
+            q_cfs = q_cfs.union(q_cf)
+        topics = topics.filter(Topic.topic_id.in_(q_cfs))
     if format_filter != None:
-        topics = topics.filter(~Topic.topic_id.in_(db.session.query(Topic.topic_id).filter(Topic.format != format_filter)))
+        ffs = format_filter.split(',')
+        q_ffs = db.session.query(Topic.topic_id).filter(db.false())
+        for ff in ffs:
+            q_ff = db.session.query(Topic.topic_id).filter(Topic.format == ff)
+            q_ffs = q_ffs.union(q_ff)
+        topics = topics.filter(Topic.topic_id.in_(q_ffs))
     if location_filter != None:
-        topics = topics.filter(~Topic.topic_id.in_(db.session.query(Topic.topic_id).filter(Topic.location != location_filter)))
+        lfs = location_filter.split(',')
+        q_lfs = db.session.query(Topic.topic_id).filter(db.false())
+        for lf in lfs:
+            q_lf = db.session.query(Topic.topic_id).filter(Topic.location == lf)
+            q_lfs = q_lfs.union(q_lf)
+        topics = topics.filter(Topic.topic_id.in_(q_lfs))
+
+    if keyword != None:
+        keyword = "%" + keyword + "%"
+        topics = topics.filter(Topic.title.ilike(keyword))
 
     results['content_names'] = content_names
     results['format_names'] = format_names

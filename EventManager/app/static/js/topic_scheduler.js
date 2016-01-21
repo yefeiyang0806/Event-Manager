@@ -11,8 +11,16 @@
       });
 
       var modified_list = [];
-      var current_content = $("#content-filter").find(":selected").val();
-      var current_format = $("#format-filter").find(":selected").val();
+      var current_content = '';
+      var current_format = '';
+      $(".format-checkbox:checked").each(function(){
+        current_format += $(this).val() + ',';
+      });
+      console.log(current_format);
+      $(".content-checkbox:checked").each(function(){
+        current_content += $(this).val() + ',';
+      });
+      console.log(current_content);
       var current_location = $("#location-filter").find(":selected").text();
 
       $("#set_filter").click(function(){
@@ -154,9 +162,18 @@
 
       function recreate_scheduler(){
         var filter_data = [];
-        var content_id = $("#content-filter").find(":selected").val();
-        var format_id = $("#format-filter").find(":selected").val();
+        var content_id = '';
+        var format_id = '';
         var location = $("#location-filter").find(":selected").text();
+        var keyword = $("#keyword").val();
+        $(".format-checkbox:checked").each(function(){
+          format_id += $(this).val() + ',';
+        });
+        console.log(format_id);
+        $(".content-checkbox:checked").each(function(){
+          content_id += $(this).val() + ',';
+        });
+        console.log(content_id);
         current_content = content_id;
         current_format = format_id;
         current_location = location;
@@ -168,6 +185,9 @@
         }
         if (location != "------Any------"){
           filter_data.push({'type': 'location', 'value': location});
+        }
+        if (keyword != ''){
+          filter_data.push({'type': 'keyword', 'value': keyword});
         }
         $.ajax({
           type: "POST",

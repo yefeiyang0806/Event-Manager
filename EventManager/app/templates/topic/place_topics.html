@@ -10,6 +10,14 @@
     .ui-dialog {
       z-index: 1050;
     }
+    .dropdown-content > ul > li {
+      list-style-type: none;
+    }
+    .dropdown-content > ul > li input {
+      margin-right: 10px;
+      font-family: Sans-serif;
+      /*font-size: 150%;*/
+    }
   </style>
   {% set active_list = 'PT' %}
   {% include 'public/navbar.html' %}
@@ -22,25 +30,58 @@
         <div class='row' style='text-align:center;'>
           <table class='filter-table' width="90%">
             <tr>
-              <td align='center'>
+              <td align='center' width='40%'>
                 <label class='control-label' for='content-filter'>Content: </label>
-                <select id='content-filter'>
-                    <option value='any' selected>----Any----</option>
-                  {% for c_name in content_names %}
-                    <option value='{{ c_name.id }}'>{{ c_name.name }}</option>
-                  {% endfor %}
-                </select>
+                <div class="form-group" style='margin-right:10%;'>
+                  <div class='form-control dropdown-checkbox'>
+                    <div class='dropdown-trigger'>
+                      <a href="javascript:void(0)">
+                        <span class="hida">Select Content</span>    
+                        <p class="multiSel"></p>  
+                      </a>
+                    </div>
+              
+                    <div class='dropdown-content' id='dropdown-content' style='position:relative;z-index:2;'>
+                      <ul style='background-color:white;'>
+                        {% for c_name in content_names %}
+                          <li>
+                            <input type='checkbox' name='selected_contents[]' class='content-checkbox' id='{{ c_name.id }}' value='{{ c_name.id}}'>{{ c_name.name }}
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+
+
               </td>
-              <td align='center'>
+              <td align='center' width='40%'>
                 <label class='control-label' for='format-filter'>Format: </label>
-                <select id='format-filter'>
-                  <option value='any' selected>--------Any--------</option>
-                  {% for f_name in format_names %}
-                    <option value='{{ f_name.id }}'>{{ f_name.name }}</option>
-                  {% endfor %}
-                </select>
+                <div class="form-group" style='margin-left:10%;margin-right:10%;'>
+                  <div class='form-control dropdown-checkbox'>
+                    <div class='dropdown-trigger'>
+                      <a href="javascript:void(0)">
+                        <span class="hida">Select Format</span>    
+                        <p class="multiSel"></p>  
+                      </a>
+                    </div>
+              
+                    <div class='dropdown-content' id='dropdown-content' style='position:relative;z-index:2;'>
+                      <ul style='background-color:white;'>
+                        {% for f_name in format_names %}
+                          <li>
+                            <input type='checkbox' name='selected_formats[]' class='format-checkbox' id='{{ f_name.id }}' value='{{ f_name.id}}'>{{ f_name.name }}
+                          </li>
+                        {% endfor %}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+
               </td>
-              <td align='center'>
+              <!-- <td align='center'>
                 <label class='control-label' for='location-filter'>Location: </label>
                 <select id='location-filter'>
                   <option selected>------Any------</option>
@@ -48,16 +89,21 @@
                     <option>{{ l }}</option>
                   {% endfor %}
                 </select>
-              </td>
+              </td> -->
               <td rowspan=2>
                 <button class='btn btn-primary' id='set_filter'>Search</button>
               </td>
             </tr>
             <tr>
-              <td colspan=3>Title:
-                <input type='text' />
+              <td colspan=3>
+                <div class="col-xs-12 col-sm-6 col-md-6" style='z-index:1;margin-left:3%;'>
+                  <div class='input-group'>
+                    <label for='keyword'>Title:</lable>
+                    <input type='text' class='form-control' size=50 id='keyword'/>
+                  </div>
+                </div>
               </td>
-            <tr><td colspan=4 style='padding-left:15px;'><hr></td></tr>
+            <tr><td colspan=3 style='padding-left:15px;'><hr></td></tr>
             <tr id='filter_notice'>
               <td colspan=4 style='padding-left:15px;'>
                 <div class="panel panel-warning">
@@ -132,5 +178,52 @@
   <script src="{{url_for('static',filename='jqwidgets/jqwidgets/globalization/globalize.js')}}"></script>
   <script src="{{url_for('static',filename='jqwidgets/jqwidgets/globalization/globalize.culture.de-DE.js')}}"></script>
   <script src="{{url_for('static',filename='js/topic_scheduler.js')}}"></script>
+  <script>
+    $(document).ready(function() {
+
+      $('.dropdown-content ul').css('display', 'none');
+
+      $('input[type="checkbox"]').each(function(){
+        if ($(this).is(':checked')) {
+          if ($(this).closest('.dropdown-checkbox').find('.hida').length){
+            $(this).closest('.dropdown-checkbox').find(".hida").remove();
+          }
+          var clicked = $(this).val();
+          clicked = $.trim(clicked) + ', ';
+          var html = '<span title="' + clicked + '">' + clicked + '</span>';
+          $(this).closest('.dropdown-checkbox').find('.multiSel').append(html);
+        }
+      });
+  
+      $('.dropdown-trigger').click(function(){
+        $(this).next().children('ul').slideToggle('fast');
+      });
+
+      $('.dropdown-content input[type="checkbox"]').click(function(){
+        var clicked = $(this).val();
+        clicked = $.trim(clicked) + ', ';
+        if ($(this).is(':checked')) {
+          var html = '<span title="' + clicked + '">' + clicked + '</span>';
+          $(this).closest('.dropdown-checkbox').find('.multiSel').append(html);
+          // console.log($(this).closest('.dropdown-checkbox').children('.multiSel'));
+          $(this).closest('.dropdown-checkbox').find(".hida").remove();
+        }
+        else{
+          $('span[title="' + clicked + '"]').remove();
+          if ($(this).closest('.dropdown-checkbox').find('.multiSel').children().length==0){
+            $(this).closest('.dropdown-checkbox').find('a').prepend('<span class="hida">Select Content</span>');
+          }
+        }
+      });
+
+      $(document).bind('click', function(e) {
+        var $clicked = $(e.target);
+        if (!$clicked.parents().hasClass("dropdown-checkbox") && !$clicked.parents().hasClass("dropdown-content")){
+          $(".dropdown-content ul").hide();
+        }
+      });
+    });
+  </script>
+
     
 {% endblock %}
