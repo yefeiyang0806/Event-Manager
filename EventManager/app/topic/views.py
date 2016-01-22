@@ -184,6 +184,7 @@ def arrange_topics():
     content_filter = request.args.get('content', None)
     format_filter = request.args.get('format', None)
     location_filter = request.args.get('location', None)
+    keyword = request.args.get('keyword', None)
     results = topic_filters(content_filter, format_filter, location_filter, keyword)
     content_names = results['content_names']
     format_names = results['format_names']
@@ -222,6 +223,7 @@ def validate_topics():
     content_filter = request.args.get('content', None)
     format_filter = request.args.get('format', None)
     location_filter = request.args.get('location', None)
+    keyword = request.args.get('keyword', None)
     results = topic_filters(content_filter, format_filter, location_filter, keyword)
     content_names = results['content_names']
     format_names = results['format_names']
@@ -421,7 +423,7 @@ def ajax_schedule():
 def reset_schedule():
     json_data = request.get_json(force=True)
     conditions = json_data["remove_conditions"]
-    content_filter = format_filter = location = None
+    content_filter = format_filter = location = keyword = None
     for f in conditions:
         if f['type'] == 'content':
             content_filter = f['value']

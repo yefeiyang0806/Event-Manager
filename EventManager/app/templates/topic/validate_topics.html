@@ -23,7 +23,7 @@
         <br />
 
         <div class='row' style='text-align:center;'>
-          <table class='filter-table' width="90%">
+          <!-- <table class='filter-table' width="90%">
             <tr>
               <td align='center'>
                 <label class='control-label' for='content-filter'>Content: </label>
@@ -56,7 +56,8 @@
                 <button class='btn btn-primary' id='set_filter'>Search</button>
               </td>
             </tr>
-          </table>
+          </table> -->
+          {% include 'public/filter_table.html' %}
         </div>
         <br>
 
@@ -150,6 +151,7 @@
   <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
   <script src="{{url_for('static', filename='js/pagination.js')}}"></script>
   <script src="{{url_for('static', filename='jquery-timepicker/jquery.timepicker.js')}}"></script>
+  <script src="{{url_for('static',filename='js/multi_filter.js')}}"></script>
   <script>
     $(document).ready(function() {
       var csrftoken = $('meta[name=csrf-token]').attr('content');
@@ -167,46 +169,61 @@
         }
       });
 
-      //Set the selected option based on the URL
-      var url_location = getUrlParameter('location');
-      var url_content = getUrlParameter('content');
-      var url_format = getUrlParameter('format');
-      $("#location-filter").find("option").each(function(){
-        if ($(this).text() == url_location){
-          $(this).prop('selected', true);
-        }
-      });
-      $("#content-filter").find("option").each(function(){
-        if ($(this).val() == url_content){
-          $(this).prop('selected', true);
-        }
-      });
-      $("#format-filter").find("option").each(function(){
-        if ($(this).val() == url_format){
-          $(this).prop('selected', true);
-        }
-      });
+      // //Set the selected option based on the URL
+      // var url_location = getUrlParameter('location');
+      // var url_content = getUrlParameter('content');
+      // var url_format = getUrlParameter('format');
+      // $("#location-filter").find("option").each(function(){
+      //   if ($(this).text() == url_location){
+      //     $(this).prop('selected', true);
+      //   }
+      // });
+      // $("#content-filter").find("option").each(function(){
+      //   if ($(this).val() == url_content){
+      //     $(this).prop('selected', true);
+      //   }
+      // });
+      // $("#format-filter").find("option").each(function(){
+      //   if ($(this).val() == url_format){
+      //     $(this).prop('selected', true);
+      //   }
+      // });
 
       //Redirect the browser to the desired URL based on the filter conditions
       $("#set_filter").click(function(){
         var suffix = "";
-        var content_name = $("#content-filter").find(":selected").val();
-        var format_name = $("#format-filter").find(":selected").val();
-        var location = $("#location-filter").find(":selected").text();
-        if (content_name != "----Any----"){
-          suffix += "content=" + content_name;
+        var content_id = '';
+        var format_id = '';
+        // var location = $("#location-filter").find(":selected").text();
+        var keyword = $("#keyword").val();
+        $(".format-checkbox:checked").each(function(){
+          format_id += $(this).val() + ',';
+        });
+        console.log(format_id);
+        $(".content-checkbox:checked").each(function(){
+          content_id += $(this).val() + ',';
+        });
+
+        if (content_id != ""){
+          suffix += "content=" + content_id;
         }
-        if (format_name != "--------Any--------"){
+        if (format_id != ""){
           if (suffix != ""){
             suffix += '&';
           }
-          suffix += "format=" + format_name;
+          suffix += "format=" + format_id;
         }
-        if (location != "------Any------"){
+        // if (location != "------Any------"){
+        //   if (suffix != ""){
+        //     suffix += '&';
+        //   }
+        //   suffix += "location=" + location;
+        // }
+        if (keyword != ""){
           if (suffix != ""){
             suffix += '&';
           }
-          suffix += "location=" + location;
+          suffix += "keyword=" + keyword;
         }
         $(window.location).attr('href', '/topic/validate?'+suffix);
       });

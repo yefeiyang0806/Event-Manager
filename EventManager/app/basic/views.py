@@ -244,7 +244,7 @@ def generate_db():
     c_sme = Content('Small & Medium Enterprises', 'SME', 'i325391')
     c_iot = Content('Internet of Things', 'IOT', 'i325391')
     c_other = Content('Other', 'Other', 'i325391')
-    c_iet = Content('Incubation & Emerging Trends', 'TET', 'i325391')
+    c_iet = Content('Incubation & Emerging Trends', 'IET', 'i325391')
     c_ana = Content('Analytics', 'ANA', 'i325391')
     c_loba = Content('LoB Applications', 'LOBA', 'i325391')
     c_ina = Content('Industry Applications', 'INA', 'i325391')

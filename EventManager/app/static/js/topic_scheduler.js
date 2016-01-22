@@ -16,35 +16,12 @@
       $(".format-checkbox:checked").each(function(){
         current_format += $(this).val() + ',';
       });
-      console.log(current_format);
+      // console.log(current_format);
       $(".content-checkbox:checked").each(function(){
         current_content += $(this).val() + ',';
       });
-      console.log(current_content);
+      // console.log(current_content);
       var current_location = $("#location-filter").find(":selected").text();
-
-      $("#set_filter").click(function(){
-        if (modified_list.length>0){
-          $('#dialog').dialog({
-            width:400,
-            height:240,
-            modal: true,
-            buttons: {
-              Confirm: function() {
-                $( this ).dialog( "close" );
-                recreate_scheduler();
-              },
-              Cancel: function() {
-                $( this ).dialog( "close" );
-              }
-            }
-          });
-        }
-        else {
-          recreate_scheduler();
-        }
-        $("#filter_notice").remove();
-      });
 
       $("#reset_schedule").click(function(){
         var reset_url = "/topic/reset_schedule";
@@ -72,9 +49,10 @@
         if ($.inArray(appointment['id'], modified_list) == -1){
           modified_list.push(appointment['id']);
         }
-        
+        var from = $("#scheduler").jqxScheduler('getAppointmentProperty', appointment['id'], 'from');
+        $("#scheduler").jqxScheduler('setAppointmentProperty', appointment['id'], 'to', from.addMinutes(30));
+        // $("#scheduler").jqxScheduler('setAppointmentProperty', appointment['id'], 'background', 'yellow');
         $("#scheduler").jqxScheduler('beginAppointmentsUpdate');
-        // $("#scheduler").jqxScheduler('setAppointmentProperty', appointment['id'], 'borderColor', 'red');
         $("#scheduler").jqxScheduler('endAppointmentsUpdate');
       });
 
@@ -127,11 +105,35 @@
         });
       });
 
-      $("#xmlExport").jqxButton();
+      $("#set_filter").click(function(){
+        if (modified_list.length>0){
+          // $('#dialog').dialog({
+          //   width:400,
+          //   height:240,
+          //   modal: true,
+          //   buttons: {
+          //     Confirm: function() {
+          //       $( this ).dialog( "close" );
+          //       recreate_scheduler();
+          //     },
+          //     Cancel: function() {
+          //       $( this ).dialog( "close" );
+          //     }
+          //   }
+          // });
+          $('#scheduler_update').click();
+        }
+        // else {
+        recreate_scheduler();
+        // }
+        $("#filter_notice").remove();
+      });
+
+      $("#excelExport").jqxButton();
       $("#icalExport").jqxButton();
 
-      $("#xmlExport").click(function () {
-        $("#scheduler").jqxScheduler('exportData', 'xml');
+      $("#excelExport").click(function () {
+        $("#scheduler").jqxScheduler('exportData', 'xls');
       });
 
       $("#icalExport").click(function () {
@@ -169,11 +171,11 @@
         $(".format-checkbox:checked").each(function(){
           format_id += $(this).val() + ',';
         });
-        console.log(format_id);
+        // console.log(format_id);
         $(".content-checkbox:checked").each(function(){
           content_id += $(this).val() + ',';
         });
-        console.log(content_id);
+        // console.log(content_id);
         current_content = content_id;
         current_format = format_id;
         current_location = location;
@@ -236,7 +238,7 @@
               rowsHeight: 30,
               dayNameFormat: "abbr",
               source: adapter,
-              showLegend: true,
+              // showLegend: true,
               legendHeight: 100,
               ready: function () {
                     
