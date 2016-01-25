@@ -322,34 +322,41 @@ def validate_arrangement():
             db.session.commit()
     # Do validations on modifications of schedule
     for s in schedule:
-        conflict_speaker = speaker_conflict(s['topic_id'], s['date'], s['time_from'], s['time_to'])
-        conflict_room = room_conflict(s['topic_id'], s['date'], s['time_from'], s['time_to'], s['resource'])
-        if conflict_speaker:
-            error_msg = dict()
-            error_msg['topic_id'] = s['topic_id']
-            error_msg['title'] = db.session.query(Topic).filter(Topic.topic_id == s['topic_id']).first().title
-            error_msg['message'] = s_conflict
-            errors.append(error_msg)
-        if conflict_room:
-            error_msg = dict()
-            error_msg['topic_id'] = s['topic_id']
-            error_msg['title'] = db.session.query(Topic).filter(Topic.topic_id == s['topic_id']).first().title
-            error_msg['message'] = r_conflict
-            errors.append(error_msg)
-        if (not conflict_speaker) and (not conflict_room):
+        if s['resource'] == 'TBD':
             topic = db.session.query(Topic).filter(Topic.topic_id == s['topic_id']).first()
-            if topic.schedule.first()==None:
-                t_s = TopicSchedule(topic.topic_id, s['date'], s['date'], \
-                datetime.datetime.strptime(s['time_from'], '%H:%M:%S').time(), datetime.datetime.strptime(s['time_to'], '%H:%M:%S').time(), s['resource'], g.user.user_id)
-                db.session.add(t_s)
-            else:
-                t_s = topic.schedule.first()
-                t_s.day_from = s['date']
-                t_s.day_to = s['date']
-                t_s.time_from = datetime.datetime.strptime(s['time_from'], '%H:%M:%S').time()
-                t_s.time_to = datetime.datetime.strptime(s['time_to'], '%H:%M:%S').time()
-                t_s.resource = s['resource']
-            db.session.commit()
+            if topic.schedule.first()!=None:
+                db.session.delete(topic.schedule.first())
+                db.session.commit()
+            # return jsonify({'status':'success'})
+        else:
+            conflict_speaker = speaker_conflict(s['topic_id'], s['date'], s['time_from'], s['time_to'])
+            conflict_room = room_conflict(s['topic_id'], s['date'], s['time_from'], s['time_to'], s['resource'])
+            if conflict_speaker:
+                error_msg = dict()
+                error_msg['topic_id'] = s['topic_id']
+                error_msg['title'] = db.session.query(Topic).filter(Topic.topic_id == s['topic_id']).first().title
+                error_msg['message'] = s_conflict
+                errors.append(error_msg)
+            if conflict_room:
+                error_msg = dict()
+                error_msg['topic_id'] = s['topic_id']
+                error_msg['title'] = db.session.query(Topic).filter(Topic.topic_id == s['topic_id']).first().title
+                error_msg['message'] = r_conflict
+                errors.append(error_msg)
+            if (not conflict_speaker) and (not conflict_room):
+                topic = db.session.query(Topic).filter(Topic.topic_id == s['topic_id']).first()
+                if topic.schedule.first()==None:
+                    t_s = TopicSchedule(topic.topic_id, s['date'], s['date'], \
+                    datetime.datetime.strptime(s['time_from'], '%H:%M:%S').time(), datetime.datetime.strptime(s['time_to'], '%H:%M:%S').time(), s['resource'], g.user.user_id)
+                    db.session.add(t_s)
+                else:
+                    t_s = topic.schedule.first()
+                    t_s.day_from = s['date']
+                    t_s.day_to = s['date']
+                    t_s.time_from = datetime.datetime.strptime(s['time_from'], '%H:%M:%S').time()
+                    t_s.time_to = datetime.datetime.strptime(s['time_to'], '%H:%M:%S').time()
+                    t_s.resource = s['resource']
+                db.session.commit()
     if not errors:
         return jsonify({'status':'success'})
     else:
