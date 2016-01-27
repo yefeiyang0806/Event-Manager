@@ -1,12 +1,34 @@
 {% extends "bootstrap/base.html" %}
-{% block title %}{{ full_name }}'s Home Page{% endblock %}
+{% block title %}Schedule Output{% endblock %}
 {% block body %}
   {{super()}}
-
+  <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <style>
+    .timeline > td {
+      border: 1px solid black;
+    }
+    .each_res > td {
+      border: 1px solid black;
+    }
+  </style>
+  <div class="container-fluid">
+    <div class="row">
+      <div>
+        <button id='btnExport'>Export</button>
+      </div>
+      <div id='data'>
+        <!-- <table id='result' width='95%'> -->
+        <table>
+        </table>
+      </div> 
+    </div>
+  </div>
 
   <meta name="csrf-token" content="{{ csrf_token() }}"></meta>
 
   <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>
+  <script src="{{url_for('static', filename='js/date.js')}}"></script>
   <script>
   	$(document).ready(function() {
   	  var csrftoken = $('meta[name=csrf-token]').attr('content');
@@ -23,10 +45,102 @@
         dataType: "json",
         url: "/topic/schedule_output_ajax",
         success: function(data){
-          for (var i=0; i < data.length; i++){
-          	console.log(data[i]);
+          // for (var i=0; i < data.length; i++){
+          	// console.log(data[i]);
+          // }
+          var start = new Date(2016,0,1,10,5,0);
+          var finish = new Date(2016, 0,1,20,5,0);
+          var timeline = '<tr><td>Resource: <td/>';
+          var total_td_count = 132;
+          while (start.getHours()<=20){
+            var time_str = start.toString("HH:mm");
+            timeline += '<td>' + time_str + '</td>'
+            start.addMinutes(5);
           }
+          // console.log(timeline);
+          timeline += '</tr>';
+          $('table').append(timeline);
+
+          for (var x=0; x<data.length; x++){
+            var ele = '<tr><td>'+ data[x]['res_id'] + '<td/>';
+            var res_schedules = data[x]['schedules'];
+            var current_hour = 10;
+            var current_minute = 0;
+            for (var i=0; i<res_schedules.length; i++){
+            // for (var i=0; i<2; i++){
+              var hour = parseInt(res_schedules[i]['from_hour']);
+              var minute = parseInt(res_schedules[i]['from_minute']);
+              var duration = parseInt(res_schedules[i]['duration']);
+              var minute_diff = minute - current_minute;
+              var hour_diff = 0;
+              var empty_slot = 0;
+              var colspan = duration/5;
+              if (minute_diff < 0){
+                hour_diff = hour - 1 - current_hour;
+                minute_diff += 60;
+              }
+              else {
+                hour_diff = hour - current_hour;
+              }
+              empty_slot = (minute_diff + hour_diff * 60) / 5;
+              // if (empty_slot>0){
+              //   ele += '<td colspan=' + empty_slot + '></td>';
+              // }
+              for (var e=0; e<empty_slot; e++){
+                ele += '<td></td>';
+              }
+              ele += '<td colspan=' + colspan + '>' + res_schedules[i]['title'];
+              ele += ' (' + res_schedules[i]['topic_id'] + ')</td>';
+              var new_minute = minute + duration;
+              var new_hour = hour;
+              while (new_minute >= 60){
+                new_minute -= 60;
+                new_hour += 1;
+              }
+              current_hour = new_hour;
+              current_minute = new_minute;
+              if (i == res_schedules.length-1){
+                var remind_empty = ((20 - new_hour)*60 + (55-new_minute))/5;
+                for (var r=0; r<remind_empty; r++){
+                  ele += '<td></td>';
+                }
+                // ele += '<td colspan=' + remind_empty + '></td>';
+              }
+              // console.log('current_minute: ' + current_minute);
+              // console.log('current_hour: ' + current_hour);
+            }
+            ele += '</tr>';
+            $('table').append(ele);
+          }
+          // $("#result").each(function() {
+          //   var $this = $(this);
+          //   var newrows = [];
+          //   $this.find("tr").each(function(){
+          //     var i = 0;
+          //     $(this).find("td").each(function(){
+          //       i++;
+          //       if(newrows[i] === undefined) { newrows[i] = $("<tr class='each_res'></tr>"); }
+          //       if ($(this).attr('colspan') >= 0){
+          //         var count = $(this).attr('colspan');
+          //         $(this).removeAttr('colspan');
+          //         // $(this).attr('rowspan', count);
+          //         $(this).addClass('rowspan');
+          //       }
+          //       newrows[i].append($(this));
+          //     });
+          //   });
+          //   $(this).find("tr").remove();
+          //   $.each(newrows, function(){
+          //     $this.append(this);
+          //   });
+          // });
+
       	}
+      });
+
+      $("#btnExport").click(function (e) {
+        window.open('data:application/vnd.ms-excel,' + $('#data').html());
+        e.preventDefault();
       });
 
   	});

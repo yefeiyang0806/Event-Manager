@@ -8,7 +8,7 @@ from .forms import CreateTopicForm
 from ..models import User, Topic, Role, Menu, Role_menu, Content, Format, ResourceType, Resource, TopicValidation, TopicSchedule
 from ..emails import send_email
 from werkzeug.security import generate_password_hash
-import random, json, datetime, math
+import random, json, datetime, math, xlwt
 import re
 
 
@@ -481,48 +481,12 @@ def ajax_resources(format=None):
     return json.dumps(res)
 
 
-#Go to the page to show the results of schedule
+# Go to the page to show the results of schedule
 @topic.route('/schedule_output')
 @login_required
 def schedule_output():
-    return render_template('topic/schedule_output.html')
-
-#Output the schedule to a new page
-@topic.route('/schedule_output_ajax')
-@login_required
-def schedule_output_ajax():
-    schedules = db.session.query(TopicSchedule).order_by(TopicSchedule.resource, TopicSchedule.time_from).all()
-    current_res = schedules[0].resource
-    results = list()
-    res_bucket = dict()
-    schedules_ajax = list()
-    for s in schedules:
-        related_topic = db.session.query(Topic).filter(Topic.topic_id == s.topic_id).first()
-        from_str = datetime.datetime.combine(s.day_from,s.time_from)
-        to_str = datetime.datetime.combine(s.day_from,s.time_to)
-        delta = to_str - from_str
-        appointment = dict()
-        appointment['title'] = related_topic.title
-        appointment['topic_id'] = related_topic.topic_id
-        appointment['resource'] = s.resource
-        appointment['from_hour'] = int(s.time_from.hour)
-        appointment['from_minute'] = int(s.time_from.minute)
-        appointment['duration'] = int(delta.seconds/60)
-        print (appointment['topic_id'])
-        print (appointment['title'])
-        if hasattr(res_bucket, 'res_id') and s.resource == res_bucket['res_id']:
-            schedules_ajax.append(appointment)
-        else:
-            if hasattr(res_bucket, 'res_id') and s.resource != res_bucket['res_id']:
-                res_bucket['schedules'] = schedules_ajax
-                results.append(res_bucket)
-                res_bucket = dict()
-                schedules_ajax = list()
-            res_bucket['res_id'] = s.resource
-            schedules_ajax.append(appointment)
-        res_bucket['schedules'] = schedules_ajax
-        results.append(res_bucket)
-    return json.dumps(schedule_ajax)
+    output_schedule()
+    return redirect(url_for("basic.index"))
 
 
 #Required by the LoginManager
@@ -689,3 +653,108 @@ def generate_topic_id():
     candidate = random.sample(pool, 6)
     active_code = candidate[0] + candidate[1] + candidate[2] + candidate[3] + candidate[4] + candidate[5]
     return str(active_code)
+
+
+#Export the schedule to the xls.
+def output_schedule():
+    content_obj_list = db.session.query(Content.content_id).all()
+    content_list = [c[0] for c in content_obj_list]
+    # print (content_list)
+    wb = xlwt.Workbook()
+    ws = wb.add_sheet('A Test Sheet')
+    style_str = 'align: wrap on, vert top; pattern: pattern solid;'
+    
+    results = schedule_output()
+    start = datetime.datetime.strptime("01/01/16 10:00", "%d/%m/%y %H:%M")
+    # print (start.strftime('%H:%M'))
+    ws.write(0, 0, 'Resource')
+    row_index = 1
+    time_interval = datetime.timedelta(minutes=5)
+    while start.hour < 20:
+        ws.write(row_index, 0, start.strftime('%H:%M'))
+        row_index += 1
+        start += time_interval
+    col_index = 1
+    for res_bucket in results:
+        row_index = 0
+        ws.write(row_index, col_index, res_bucket['res_id'])
+        current_hour = 10
+        current_minute = 0
+        for each_schedule in res_bucket['schedules']:
+            row_index += 1
+            hour = int(each_schedule['from_hour'])
+            minute = int(each_schedule['from_minute'])
+            duration = int(each_schedule['duration'])
+            # print(current_minute)
+            # print(minute)
+            color_number = content_list.index(each_schedule['content'])+1
+            print(color_number)
+            print(each_schedule['content'])
+            # To avoid black 0 and 8.
+            # if color_number == 1:
+                # color_number = 30
+            style0 = xlwt.easyxf(style_str)
+            style0.pattern.pattern_fore_colour = color_number
+            minute_diff = minute - current_minute
+            hour_diff = 0
+            empty_slots = 0
+            rowspan = int(duration/5)
+            if minute_diff < 0:
+                hour_diff = hour - 1 - current_hour
+                minute_diff += 60
+            else:
+                hour_diff = hour - current_hour
+            empty_slots = int((minute_diff + hour_diff * 60) / 5)
+            row_index += empty_slots
+            ws.write_merge(row_index, int(row_index+rowspan-1), col_index, col_index, each_schedule['title'], style0)
+            new_minute = minute + duration
+            new_hour = hour
+            row_index += rowspan-1
+            # Update current time.
+            while new_minute >= 60:
+                new_minute -= 60
+                new_hour += 1
+            current_hour = new_hour
+            current_minute = new_minute
+        col_index += 1
+
+
+    wb.save('example.xls')
+
+
+
+#Output the schedule to a new page
+# @topic.route('/schedule_output_ajax')
+# @login_required
+def schedule_output():
+    schedules = db.session.query(TopicSchedule).order_by(TopicSchedule.resource, TopicSchedule.time_from).all()
+    current_res = schedules[0].resource
+    results = list()
+    res_bucket = dict()
+    res_bucket['res_id'] = current_res
+    schedules_ajax = list()
+    for s in schedules:
+        related_topic = db.session.query(Topic).filter(Topic.topic_id == s.topic_id).first()
+        from_str = datetime.datetime.combine(s.day_from,s.time_from)
+        to_str = datetime.datetime.combine(s.day_from,s.time_to)
+        delta = to_str - from_str
+        appointment = dict()
+        appointment['title'] = related_topic.title
+        appointment['content'] = related_topic.content
+        appointment['topic_id'] = related_topic.topic_id
+        appointment['resource'] = s.resource
+        appointment['from_hour'] = int(s.time_from.hour)
+        appointment['from_minute'] = int(s.time_from.minute)
+        appointment['duration'] = int(delta.seconds/60)
+        
+        if ('res_id' in res_bucket) and (s.resource != res_bucket['res_id']):
+            res_bucket['schedules'] = schedules_ajax
+            results.append(res_bucket)
+            res_bucket = {}
+            schedules_ajax = []
+        res_bucket['res_id'] = s.resource
+        schedules_ajax.append(appointment)
+    # Insert the last same resource bucket into results.
+    res_bucket['schedules'] = schedules_ajax
+    results.append(res_bucket)
+    return results
