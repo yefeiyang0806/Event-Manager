@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from app import db, lm
 from config import ADMINS
-from flask import render_template, flash, redirect, session, url_for, request, g, request, Blueprint, jsonify
+from flask import render_template, flash, redirect, session, url_for, request, g, request, Blueprint, jsonify, Response
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from flask.ext.mail import Message
 from .forms import CreateTopicForm
@@ -485,8 +485,8 @@ def ajax_resources(format=None):
 @topic.route('/schedule_output')
 @login_required
 def schedule_output():
-    output_schedule()
-    return redirect(url_for("basic.index"))
+    resp = output_schedule()
+    return resp
 
 
 #Required by the LoginManager
@@ -659,16 +659,19 @@ def generate_topic_id():
 def output_schedule():
     content_obj_list = db.session.query(Content.content_id).all()
     content_list = [c[0] for c in content_obj_list]
-    # print (content_list)
+    color_list = []
+    # for c in content_list:
     wb = xlwt.Workbook()
     ws = wb.add_sheet('A Test Sheet')
-    style_str = 'align: wrap on, vert top; pattern: pattern solid;'
-    
+    style_str0 = 'align: wrap on, vert top, horz center;'
+    style_str1 = 'align: wrap on, vert top, horz center; borders: top thin, right thin, bottom thin, left thin; pattern: pattern solid;'
+    style0 = xlwt.easyxf(style_str0)            
+
     results = schedule_output()
-    start = datetime.datetime.strptime("01/01/16 10:00", "%d/%m/%y %H:%M")
-    # print (start.strftime('%H:%M'))
+    start = datetime.datetime.strptime("01/01/16 11:00", "%d/%m/%y %H:%M")
     ws.write(0, 0, 'Resource')
-    row_index = 1
+    ws.write(1, 0, 'Format')
+    row_index = 2
     time_interval = datetime.timedelta(minutes=5)
     while start.hour < 20:
         ws.write(row_index, 0, start.strftime('%H:%M'))
@@ -677,8 +680,12 @@ def output_schedule():
     col_index = 1
     for res_bucket in results:
         row_index = 0
-        ws.write(row_index, col_index, res_bucket['res_id'])
-        current_hour = 10
+        resource = db.session.query(Resource).filter(Resource.r_id == res_bucket['res_id']).first()
+        
+        ws.write(row_index, col_index, resource.name, style0)
+        row_index += 1
+        ws.write(row_index, col_index, resource.r_type, style0)
+        current_hour = 11
         current_minute = 0
         for each_schedule in res_bucket['schedules']:
             row_index += 1
@@ -687,18 +694,15 @@ def output_schedule():
             duration = int(each_schedule['duration'])
             # print(current_minute)
             # print(minute)
-            color_number = content_list.index(each_schedule['content'])+1
-            print(color_number)
-            print(each_schedule['content'])
-            # To avoid black 0 and 8.
-            # if color_number == 1:
-                # color_number = 30
-            style0 = xlwt.easyxf(style_str)
-            style0.pattern.pattern_fore_colour = color_number
+            color_number = content_list.index(each_schedule['content'])+10
+            style1 = xlwt.easyxf(style_str1)
+            style1.pattern.pattern_fore_colour = color_number
             minute_diff = minute - current_minute
             hour_diff = 0
             empty_slots = 0
             rowspan = int(duration/5)
+            # print(duration)
+            # print(rowspan)
             if minute_diff < 0:
                 hour_diff = hour - 1 - current_hour
                 minute_diff += 60
@@ -706,7 +710,10 @@ def output_schedule():
                 hour_diff = hour - current_hour
             empty_slots = int((minute_diff + hour_diff * 60) / 5)
             row_index += empty_slots
-            ws.write_merge(row_index, int(row_index+rowspan-1), col_index, col_index, each_schedule['title'], style0)
+            words = each_schedule['topic_id'] + ' - ' + each_schedule['title']
+            print(row_index)
+            print(row_index + rowspan -1)
+            ws.write_merge(row_index, int(row_index+rowspan-1), col_index, col_index, words, style1)
             new_minute = minute + duration
             new_hour = hour
             row_index += rowspan-1
@@ -717,9 +724,32 @@ def output_schedule():
             current_hour = new_hour
             current_minute = new_minute
         col_index += 1
+    
+    #Generate color legend
+    content_name_list = db.session.query(Content.name).all()
+    name_list = [c[0] for c in content_name_list]
+    row_count = 0
+    col_index += 1
+    row_index = 2
+    for c in name_list:
+        if row_count >= 6:
+            col_index += 3
+            row_index = 2
+            row_count = 0
+        color_number = name_list.index(c)+10
+        style1 = xlwt.easyxf(style_str1)
+        style1.pattern.pattern_fore_colour = color_number
+        ws.write(row_index+row_count, col_index, '', style1)
+        ws.write_merge(row_index+row_count, row_index+row_count, col_index+1, col_index+2, c)
+        row_count += 1
+    for ci in range(1, col_index+3) :
+        ws.col(ci).width = (3600)
 
-
-    wb.save('example.xls')
+    filename = 'agenda'
+    resp = Response(mimetype='application/vnd.ms-excel')
+    resp.headers['Content-Disposition'] = (u'attachment;filename="{name}.xls"'.format(name=filename)).encode('gbk')
+    wb.save(resp.stream)
+    return resp
 
 
 
@@ -742,6 +772,7 @@ def schedule_output():
         appointment['title'] = related_topic.title
         appointment['content'] = related_topic.content
         appointment['topic_id'] = related_topic.topic_id
+        # appointment['speaker'] = db.session.query(User).filter(User.user_id == related_topic.speaker1).first().full_name
         appointment['resource'] = s.resource
         appointment['from_hour'] = int(s.time_from.hour)
         appointment['from_minute'] = int(s.time_from.minute)

@@ -78,7 +78,7 @@
         }
         var from = $("#scheduler").jqxScheduler('getAppointmentProperty', appointment['id'], 'from');
         // console.log(set_default);
-        if (set_default == null){
+        if (set_default == null || set_default == ''){
           $("#scheduler").jqxScheduler('setAppointmentProperty', appointment['id'], 'to', from.addMinutes(default_duration));
         }
         else {
@@ -166,12 +166,12 @@
         // $("#filter_notice").remove();
       });
 
-      $("#excelExport").jqxButton();
+      // $("#excelExport").jqxButton();
       $("#icalExport").jqxButton();
 
-      $("#excelExport").click(function () {
-        $("#scheduler").jqxScheduler('exportData', 'xls');
-      });
+      // $("#excelExport").click(function () {
+        // $("#scheduler").jqxScheduler('exportData', 'xls');
+      // });
 
       $("#icalExport").click(function () {
         $("#scheduler").jqxScheduler('exportData', 'ics');
