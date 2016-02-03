@@ -152,8 +152,9 @@ class Topic(db.Model):
 
 class Role_menu(db.Model):
     uuid = db.Column(db.String(40), primary_key = True)
-    role_id = db.Column(db.String(10), db.ForeignKey('role.role_id'), primary_key = True)
-    menu_id = db.Column(db.String(10), db.ForeignKey('menu.menu_id'), primary_key = True)
+    role_id = db.Column(db.String(10), db.ForeignKey('role.role_id'))
+    menu_id = db.Column(db.String(10), db.ForeignKey('menu.menu_id'))
+    __table_args__ = (db.UniqueConstraint('role_id', 'menu_id', name='unique_role_menu_set'),{})
     menu = db.relationship("Menu", backref="role_assoc")
     create_date = db.Column(db.Date)
     create_time = db.Column(db.Time)

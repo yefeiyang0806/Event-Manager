@@ -469,9 +469,9 @@ def ajax_resources(format=None):
                 name = db.session.query(Format).filter(Format.format_id == f).first().name
                 formats_names.append(name)
         # formats_names = db.session.query(Format).filter(Format.format_id.in_(formats)).all()
-        print ("-------------------------")
-        print(formats)
-        print (formats_names[0])
+        # print ("-------------------------")
+        # print(formats)
+        # print (formats_names[0])
         selected_resources = db.session.query(Resource).filter(Resource.r_type.in_(formats_names)).all()
     for r in selected_resources:
         each_r = dict()
@@ -711,8 +711,8 @@ def output_schedule():
             empty_slots = int((minute_diff + hour_diff * 60) / 5)
             row_index += empty_slots
             words = each_schedule['topic_id'] + ' - ' + each_schedule['title']
-            print(row_index)
-            print(row_index + rowspan -1)
+            # print(row_index)
+            # print(row_index + rowspan -1)
             ws.write_merge(row_index, int(row_index+rowspan-1), col_index, col_index, words, style1)
             new_minute = minute + duration
             new_hour = hour

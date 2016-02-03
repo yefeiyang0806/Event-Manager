@@ -50,8 +50,6 @@ def index():
 @login_required
 def logged_in():
     topics = db.session.query(Topic).filter(Topic.create_by == g.user.email).all()
-    # menu_categories = menus_of_role()
-    print(menu_categories)
     return render_template('basic/member.html', full_name=full_name, topics=topics, status=status, menu_categories=menu_categories)
 
 
@@ -68,7 +66,6 @@ def register():
         selected_events = request.form.getlist('selected_events')
         if selected_events is not None:
             for e_id in selected_events:
-                print (e_id)
                 fullname = form.first_name.data + ' ' + form.last_name.data
                 new_attender = EventAttender(e_id, fullname, form.email.data)
                 db.session.add(new_attender)
