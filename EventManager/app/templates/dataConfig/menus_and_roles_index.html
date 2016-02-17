@@ -203,6 +203,14 @@
           contentType: "application/json",
           dataType: "json",
           data: JSON.stringify({ "menu_id": menu_id }),
+          statusCode: {
+            500: function(){
+              alert('Sever Side Error. Please try again.');
+            },
+            404: function(){
+              alert('Page not found.');
+            }
+          },
           success: function(data){
             if (data['success']){
               alert(data['success']);
