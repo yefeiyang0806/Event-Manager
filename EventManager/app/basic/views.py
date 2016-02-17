@@ -436,8 +436,10 @@ def menus_of_role():
     menu_categories = list()
     cat_grouped_menus = list()
     category_ids = list()
+    menu_ids = list()
     for m in middles:
         certain_menu = db.session.query(Menu).filter(Menu.menu_id == m.menu_id).first()
+        menu_ids.append(certain_menu.menu_id)
         if certain_menu.category_id not in category_ids:
             category_ids.append(certain_menu.category_id)
             cat_grouped_menus.append(certain_menu)
@@ -446,13 +448,14 @@ def menus_of_role():
         cat = dict()
         cat['category_id'] = c.category_id
         cat['category_name'] = c.category_name
-        menus = db.session.query(Menu).filter(Menu.category_id == c.category_id).all()
+        menus = db.session.query(Menu).filter(Menu.category_id == c.category_id).filter().all()
         for m in menus:
-            each_menu = dict()
-            each_menu['menu_id'] = m.menu_id
-            each_menu['menu_name'] = m.menu_name
-            each_menu['url'] = m.url
-            c_menus.append(each_menu)
+            if m.menu_id in menu_ids:
+                each_menu = dict()
+                each_menu['menu_id'] = m.menu_id
+                each_menu['menu_name'] = m.menu_name
+                each_menu['url'] = m.url
+                c_menus.append(each_menu)
         cat['menus'] = c_menus
         menu_categories.append(cat)
 

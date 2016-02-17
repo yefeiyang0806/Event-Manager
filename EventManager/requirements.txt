@@ -7,3 +7,4 @@ sqlalchemy-migrate
 flask-wtf
 pymysql3
 pyexcel-xls
+xlwt

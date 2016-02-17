@@ -14,6 +14,13 @@
     .menu-table tr > td:last-child {
       width:40%;
     }
+    .menu-mgmt-table {
+      width: 100%;
+    }
+    .menu-mgmt-table tr > td {
+      width: 25%;
+      padding-bottom: 10px;
+    }
   </style>
   {% set active_list = 'MRI' %}
   {% include 'public/navbar.html' %}
@@ -25,17 +32,46 @@
         <br />
         <div class="table-responsive">
           <ul class="nav nav-tabs" role="tablist">
-            <li role="presentation" class="active"><a href="#menus" aria-controls="menus" role="tab" data-toggle="tab">Assign menus to roles</a></li>
-            <li role="presentation"><a href="#roles" aria-controls="roles" role="tab" data-toggle="tab">Assign roles to menus</a></li>
+            <li role="presentation" class="active"><a href="#menu_mgmt" aria-controls="menu management" role="tab" data-toggle="tab">Menu Management</a></li>
+            <li role="presentation"><a href="#menus" aria-controls="menus" role="tab" data-toggle="tab">Assign menus to roles</a></li>
           </ul>
           <!-- Content of each tab -->
           <div class="tab-content">
-            <div role="tabpanel" class="tab-pane active" id="menus">
+            <!-- Content of menu management tab -->
+            <div role="tabpanel" class="tab-pane active" id="menu_mgmt">
+              <table class='menu-mgmt-table'>
+                {% for cat_bucket in menus_by_cat %}
+                  <tr>
+                    <td colspan=4><h4>{{ cat_bucket.category }}</h4></td>
+                  </tr>
+                  {% for menu_obj in cat_bucket.menus %}
+                    <tr class='menu-row'>
+                      <td>
+                        Name: <input type='text' class='menu-name' value='{{ menu_obj.menu.menu_name }}'/>
+                      </td>
+                      <td>
+                        ID: <input type='text' class='menu-id' value='{{ menu_obj.menu.menu_id }}' disabled/>
+                      </td>
+                      <td>
+                        URL: <input type='text' class='menu-url' value='{{ menu_obj.menu.url }}'/>
+                      </td>
+                      <td>
+                        <button class='btn btn-primary modify-menu'>Modify</button>
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        <button class='btn btn-danger delete-menu'>Delete</button>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                {% endfor %}
+              </table>
+            </div>
+            <!-- end of tab content and new start of next tab -->
+            <div role="tabpanel" class="tab-pane" id="menus">
               {% if menus_by_cat %}
                 {% for cat_bucket in menus_by_cat %}
                   <table class='menu-table'>
                     <tr bgcolor='#C0C0C0'>
-                      <td colspan=2 style='padding:10px 0px;'>
+                      <td colspan=2 style='padding:10px 0px;text-align:center;'>
                         <h4>{{ cat_bucket.category }}</h4>
                       </td>
                       <td style='padding:10px 0px;'>
@@ -85,7 +121,7 @@
                 {% endfor %}
               {% endif %}
             </div>
-            <div role="tabpanel" class="tab-pane" id="roles">...</div>
+            <!-- end of tab content -->
           </div>
         </div>
       </div>
@@ -128,6 +164,54 @@
         var clicked_btn = $(this);
         var op = 'remove';
         update_cat_role_menu_relation(clicked_btn, op)
+      });
+
+      $('.modify-menu').click(function(){
+        var menu_id = $(this).parent().prev().prev().find('input').val();
+        var url = $(this).parent().prev().find('input').val();
+        var menu_name = $(this).parent().prev().prev().prev().find('input').val();
+        $.ajax({
+          type: "POST",
+          url: "/dataConfig/update_menu_ajax",
+          contentType: "application/json",
+          dataType: "json",
+          statusCode: {
+            500: function(){
+              alert('Sever Side Error. Please try again.');
+            },
+            404: function(){
+              alert('Page not found.');
+            }
+          },
+          data: JSON.stringify({ "menu_id": menu_id, "menu_name": menu_name, "url": url }),
+          success: function(data){
+            if (data['success']){
+              alert(data['success']);
+            }
+            else if (data['error']){
+              alert(data['error']);
+            }
+          }
+        });
+      });
+
+      $('.delete-menu').click(function(){
+        var menu_id = $(this).parent().prev().prev().find('input').val();
+        $.ajax({
+          type: "POST",
+          url: "/dataConfig/delete_menu_ajax",
+          contentType: "application/json",
+          dataType: "json",
+          data: JSON.stringify({ "menu_id": menu_id }),
+          success: function(data){
+            if (data['success']){
+              alert(data['success']);
+            }
+            else if (data['error']){
+              alert(data['error']);
+            }
+          }
+        });
       });
 
       function update_role_menu_relation(clicked_btn, op){

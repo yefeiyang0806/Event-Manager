@@ -144,20 +144,6 @@
           $(this).show();
         });
         if (modified_list.length>0){
-          // $('#dialog').dialog({
-          //   width:400,
-          //   height:240,
-          //   modal: true,
-          //   buttons: {
-          //     Confirm: function() {
-          //       $( this ).dialog( "close" );
-          //       recreate_scheduler();
-          //     },
-          //     Cancel: function() {
-          //       $( this ).dialog( "close" );
-          //     }
-          //   }
-          // });
           $('#scheduler_update').click();
         }
         // else {
@@ -178,7 +164,7 @@
       });
 
      // $("#set_filter").trigger('click');
-      extractContentColor('DFSD (S/4HANA)');
+      // extractContentColor('DFSD (S/4HANA)');
 
       function remove_schedule_records(){
         var remove_conditions = [];
