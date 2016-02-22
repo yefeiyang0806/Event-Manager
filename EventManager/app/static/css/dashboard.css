@@ -168,3 +168,18 @@ body {
   min-width: 100px;
 }
 
+.ui-dialog {
+      z-index: 1050;
+    }
+    .dropdown-content > ul > li {
+      list-style-type: none;
+    }
+    .dropdown-content > ul > li input {
+      margin-right: 10px;
+      font-family: Sans-serif;
+      /*font-size: 150%;*/
+    }
+    .filter-table > tbody > tr:first-child > td {
+      padding-bottom: 15px;
+    }
+

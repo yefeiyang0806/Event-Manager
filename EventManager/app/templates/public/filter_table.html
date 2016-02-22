@@ -1,0 +1,69 @@
+          <table class='filter-table' width="90%">
+            <tr>
+              <td width='40%'>
+                <form class="form-inline">
+                  <label class='control-label' for='content-filter'>Content: </label>
+                  <div class="form-group" id='content-filter'>
+                    <div class='form-control dropdown-checkbox'>
+                      <div class='dropdown-trigger'>
+                        <a href="javascript:void(0)">
+                          <span class="hida">Select Content</span>    
+                          <p class="multiSel"></p>  
+                        </a>
+                      </div>
+              
+                      <div class='dropdown-content' id='dropdown-content' style='position:relative;z-index:2;'>
+                        <ul style='background-color:white;'>
+                          {% for c_name in content_names %}
+                            <li>
+                              <input type='checkbox' name='selected_contents[]' class='content-checkbox' id='{{ c_name.id }}' value='{{ c_name.id}}'>{{ c_name.name }}
+                            </li>
+                          {% endfor %}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </td>
+              <td width='40%'>
+                <form class="form-inline">
+                  <label class='control-label' for='format-filter'>Format: </label>
+                  <div class="form-group" id='format-filter'>
+                    <div class='form-control dropdown-checkbox'>
+                      <div class='dropdown-trigger'>
+                        <a href="javascript:void(0)">
+                          <span class="hida">Select Format</span>    
+                          <p class="multiSel"></p>  
+                        </a>
+                      </div>
+              
+                      <div class='dropdown-content' id='dropdown-content' style='position:relative;z-index:2;'>
+                        <ul style='background-color:white;'>
+                          {% for f_name in format_names %}
+                            <li>
+                              <input type='checkbox' name='selected_formats[]' class='format-checkbox' id='{{ f_name.id }}' value='{{ f_name.id}}'>{{ f_name.name }}
+                            </li>
+                          {% endfor %}
+                        </ul>
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </td>
+              <td rowspan=2 style='border-left:1px solid #DCDCDC;'>
+                <button class='btn btn-primary' id='set_filter'>Search</button>
+              </td>
+            </tr>
+            <tr>
+              <td width='80%' colspan=2>
+                <div style='z-index:1;'>
+                  <form class="form-inline">
+                    <div class='form-group'>
+                      <label class='control-label' for='keyword'>Title:</lable>
+                      <input type='text' class='form-control' size=50 id='keyword'/>
+                    </div>
+                  </form>
+                </div>
+              </td>
+            <tr><td colspan=3 style='padding-left:15px;'><hr></td></tr>
+          </table>

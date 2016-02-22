@@ -7,10 +7,42 @@
   <link href="{{url_for('static', filename='jqwidgets/jqwidgets/styles/jqx.base.css')}}" rel="stylesheet">
   <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
   <style>
-    .ui-dialog {
-      z-index: 1050;
+    .color-legend {
+      position: relative;
+    }
+    #content-legend {
+      table-layout: fixed;
+    }
+    #content-legend .legend-text {
+      padding-left: 20px;
+    }
+    #content-legend .color-box {
+      width: 10px;
+      height: 10px;
+      display: inline-block;
+      /*background-color: #ccc;*/
+      position: absolute;
+      left: 5px;
+      top: 5px;
+    }
+    #content-legend td {
+      padding-left: 5px;
+      padding-right: 5px;
+      padding-top: 5px;
+      text-align: left;
+      width: 10%;
+      vertical-align: center;
+      overflow: hidden;
+      white-space: nowrap;
+    }
+    input[type="number"] {
+      width:60px;
+    }
+    .scheduler-hide {
+      display: none;
     }
   </style>
+
   {% set active_list = 'PT' %}
   {% include 'public/navbar.html' %}
   <div class="container-fluid">
@@ -18,75 +50,67 @@
   		{% include 'public/side_bar.html' %}
     	<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
         <h1 class="page-header">Place Topics</h1>
-        <br />
         <div class='row' style='text-align:center;'>
-          <table class='filter-table' width="90%">
+          {% include 'public/filter_table.html' %}
+          <table class='scheduler-hide' width='90%'>
+            <tr>
+              <td align='right'><strong>Default duration:</strong></td>
+              {% for fn in format_names %}
+                <td class='default-text' align='center'><strong>{{ fn.name }}:</strong><br/>
+                  <input type='number' class='default-duration' id='{{ fn.id }}' /> minutes<td>
+              {% endfor %}
+            </tr>
+          </table>
+          <br/>
+          <table class='scheduler-hide' width='90%'>
             <tr>
               <td align='center'>
-                <label class='control-label' for='content-filter'>Content: </label>
-                <select id='content-filter'>
-                    <option value='any' selected>----Any----</option>
-                  {% for c_name in content_names %}
-                    <option value='{{ c_name.id }}'>{{ c_name.name }}</option>
-                  {% endfor %}
-                </select>
-              </td>
-              <td align='center'>
-                <label class='control-label' for='format-filter'>Format: </label>
-                <select id='format-filter'>
-                  <option value='any' selected>--------Any--------</option>
-                  {% for f_name in format_names %}
-                    <option value='{{ f_name.id }}'>{{ f_name.name }}</option>
-                  {% endfor %}
-                </select>
-              </td>
-              <td align='center'>
-                <label class='control-label' for='location-filter'>Location: </label>
-                <select id='location-filter'>
-                  <option selected>------Any------</option>
-                  {% for l in locations %}
-                    <option>{{ l }}</option>
-                  {% endfor %}
-                </select>
-              </td>
-              <td>
-                <button class='btn btn-primary' id='set_filter'>Search</button>
+                <button class='btn btn-info' id='reset_schedule'>Reset schedule records</button>
               </td>
             </tr>
-            <tr><td colspan=4 style='padding-left:15px;'><hr></td></tr>
-            <tr id='filter_notice'>
-              <td colspan=4 style='padding-left:15px;'>
-                <div class="panel panel-warning">
-                  <div class="panel-heading">
-                    Please set filter conditions
-                  </div>
-                  <div class="panel-body">
-                    Please select a content and/or format type and press "search".<br/>
-                    <b>Warning</b>: Large number of unscheduled topics would result in 'Not Responding'. 
-                  </div>
-                </div>
-              </td>
-            </tr>
-            <tr><td colspan=4><button class='btn btn-info' id='reset_schedule'>Reset schedule records</button></td></tr>
           </table>
         </div>
         <br>
         <div id='scheduler_wrapper'>
           <div id='scheduler' width='100%'></div>
         </div>
-        <div class='row' style='text-align:center;margin-top:20px;'>
+        <div class='row scheduler-hide' style='text-align:center;margin-top:10px;'>
+          <table id='content-legend' width="90%">
+            <tr>
+              <td>
+                {% for cn in content_names %}
+                  <div class='color-legend'>
+                    <div class='legend-text'>{{ cn.name }}</div>
+                    <div class='color-box'></div>
+                  </div></td>
+                  {% if loop.index % 6 == 0 %}
+                    </tr><td>
+                  {% else %}
+                    <td>
+                  {% endif %}
+                {% endfor %}
+          </table>
+          <br>
+          <!-- Export buttons and update buttons -->
           <table width="90%">
             <tr>
               <td>
                 <button class='btn btn-info' id='scheduler_update' >Update Schedule</button>
               </td>
+              <td>
+                <!-- <input type="button" value="Export to EXCEl" id='excelExport' /> -->
+                <a class='btn btn-primary' href='/topic/schedule_output'>Export to EXCEl</a>
+              </td>
+              <td>
+                <input type="button" value="Export to iCal" id='icalExport' />
+              </td>
             </tr>
           </table>
         </div>
-        <div id="dialog" style='display:none;' title="Modifications are detected!">
+        <!-- <div id="dialog" style='display:none;' title="Modifications are detected!">
           <p>Unsaved Modifications have been detected on the current scheduler.<br />
             Refreshing the scheduler would discard these changes.</p>
-        </div>
+        </div> -->
         <div id="dialog_reset" style='display:none;' title="Do you want to reset the scheduler?">
           <p>Once reset, all records in the current scheduler would be removed.<br />
             Are you sure you want to reset the scheduler?</p>
@@ -104,6 +128,7 @@
   <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxbuttons.js')}}"></script>
   <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxscrollbar.js')}}"></script>
   <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxdata.js')}}"></script>
+  <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxdata.export.js')}}"></script>
   <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxdate.js')}}"></script>
   <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxscheduler.js')}}"></script>
   <script src="{{url_for('static',filename='jqwidgets/jqwidgets/jqxscheduler.api.js')}}"></script>
@@ -121,5 +146,6 @@
   <script src="{{url_for('static',filename='jqwidgets/jqwidgets/globalization/globalize.js')}}"></script>
   <script src="{{url_for('static',filename='jqwidgets/jqwidgets/globalization/globalize.culture.de-DE.js')}}"></script>
   <script src="{{url_for('static',filename='js/topic_scheduler.js')}}"></script>
-    
+  <script src="{{url_for('static',filename='js/multi_filter.js')}}"></script>
+
 {% endblock %}

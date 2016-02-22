@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 from app import db, lm
 from config import ADMINS
-from flask import render_template, flash, redirect, session, url_for, request, g, request, Blueprint, jsonify
+from flask import render_template, flash, redirect, session, url_for, request, g, request, Blueprint, jsonify, Response
 from flask.ext.login import login_user, logout_user, current_user, login_required
 from flask.ext.mail import Message
 from .forms import CreateTopicForm
 from ..models import User, Topic, Role, Menu, Role_menu, Content, Format, ResourceType, Resource, TopicValidation, TopicSchedule
 from ..emails import send_email
 from werkzeug.security import generate_password_hash
-import random, json, datetime, math
+import random, json, datetime, math, xlwt
 import re
 
 
@@ -184,7 +184,8 @@ def arrange_topics():
     content_filter = request.args.get('content', None)
     format_filter = request.args.get('format', None)
     location_filter = request.args.get('location', None)
-    results = content_format_location_filter(content_filter, format_filter, location_filter)
+    keyword = request.args.get('keyword', None)
+    results = topic_filters(content_filter, format_filter, location_filter, keyword)
     content_names = results['content_names']
     format_names = results['format_names']
     locations = results['locations']
@@ -204,7 +205,8 @@ def place_topics():
     content_filter = request.args.get('content', None)
     format_filter = request.args.get('format', None)
     location_filter = request.args.get('location', None)
-    results = content_format_location_filter(content_filter, format_filter, location_filter)
+    keyword = None
+    results = topic_filters(content_filter, format_filter, location_filter, keyword)
     content_names = results['content_names']
     format_names = results['format_names']
     locations = results['locations']
@@ -221,7 +223,8 @@ def validate_topics():
     content_filter = request.args.get('content', None)
     format_filter = request.args.get('format', None)
     location_filter = request.args.get('location', None)
-    results = content_format_location_filter(content_filter, format_filter, location_filter)
+    keyword = request.args.get('keyword', None)
+    results = topic_filters(content_filter, format_filter, location_filter, keyword)
     content_names = results['content_names']
     format_names = results['format_names']
     locations = results['locations']
@@ -319,34 +322,41 @@ def validate_arrangement():
             db.session.commit()
     # Do validations on modifications of schedule
     for s in schedule:
-        conflict_speaker = speaker_conflict(s['topic_id'], s['date'], s['time_from'], s['time_to'])
-        conflict_room = room_conflict(s['topic_id'], s['date'], s['time_from'], s['time_to'], s['resource'])
-        if conflict_speaker:
-            error_msg = dict()
-            error_msg['topic_id'] = s['topic_id']
-            error_msg['title'] = db.session.query(Topic).filter(Topic.topic_id == s['topic_id']).first().title
-            error_msg['message'] = s_conflict
-            errors.append(error_msg)
-        if conflict_room:
-            error_msg = dict()
-            error_msg['topic_id'] = s['topic_id']
-            error_msg['title'] = db.session.query(Topic).filter(Topic.topic_id == s['topic_id']).first().title
-            error_msg['message'] = r_conflict
-            errors.append(error_msg)
-        if (not conflict_speaker) and (not conflict_room):
+        if s['resource'] == 'TBD':
             topic = db.session.query(Topic).filter(Topic.topic_id == s['topic_id']).first()
-            if topic.schedule.first()==None:
-                t_s = TopicSchedule(topic.topic_id, s['date'], s['date'], \
-                datetime.datetime.strptime(s['time_from'], '%H:%M:%S').time(), datetime.datetime.strptime(s['time_to'], '%H:%M:%S').time(), s['resource'], g.user.user_id)
-                db.session.add(t_s)
-            else:
-                t_s = topic.schedule.first()
-                t_s.day_from = s['date']
-                t_s.day_to = s['date']
-                t_s.time_from = datetime.datetime.strptime(s['time_from'], '%H:%M:%S').time()
-                t_s.time_to = datetime.datetime.strptime(s['time_to'], '%H:%M:%S').time()
-                t_s.resource = s['resource']
-            db.session.commit()
+            if topic.schedule.first()!=None:
+                db.session.delete(topic.schedule.first())
+                db.session.commit()
+            # return jsonify({'status':'success'})
+        else:
+            conflict_speaker = speaker_conflict(s['topic_id'], s['date'], s['time_from'], s['time_to'])
+            conflict_room = room_conflict(s['topic_id'], s['date'], s['time_from'], s['time_to'], s['resource'])
+            if conflict_speaker:
+                error_msg = dict()
+                error_msg['topic_id'] = s['topic_id']
+                error_msg['title'] = db.session.query(Topic).filter(Topic.topic_id == s['topic_id']).first().title
+                error_msg['message'] = s_conflict
+                errors.append(error_msg)
+            if conflict_room:
+                error_msg = dict()
+                error_msg['topic_id'] = s['topic_id']
+                error_msg['title'] = db.session.query(Topic).filter(Topic.topic_id == s['topic_id']).first().title
+                error_msg['message'] = r_conflict
+                errors.append(error_msg)
+            if (not conflict_speaker) and (not conflict_room):
+                topic = db.session.query(Topic).filter(Topic.topic_id == s['topic_id']).first()
+                if topic.schedule.first()==None:
+                    t_s = TopicSchedule(topic.topic_id, s['date'], s['date'], \
+                    datetime.datetime.strptime(s['time_from'], '%H:%M:%S').time(), datetime.datetime.strptime(s['time_to'], '%H:%M:%S').time(), s['resource'], g.user.user_id)
+                    db.session.add(t_s)
+                else:
+                    t_s = topic.schedule.first()
+                    t_s.day_from = s['date']
+                    t_s.day_to = s['date']
+                    t_s.time_from = datetime.datetime.strptime(s['time_from'], '%H:%M:%S').time()
+                    t_s.time_to = datetime.datetime.strptime(s['time_to'], '%H:%M:%S').time()
+                    t_s.resource = s['resource']
+                db.session.commit()
     if not errors:
         return jsonify({'status':'success'})
     else:
@@ -379,15 +389,17 @@ def ajax_schedule():
     if request.method == 'POST':
         json_data = request.get_json(force=True)
         filter_data = json_data["filters"]
-        content_filter = format_filter = location = None
+        content_filter = format_filter = location = keyword = None
         for f in filter_data:
             if f['type'] == 'content':
                 content_filter = f['value']
             if f['type'] == 'format':
                 format_filter = f['value']
             if f['type'] == 'location':
-                location = f['value']
-        filtered_results = content_format_location_filter(content_filter, format_filter, location)
+                location_filter = f['value']
+            if f['type'] == 'keyword':
+                keyword = f['value']
+        filtered_results = topic_filters(content_filter, format_filter, location_filter, keyword)
         rejected_topics = db.session.query(Topic).filter(Topic.status=='RJ').all()
         filtered_topics = filtered_results['topics']
         filtered_topics = set(filtered_topics).difference(set(rejected_topics))
@@ -418,21 +430,24 @@ def ajax_schedule():
 def reset_schedule():
     json_data = request.get_json(force=True)
     conditions = json_data["remove_conditions"]
-    content_filter = format_filter = location = None
+    content_filter = format_filter = location = keyword = None
     for f in conditions:
         if f['type'] == 'content':
             content_filter = f['value']
         if f['type'] == 'format':
             format_filter = f['value']
         if f['type'] == 'location':
-            location = f['value']
-    filtered_results = content_format_location_filter(content_filter, format_filter, location)
+            location_filter = f['value']
+        if f['type'] == 'keyword':
+            keyword = f['value']
+    filtered_results = topic_filters(content_filter, format_filter, location_filter, keyword)
     filtered_topics = filtered_results['topics'].all()
     related_topic_id = list()
     for t in filtered_topics:
         related_topic_id.append(t.topic_id)
     related_schedules = db.session.query(TopicSchedule).filter(TopicSchedule.topic_id.in_(related_topic_id)).all()
     for rs in related_schedules:
+        # print(rs.topic_id)
         db.session.delete(rs)
     db.session.commit()
     return 'success'
@@ -447,14 +462,31 @@ def ajax_resources(format=None):
     if format is None:
         selected_resources = db.session.query(Resource).all()
     else:
-        format_name = db.session.query(Format).filter(Format.format_id == format).first().name
-        selected_resources = db.session.query(Resource).filter(Resource.r_type == format_name).all()
+        formats = format.split(',')
+        formats_names = list()
+        for f in formats:
+            if f != '':
+                name = db.session.query(Format).filter(Format.format_id == f).first().name
+                formats_names.append(name)
+        # formats_names = db.session.query(Format).filter(Format.format_id.in_(formats)).all()
+        print ("-------------------------")
+        print(formats)
+        print (formats_names[0])
+        selected_resources = db.session.query(Resource).filter(Resource.r_type.in_(formats_names)).all()
     for r in selected_resources:
         each_r = dict()
         each_r['resource'] = r.r_id
         res.append(each_r)
     res.append({'resource': 'TBD'})
     return json.dumps(res)
+
+
+# Go to the page to show the results of schedule
+@topic.route('/schedule_output')
+@login_required
+def schedule_output():
+    resp = output_schedule()
+    return resp
 
 
 #Required by the LoginManager
@@ -551,7 +583,7 @@ def room_conflict(topic_id, date, time_from, time_to, resource):
 
 
 #Return topics based on the content, format and location
-def content_format_location_filter(content_filter, format_filter, location_filter):
+def topic_filters(content_filter, format_filter, location_filter, keyword):
     contents = db.session.query(Content).all()
     formats = db.session.query(Format).all()
     locations_set = db.session.query(Topic.location).all()
@@ -570,11 +602,30 @@ def content_format_location_filter(content_filter, format_filter, location_filte
 
     topics = db.session.query(Topic)
     if content_filter != None:
-        topics = topics.filter(~Topic.topic_id.in_(db.session.query(Topic.topic_id).filter(Topic.content != content_filter)))
+        cfs = content_filter.split(',')
+        q_cfs = db.session.query(Topic.topic_id).filter(db.false())
+        for cf in cfs:
+            q_cf = db.session.query(Topic.topic_id).filter(Topic.content == cf)
+            q_cfs = q_cfs.union(q_cf)
+        topics = topics.filter(Topic.topic_id.in_(q_cfs))
     if format_filter != None:
-        topics = topics.filter(~Topic.topic_id.in_(db.session.query(Topic.topic_id).filter(Topic.format != format_filter)))
+        ffs = format_filter.split(',')
+        q_ffs = db.session.query(Topic.topic_id).filter(db.false())
+        for ff in ffs:
+            q_ff = db.session.query(Topic.topic_id).filter(Topic.format == ff)
+            q_ffs = q_ffs.union(q_ff)
+        topics = topics.filter(Topic.topic_id.in_(q_ffs))
     if location_filter != None:
-        topics = topics.filter(~Topic.topic_id.in_(db.session.query(Topic.topic_id).filter(Topic.location != location_filter)))
+        lfs = location_filter.split(',')
+        q_lfs = db.session.query(Topic.topic_id).filter(db.false())
+        for lf in lfs:
+            q_lf = db.session.query(Topic.topic_id).filter(Topic.location == lf)
+            q_lfs = q_lfs.union(q_lf)
+        topics = topics.filter(Topic.topic_id.in_(q_lfs))
+
+    if keyword != None:
+        keyword = "%" + keyword + "%"
+        topics = topics.filter(Topic.title.ilike(keyword))
 
     results['content_names'] = content_names
     results['format_names'] = format_names
@@ -602,3 +653,139 @@ def generate_topic_id():
     candidate = random.sample(pool, 6)
     active_code = candidate[0] + candidate[1] + candidate[2] + candidate[3] + candidate[4] + candidate[5]
     return str(active_code)
+
+
+#Export the schedule to the xls.
+def output_schedule():
+    content_obj_list = db.session.query(Content.content_id).all()
+    content_list = [c[0] for c in content_obj_list]
+    color_list = []
+    # for c in content_list:
+    wb = xlwt.Workbook()
+    ws = wb.add_sheet('A Test Sheet')
+    style_str0 = 'align: wrap on, vert top, horz center;'
+    style_str1 = 'align: wrap on, vert top, horz center; borders: top thin, right thin, bottom thin, left thin; pattern: pattern solid;'
+    style0 = xlwt.easyxf(style_str0)            
+
+    results = schedule_output()
+    start = datetime.datetime.strptime("01/01/16 11:00", "%d/%m/%y %H:%M")
+    ws.write(0, 0, 'Resource')
+    ws.write(1, 0, 'Format')
+    row_index = 2
+    time_interval = datetime.timedelta(minutes=5)
+    while start.hour < 20:
+        ws.write(row_index, 0, start.strftime('%H:%M'))
+        row_index += 1
+        start += time_interval
+    col_index = 1
+    for res_bucket in results:
+        row_index = 0
+        resource = db.session.query(Resource).filter(Resource.r_id == res_bucket['res_id']).first()
+        
+        ws.write(row_index, col_index, resource.name, style0)
+        row_index += 1
+        ws.write(row_index, col_index, resource.r_type, style0)
+        current_hour = 11
+        current_minute = 0
+        for each_schedule in res_bucket['schedules']:
+            row_index += 1
+            hour = int(each_schedule['from_hour'])
+            minute = int(each_schedule['from_minute'])
+            duration = int(each_schedule['duration'])
+            # print(current_minute)
+            # print(minute)
+            color_number = content_list.index(each_schedule['content'])+10
+            style1 = xlwt.easyxf(style_str1)
+            style1.pattern.pattern_fore_colour = color_number
+            minute_diff = minute - current_minute
+            hour_diff = 0
+            empty_slots = 0
+            rowspan = int(duration/5)
+            # print(duration)
+            # print(rowspan)
+            if minute_diff < 0:
+                hour_diff = hour - 1 - current_hour
+                minute_diff += 60
+            else:
+                hour_diff = hour - current_hour
+            empty_slots = int((minute_diff + hour_diff * 60) / 5)
+            row_index += empty_slots
+            words = each_schedule['topic_id'] + ' - ' + each_schedule['title']
+            print(row_index)
+            print(row_index + rowspan -1)
+            ws.write_merge(row_index, int(row_index+rowspan-1), col_index, col_index, words, style1)
+            new_minute = minute + duration
+            new_hour = hour
+            row_index += rowspan-1
+            # Update current time.
+            while new_minute >= 60:
+                new_minute -= 60
+                new_hour += 1
+            current_hour = new_hour
+            current_minute = new_minute
+        col_index += 1
+    
+    #Generate color legend
+    content_name_list = db.session.query(Content.name).all()
+    name_list = [c[0] for c in content_name_list]
+    row_count = 0
+    col_index += 1
+    row_index = 2
+    for c in name_list:
+        if row_count >= 6:
+            col_index += 3
+            row_index = 2
+            row_count = 0
+        color_number = name_list.index(c)+10
+        style1 = xlwt.easyxf(style_str1)
+        style1.pattern.pattern_fore_colour = color_number
+        ws.write(row_index+row_count, col_index, '', style1)
+        ws.write_merge(row_index+row_count, row_index+row_count, col_index+1, col_index+2, c)
+        row_count += 1
+    for ci in range(1, col_index+3) :
+        ws.col(ci).width = (3600)
+
+    filename = 'agenda'
+    resp = Response(mimetype='application/vnd.ms-excel')
+    resp.headers['Content-Disposition'] = (u'attachment;filename="{name}.xls"'.format(name=filename)).encode('gbk')
+    wb.save(resp.stream)
+    return resp
+
+
+
+#Output the schedule to a new page
+# @topic.route('/schedule_output_ajax')
+# @login_required
+def schedule_output():
+    schedules = db.session.query(TopicSchedule).order_by(TopicSchedule.resource, TopicSchedule.time_from).all()
+    current_res = schedules[0].resource
+    results = list()
+    res_bucket = dict()
+    res_bucket['res_id'] = current_res
+    schedules_ajax = list()
+    for s in schedules:
+        related_topic = db.session.query(Topic).filter(Topic.topic_id == s.topic_id).first()
+        from_str = datetime.datetime.combine(s.day_from,s.time_from)
+        to_str = datetime.datetime.combine(s.day_from,s.time_to)
+        delta = to_str - from_str
+        appointment = dict()
+        appointment['title'] = related_topic.title
+        appointment['content'] = related_topic.content
+        appointment['topic_id'] = related_topic.topic_id
+        # appointment['speaker'] = db.session.query(User).filter(User.user_id == related_topic.speaker1).first().full_name
+        appointment['resource'] = s.resource
+        appointment['from_hour'] = int(s.time_from.hour)
+        appointment['from_minute'] = int(s.time_from.minute)
+        appointment['duration'] = int(delta.seconds/60)
+        
+        if ('res_id' in res_bucket) and (s.resource != res_bucket['res_id']):
+            res_bucket['schedules'] = schedules_ajax
+            results.append(res_bucket)
+            res_bucket = {}
+            schedules_ajax = []
+        res_bucket['res_id'] = s.resource
+        schedules_ajax.append(appointment)
+    # Insert the last same resource bucket into results.
+    res_bucket['schedules'] = schedules_ajax
+    results.append(res_bucket)
+    return results

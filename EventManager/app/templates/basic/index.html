@@ -11,11 +11,14 @@
     {{wtf.quick_form(form, action="/index", method="post", extra_classes="form-signin", button_map="primary", id="login_form")}}
     {% with messages = get_flashed_messages() %}
       {% if messages %}
-        <ul>
-          {% for message in messages %}
-            <li>{{ message }} </li>
-          {% endfor %}
-        </ul>
+        <div style='text-align:center;'>
+          <ul>
+            {% for message in messages %}
+              <li><font color='red' size='3'>{{ message }}</font></li>
+            {% endfor %}
+          </ul>
+        </div>
+        <br/>
       {% endif %}
     {% endwith %}
     <button type="button" class="btn btn-primary btn-login" id="submit">Login</button>

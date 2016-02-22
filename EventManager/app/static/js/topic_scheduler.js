@@ -10,33 +10,41 @@
         }
       });
 
-      var modified_list = [];
-      var current_content = $("#content-filter").find(":selected").val();
-      var current_format = $("#format-filter").find(":selected").val();
-      var current_location = $("#location-filter").find(":selected").text();
-
-      $("#set_filter").click(function(){
-        if (modified_list.length>0){
-          $('#dialog').dialog({
-            width:400,
-            height:240,
-            modal: true,
-            buttons: {
-              Confirm: function() {
-                $( this ).dialog( "close" );
-                recreate_scheduler();
-              },
-              Cancel: function() {
-                $( this ).dialog( "close" );
-              }
-            }
-          });
+      // create color legends for different contents
+      var red = 200;
+      var green = 80;
+      var blue = 125;
+      $('.color-box').each(function(){
+        red += 37;
+        green -= 47;
+        blue += 59;
+        if (red > 255){
+          red -= 255;
         }
-        else {
-          recreate_scheduler();
+        if (green < 0){
+          green += 255;
         }
-        $("#filter_notice").remove();
+        if (blue > 255){
+          blue -= 255;
+        }
+        var color_str = 'rgb(' + red + ',' + green + ',' + blue + ')';
+        // console.log(color_str)
+        $(this).css('background-color', color_str);
       });
+
+      // initialize the filter related values
+      var modified_list = [];
+      var current_content = '';
+      var current_format = '';
+      $(".format-checkbox:checked").each(function(){
+        current_format += $(this).val() + ',';
+      });
+      // console.log(current_format);
+      $(".content-checkbox:checked").each(function(){
+        current_content += $(this).val() + ',';
+      });
+      // console.log(current_content);
+      var current_location = $("#location-filter").find(":selected").text();
 
       $("#reset_schedule").click(function(){
         var reset_url = "/topic/reset_schedule";
@@ -59,15 +67,27 @@
       });
 
       $('#scheduler_wrapper').on('appointmentChange', '#scheduler', function (event) {
+        var default_duration = 20;
         var args = event.args;
         var appointment = args.appointment;
+        var format = appointment['location'].split(' (')[0];
+        // console.log(format);
+        var set_default = $('.default-text:contains("'+format+'")').find('input').val();
         if ($.inArray(appointment['id'], modified_list) == -1){
           modified_list.push(appointment['id']);
         }
+        var from = $("#scheduler").jqxScheduler('getAppointmentProperty', appointment['id'], 'from');
+        // console.log(set_default);
+        if (set_default == null || set_default == ''){
+          $("#scheduler").jqxScheduler('setAppointmentProperty', appointment['id'], 'to', from.addMinutes(default_duration));
+        }
+        else {
+          $("#scheduler").jqxScheduler('setAppointmentProperty', appointment['id'], 'to', from.addMinutes(set_default));
+        }
         
-        $("#scheduler").jqxScheduler('beginAppointmentsUpdate');
-        // $("#scheduler").jqxScheduler('setAppointmentProperty', appointment['id'], 'borderColor', 'red');
-        $("#scheduler").jqxScheduler('endAppointmentsUpdate');
+        // $("#scheduler").jqxScheduler('setAppointmentProperty', appointment['id'], 'background', 'yellow');
+        // $("#scheduler").jqxScheduler('beginAppointmentsUpdate');
+        // $("#scheduler").jqxScheduler('endAppointmentsUpdate');
       });
 
       $('#scheduler_update').click(function(){
@@ -79,9 +99,9 @@
           var to = scheduler_ele.jqxScheduler('getAppointmentProperty', value, 'to').toString('HH:mm:ss');
           var date = scheduler_ele.jqxScheduler('getAppointmentProperty', value, 'to').toString('yyyy-MM-dd');
           var record = {'topic_id': value, 'resource': res, 'time_from': from, 'time_to': to, 'date': date};
-          if (res != 'TBD'){
-            data.push(record);  
-          }
+          // if (res != 'TBD'){
+          data.push(record);  
+          // }
           // Get modified date and resource ---- Done!
           // Generate json with id, from, to and resource ---- Done!
           // Send back to the validation function to do validation ---- Done!
@@ -119,7 +139,46 @@
         });
       });
 
+      $("#set_filter").click(function(){
+        $('.scheduler-hide').each(function(){
+          $(this).show();
+        });
+        if (modified_list.length>0){
+          // $('#dialog').dialog({
+          //   width:400,
+          //   height:240,
+          //   modal: true,
+          //   buttons: {
+          //     Confirm: function() {
+          //       $( this ).dialog( "close" );
+          //       recreate_scheduler();
+          //     },
+          //     Cancel: function() {
+          //       $( this ).dialog( "close" );
+          //     }
+          //   }
+          // });
+          $('#scheduler_update').click();
+        }
+        // else {
+        recreate_scheduler();
+        // }
+        // $("#filter_notice").remove();
+      });
+
+      // $("#excelExport").jqxButton();
+      $("#icalExport").jqxButton();
+
+      // $("#excelExport").click(function () {
+        // $("#scheduler").jqxScheduler('exportData', 'xls');
+      // });
+
+      $("#icalExport").click(function () {
+        $("#scheduler").jqxScheduler('exportData', 'ics');
+      });
+
      // $("#set_filter").trigger('click');
+      extractContentColor('DFSD (S/4HANA)');
 
       function remove_schedule_records(){
         var remove_conditions = [];
@@ -141,11 +200,35 @@
         });
       }
 
+      function extractContentColor(app_location){
+        var content_str = app_location.match(/\((.*?)\)/);
+        var content = content_str[1];
+        var colorbox = $('.legend-text:contains("' + content + '")').next('.color-box').css('background-color');
+        var rgb_color = colorbox.match(/\((.*?)\)/)[1].split(',');
+        // console.log(rgb_color);
+        var color_str = '#' + componentToHex(parseInt(rgb_color[0])) + componentToHex(parseInt(rgb_color[1])) + componentToHex(parseInt(rgb_color[2]));
+        return color_str;
+      }
+
+      function componentToHex(c) {
+        var hex = c.toString(16);
+        return hex.length == 1 ? "0" + hex : hex;
+      }
+
       function recreate_scheduler(){
         var filter_data = [];
-        var content_id = $("#content-filter").find(":selected").val();
-        var format_id = $("#format-filter").find(":selected").val();
+        var content_id = '';
+        var format_id = '';
         var location = $("#location-filter").find(":selected").text();
+        var keyword = $("#keyword").val();
+        $(".format-checkbox:checked").each(function(){
+          format_id += $(this).val() + ',';
+        });
+        // console.log(format_id);
+        $(".content-checkbox:checked").each(function(){
+          content_id += $(this).val() + ',';
+        });
+        // console.log(content_id);
         current_content = content_id;
         current_format = format_id;
         current_location = location;
@@ -157,6 +240,9 @@
         }
         if (location != "------Any------"){
           filter_data.push({'type': 'location', 'value': location});
+        }
+        if (keyword != ''){
+          filter_data.push({'type': 'keyword', 'value': keyword});
         }
         $.ajax({
           type: "POST",
@@ -205,11 +291,16 @@
               rowsHeight: 30,
               dayNameFormat: "abbr",
               source: adapter,
-              showLegend: true,
+              // showLegend: true,
               legendHeight: 100,
               ready: function () {
                     
-                },
+              },
+              renderAppointment: function(data){
+                var color = extractContentColor(data.appointment.location);
+                data.background = color;
+                return data;
+              },
               editDialogCreate: function (dialog, fields, editAppointment) {
                 var assigned_content_format = null;
                 if (editAppointment != null){
@@ -251,14 +342,15 @@
                 id: "topic_id",
                 description: "description",
                 location: "contentFormat",
+                // location: "resource",
                 subject: "topic_title",
                 resourceId: "resource",
               },
               view: 'dayView',
               views:
               [
-                { type: 'dayView', showWeekends: false, timeRuler: { scaleStartHour: 8, scaleEndHour: 21, scale: "tenMinutes", formatString: "HH:mm" }, appointmentsRenderMode: "exactTime" },
-                { type: 'weekView', showWeekends: false }
+                { type: 'dayView', showWeekends: false, timeRuler: { scaleStartHour: 10, scaleEndHour: 21, scale: "tenMinutes", formatString: "HH:mm" }, appointmentsRenderMode: "exactTime" },
+                // { type: 'agendaView' }
               ]
             });
           }
