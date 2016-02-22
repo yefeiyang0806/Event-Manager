@@ -50,8 +50,6 @@ def index():
 @login_required
 def logged_in():
     topics = db.session.query(Topic).filter(Topic.create_by == g.user.email).all()
-    # menu_categories = menus_of_role()
-    print(menu_categories)
     return render_template('basic/member.html', full_name=full_name, topics=topics, status=status, menu_categories=menu_categories)
 
 
@@ -68,7 +66,6 @@ def register():
         selected_events = request.form.getlist('selected_events')
         if selected_events is not None:
             for e_id in selected_events:
-                print (e_id)
                 fullname = form.first_name.data + ' ' + form.last_name.data
                 new_attender = EventAttender(e_id, fullname, form.email.data)
                 db.session.add(new_attender)
@@ -439,8 +436,10 @@ def menus_of_role():
     menu_categories = list()
     cat_grouped_menus = list()
     category_ids = list()
+    menu_ids = list()
     for m in middles:
         certain_menu = db.session.query(Menu).filter(Menu.menu_id == m.menu_id).first()
+        menu_ids.append(certain_menu.menu_id)
         if certain_menu.category_id not in category_ids:
             category_ids.append(certain_menu.category_id)
             cat_grouped_menus.append(certain_menu)
@@ -449,13 +448,14 @@ def menus_of_role():
         cat = dict()
         cat['category_id'] = c.category_id
         cat['category_name'] = c.category_name
-        menus = db.session.query(Menu).filter(Menu.category_id == c.category_id).all()
+        menus = db.session.query(Menu).filter(Menu.category_id == c.category_id).filter().all()
         for m in menus:
-            each_menu = dict()
-            each_menu['menu_id'] = m.menu_id
-            each_menu['menu_name'] = m.menu_name
-            each_menu['url'] = m.url
-            c_menus.append(each_menu)
+            if m.menu_id in menu_ids:
+                each_menu = dict()
+                each_menu['menu_id'] = m.menu_id
+                each_menu['menu_name'] = m.menu_name
+                each_menu['url'] = m.url
+                c_menus.append(each_menu)
         cat['menus'] = c_menus
         menu_categories.append(cat)
 

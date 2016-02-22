@@ -5,6 +5,7 @@
   <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
   <link href="{{url_for('static', filename='jquery-timepicker/jquery.timepicker.css')}}" rel="stylesheet">
   <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <link href="{{url_for('static', filename='css/filterbar.css')}}" rel="stylesheet">
   <style>
     iframe#card_view {
       width: 100% !important;
@@ -23,40 +24,6 @@
         <br />
 
         <div class='row' style='text-align:center;'>
-          <!-- <table class='filter-table' width="90%">
-            <tr>
-              <td align='center'>
-                <label class='control-label' for='content-filter'>Content: </label>
-                <select id='content-filter'>
-                    <option selected>----Any----</option>
-                  {% for c_name in content_names %}
-                    <option value='{{ c_name.id }}'>{{ c_name.name }}</option>
-                  {% endfor %}
-                </select>
-              </td>
-              <td align='center'>
-                <label class='control-label' for='format-filter'>Format: </label>
-                <select id='format-filter'>
-                  <option selected>--------Any--------</option>
-                  {% for f_name in format_names %}
-                    <option value='{{ f_name.id }}'>{{ f_name.name }}</option>
-                  {% endfor %}
-                </select>
-              </td>
-              <td align='center'>
-                <label class='control-label' for='location-filter'>Location: </label>
-                <select id='location-filter'>
-                  <option selected>------Any------</option>
-                  {% for l in locations %}
-                    <option>{{ l }}</option>
-                  {% endfor %}
-                </select>
-              </td>
-              <td>
-                <button class='btn btn-primary' id='set_filter'>Search</button>
-              </td>
-            </tr>
-          </table> -->
           {% include 'public/filter_table.html' %}
         </div>
         <br>
@@ -168,26 +135,6 @@
           $(this).parent().find('input[type=radio][value=' + $(this).val() + ']').prop('checked',true);
         }
       });
-
-      // //Set the selected option based on the URL
-      // var url_location = getUrlParameter('location');
-      // var url_content = getUrlParameter('content');
-      // var url_format = getUrlParameter('format');
-      // $("#location-filter").find("option").each(function(){
-      //   if ($(this).text() == url_location){
-      //     $(this).prop('selected', true);
-      //   }
-      // });
-      // $("#content-filter").find("option").each(function(){
-      //   if ($(this).val() == url_content){
-      //     $(this).prop('selected', true);
-      //   }
-      // });
-      // $("#format-filter").find("option").each(function(){
-      //   if ($(this).val() == url_format){
-      //     $(this).prop('selected', true);
-      //   }
-      // });
 
       //Redirect the browser to the desired URL based on the filter conditions
       $("#set_filter").click(function(){

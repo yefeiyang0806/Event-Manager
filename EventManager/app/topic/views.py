@@ -469,9 +469,9 @@ def ajax_resources(format=None):
                 name = db.session.query(Format).filter(Format.format_id == f).first().name
                 formats_names.append(name)
         # formats_names = db.session.query(Format).filter(Format.format_id.in_(formats)).all()
-        print ("-------------------------")
-        print(formats)
-        print (formats_names[0])
+        # print ("-------------------------")
+        # print(formats)
+        # print (formats_names[0])
         selected_resources = db.session.query(Resource).filter(Resource.r_type.in_(formats_names)).all()
     for r in selected_resources:
         each_r = dict()
@@ -500,8 +500,10 @@ def menus_of_role():
     menu_categories = list()
     cat_grouped_menus = list()
     category_ids = list()
+    menu_ids = list()
     for m in middles:
         certain_menu = db.session.query(Menu).filter(Menu.menu_id == m.menu_id).first()
+        menu_ids.append(certain_menu.menu_id)
         if certain_menu.category_id not in category_ids:
             category_ids.append(certain_menu.category_id)
             cat_grouped_menus.append(certain_menu)
@@ -510,13 +512,14 @@ def menus_of_role():
         cat = dict()
         cat['category_id'] = c.category_id
         cat['category_name'] = c.category_name
-        menus = db.session.query(Menu).filter(Menu.category_id == c.category_id).all()
+        menus = db.session.query(Menu).filter(Menu.category_id == c.category_id).filter().all()
         for m in menus:
-            each_menu = dict()
-            each_menu['menu_id'] = m.menu_id
-            each_menu['menu_name'] = m.menu_name
-            each_menu['url'] = m.url
-            c_menus.append(each_menu)
+            if m.menu_id in menu_ids:
+                each_menu = dict()
+                each_menu['menu_id'] = m.menu_id
+                each_menu['menu_name'] = m.menu_name
+                each_menu['url'] = m.url
+                c_menus.append(each_menu)
         cat['menus'] = c_menus
         menu_categories.append(cat)
 
@@ -711,8 +714,8 @@ def output_schedule():
             empty_slots = int((minute_diff + hour_diff * 60) / 5)
             row_index += empty_slots
             words = each_schedule['topic_id'] + ' - ' + each_schedule['title']
-            print(row_index)
-            print(row_index + rowspan -1)
+            # print(row_index)
+            # print(row_index + rowspan -1)
             ws.write_merge(row_index, int(row_index+rowspan-1), col_index, col_index, words, style1)
             new_minute = minute + duration
             new_hour = hour

@@ -1,0 +1,259 @@
+{% extends "bootstrap/base.html" %}
+{% block title %}Menus and Roles{% endblock %}
+{% block body %}
+  {{super()}}
+  <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  <style>
+    .menu-table {
+      width: 100%;
+    }
+    .menu-table tr > td:first-child {
+      width:25%;
+    }
+    .menu-table tr > td:last-child {
+      width:40%;
+    }
+    .menu-mgmt-table {
+      width: 100%;
+    }
+    .menu-mgmt-table tr > td {
+      width: 25%;
+      padding-bottom: 10px;
+    }
+  </style>
+  {% set active_list = 'MRI' %}
+  {% include 'public/navbar.html' %}
+  <div class="container-fluid">
+  	<div class="row">
+  		{% include 'public/side_bar.html' %}
+    	<div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+        <h1 class="page-header">Menus and Roles</h1>
+        <br />
+        <div class="table-responsive">
+          <ul class="nav nav-tabs" role="tablist">
+            <li role="presentation" class="active"><a href="#menu_mgmt" aria-controls="menu management" role="tab" data-toggle="tab">Menu Management</a></li>
+            <li role="presentation"><a href="#menus" aria-controls="menus" role="tab" data-toggle="tab">Assign menus to roles</a></li>
+          </ul>
+          <!-- Content of each tab -->
+          <div class="tab-content">
+            <!-- Content of menu management tab -->
+            <div role="tabpanel" class="tab-pane active" id="menu_mgmt">
+              <table class='menu-mgmt-table'>
+                {% for cat_bucket in menus_by_cat %}
+                  <tr>
+                    <td colspan=4><h4>{{ cat_bucket.category }}</h4></td>
+                  </tr>
+                  {% for menu_obj in cat_bucket.menus %}
+                    <tr class='menu-row'>
+                      <td>
+                        Name: <input type='text' class='menu-name' value='{{ menu_obj.menu.menu_name }}'/>
+                      </td>
+                      <td>
+                        ID: <input type='text' class='menu-id' value='{{ menu_obj.menu.menu_id }}' disabled/>
+                      </td>
+                      <td>
+                        URL: <input type='text' class='menu-url' value='{{ menu_obj.menu.url }}'/>
+                      </td>
+                      <td>
+                        <button class='btn btn-primary modify-menu'>Modify</button>
+                        &nbsp;&nbsp;&nbsp;&nbsp;
+                        <button class='btn btn-danger delete-menu'>Delete</button>
+                      </td>
+                    </tr>
+                  {% endfor %}
+                {% endfor %}
+              </table>
+            </div>
+            <!-- end of tab content and new start of next tab -->
+            <div role="tabpanel" class="tab-pane" id="menus">
+              {% if menus_by_cat %}
+                {% for cat_bucket in menus_by_cat %}
+                  <table class='menu-table'>
+                    <tr bgcolor='#C0C0C0'>
+                      <td colspan=2 style='padding:10px 0px;text-align:center;'>
+                        <h4>{{ cat_bucket.category }}</h4>
+                      </td>
+                      <td style='padding:10px 0px;'>
+                        <div class='cat-manager' id='{{ cat_bucket.category }}'>
+                          <select class='form-control role-selector' style='display:inline;width:150px;'>
+                            {% for r in roles %}
+                              <option value='{{ r.role_id }}'>{{ r.rolename }}</option>
+                            {% endfor %}
+                          </select>
+                          <button class='btn btn-primary cat-role-adder' style='display:inline;width:50px;'>
+                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                          </button>
+                          <button class='btn btn-danger cat-role-remover' style='display:inline;width:50px;'>
+                            <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {% for menu_obj in cat_bucket.menus %}
+                    <tr id='{{ menu_obj.menu.menu_id }}'>
+                      <td>
+                        {{ menu_obj.menu.menu_name }}
+                      </td>
+                      <td class='menu_roles'> 
+                        {% for r in menu_obj.roles %}
+                          {{ r }}, 
+                        {% endfor %}
+                      </td>
+                      <td>
+                        <div class='role-manager' id='{{ menu_obj.menu.menu_id }}'>
+                          <select class='form-control role-selector' style='display:inline;width:150px;'>
+                            {% for r in roles %}
+                              <option value='{{ r.role_id }}'>{{ r.rolename }}</option>
+                            {% endfor %}
+                          </select>
+                          <button class='btn btn-primary role-adder' style='display:inline;width:50px;'>
+                            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span>
+                          </button>
+                          <button class='btn btn-danger role-remover' style='display:inline;width:50px;'>
+                            <span class="glyphicon glyphicon-minus" aria-hidden="true"></span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                    {% endfor %}
+                  </table>
+                {% endfor %}
+              {% endif %}
+            </div>
+            <!-- end of tab content -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <meta name="csrf-token" content="{{ csrf_token() }}"></meta>
+
+  <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>
+  <script>
+    $(document).ready(function() {
+      var csrftoken = $('meta[name=csrf-token]').attr('content');
+      $.ajaxSetup({
+        beforeSend: function(xhr, settings) {
+          if (!/^(GET|HEAD|OPTIONS|TRACE)$/i.test(settings.type)) {
+            xhr.setRequestHeader("X-CSRFToken", csrftoken);
+          }
+        }
+      });
+
+      $('.role-adder').click(function(){
+        var clicked_btn = $(this);
+        var op = 'add';
+        update_role_menu_relation(clicked_btn, op)
+      });
+
+      $('.role-remover').click(function(){
+        var clicked_btn = $(this);
+        var op = 'remove';
+        update_role_menu_relation(clicked_btn, op)
+      });
+
+      $('.cat-role-adder').click(function(){
+        var clicked_btn = $(this);
+        var op = 'add';
+        update_cat_role_menu_relation(clicked_btn, op)
+      });
+
+      $('.cat-role-remover').click(function(){
+        var clicked_btn = $(this);
+        var op = 'remove';
+        update_cat_role_menu_relation(clicked_btn, op)
+      });
+
+      $('.modify-menu').click(function(){
+        var menu_id = $(this).parent().prev().prev().find('input').val();
+        var url = $(this).parent().prev().find('input').val();
+        var menu_name = $(this).parent().prev().prev().prev().find('input').val();
+        $.ajax({
+          type: "POST",
+          url: "/dataConfig/update_menu_ajax",
+          contentType: "application/json",
+          dataType: "json",
+          statusCode: {
+            500: function(){
+              alert('Sever Side Error. Please try again.');
+            },
+            404: function(){
+              alert('Page not found.');
+            }
+          },
+          data: JSON.stringify({ "menu_id": menu_id, "menu_name": menu_name, "url": url }),
+          success: function(data){
+            if (data['success']){
+              alert(data['success']);
+            }
+            else if (data['error']){
+              alert(data['error']);
+            }
+          }
+        });
+      });
+
+      $('.delete-menu').click(function(){
+        var menu_id = $(this).parent().prev().prev().find('input').val();
+        $.ajax({
+          type: "POST",
+          url: "/dataConfig/delete_menu_ajax",
+          contentType: "application/json",
+          dataType: "json",
+          data: JSON.stringify({ "menu_id": menu_id }),
+          success: function(data){
+            if (data['success']){
+              alert(data['success']);
+            }
+            else if (data['error']){
+              alert(data['error']);
+            }
+          }
+        });
+      });
+
+      function update_role_menu_relation(clicked_btn, op){
+        var menu_id = clicked_btn.parents('tr').attr('id');
+        var added_role = clicked_btn.parents('.role-manager').find('select').val();
+        var ajax_url = "/dataConfig/update_rolenames_ajax?menu_id=" + menu_id + "&modified_role=" + added_role + "&op_type=" + op;
+        $.ajax({
+          type: "GET",
+          dataType: "json",
+          url: ajax_url,
+          success: function(data){
+            var new_role_str = generate_roles_str(data);
+            clicked_btn.parents('td').prev().text(new_role_str);
+          }
+        });
+      }
+
+      function update_cat_role_menu_relation(clicked_btn, op){
+        var category = clicked_btn.parent().attr('id');
+        var added_role = clicked_btn.parent().find('select').val();
+        var ajax_url = "/dataConfig/update_rolenames_ajax?category=" + category + "&modified_role=" + added_role + "&op_type=" + op;
+        $.ajax({
+          type: "GET",
+          dataType: "json",
+          url: ajax_url,
+          success: function(data){
+            console.log(data);
+            for (var x=0; x<data.length; x++){
+              var new_role_str = generate_roles_str(data[x]['assigned_roles']);
+              clicked_btn.parents('.menu-table').find('tr[id="' + data[x]['menu_id'] + '"]').find('.menu_roles').text(new_role_str);
+            }
+          }
+        });
+      }
+
+      function generate_roles_str(role_list){
+        var str = ''
+        for (var i=0; i<role_list.length; i++){
+          str += role_list[i] + ', ';
+        }
+        return str;
+      }
+    });
+  </script>
+{% endblock %}

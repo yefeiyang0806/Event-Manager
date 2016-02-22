@@ -109,6 +109,11 @@ body {
   background-color: #428bca;
 }
 
+li.collapsed-title > a:hover,
+li.collapsed-title > a:focus {
+  background-color:#f0ab00;
+}
+
 
 /*
  * Main content

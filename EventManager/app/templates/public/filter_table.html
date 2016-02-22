@@ -12,10 +12,10 @@
                         </a>
                       </div>
               
-                      <div class='dropdown-content' id='dropdown-content' style='position:relative;z-index:2;'>
-                        <ul style='background-color:white;'>
+                      <div class='dropdown-content' id='dropdown-content' style='position:relative;z-index:2;text-align:left;'>
+                        <ul>
                           {% for c_name in content_names %}
-                            <li>
+                            <li style='padding-left:0px;'>
                               <input type='checkbox' name='selected_contents[]' class='content-checkbox' id='{{ c_name.id }}' value='{{ c_name.id}}'>{{ c_name.name }}
                             </li>
                           {% endfor %}
@@ -37,10 +37,10 @@
                         </a>
                       </div>
               
-                      <div class='dropdown-content' id='dropdown-content' style='position:relative;z-index:2;'>
-                        <ul style='background-color:white;'>
+                      <div class='dropdown-content' id='dropdown-content' style='position:relative;z-index:2;text-align:left;'>
+                        <ul>
                           {% for f_name in format_names %}
-                            <li>
+                            <li style='padding-left:0px;'>
                               <input type='checkbox' name='selected_formats[]' class='format-checkbox' id='{{ f_name.id }}' value='{{ f_name.id}}'>{{ f_name.name }}
                             </li>
                           {% endfor %}
