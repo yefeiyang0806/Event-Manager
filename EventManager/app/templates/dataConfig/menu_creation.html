@@ -43,7 +43,31 @@
     $(document).ready(function() {
       $('.form-submitter').click(function(){
         $('#menu_form').submit();
+        $(window.location).attr('href', '/dataConfig/menus_and_roles');
       });
+      $('#category_name').autocomplete({
+        source: function( request, response ){
+          $.ajax({
+            url: "/dataConfig/category_name_ajax",
+            dataType: "json",
+            data: {
+              q: request.term
+            },
+            success: function(data){
+              response(data);
+            }
+          });
+        },
+        minLength: 2,
+        select: function( event, ui ){
+          var selected_id = ui.item.id;
+          $('#category_id').val(selected_id);
+          $('#category_id').attr('disabled', true);
+        },
+        search: function( event, ui ){
+          $('#category_id').removeAttr('disabled');
+        }
+      })
     });
   </script>
 {% endblock %}

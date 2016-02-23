@@ -7,11 +7,17 @@
   <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
     <style>
     .form-group {width:50%;}
+    #upload_form {
+      width: 200px;
+      margin: 0 auto;
+      text-align: center;
+    }
   </style>
   {% set active_list = 'upload_files' %}
   {% include 'public/navbar.html' %}
   <div class="container-fluid">
     {% include 'public/side_bar.html' %}
+<<<<<<< HEAD
       <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
          <a href='/upload/template?id=users'  style="color:#FF0000">users_template download</a>&nbsp;
          <a href='/upload/template?id=topic' style="color:#FF0000">topic_template download</a>
@@ -22,6 +28,17 @@
                     {% endif%}               
           <button type="button" class="btn btn-primary btn-login" id="upload_submit" style="width:100px; " >Upload</button>
         </div>
+=======
+    <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+      <div style='width:100%;margin:0 auto;text-align:center;'>
+        {{ wtf.quick_form(form, id='upload_form') }} 
+        {% if message%}
+          <p>{{message}}</p></br>    
+        {% endif%}
+      </div>
+      <div style='width:100px;margin:0 auto;text-align:center;'>
+        <button type="button" class="btn btn-primary btn-login" id="upload_submit">Upload</button>
+>>>>>>> 4cc36ff7a3631d93d1e85c195457da95533eb3fb
       </div>
     </div>
   </div>
@@ -34,7 +51,10 @@
       $("#upload_submit").click(function(){
         $("#upload_form").submit();
       });
+<<<<<<< HEAD
       $("#upload_form").css({ "width": "100px"});
+=======
+>>>>>>> 4cc36ff7a3631d93d1e85c195457da95533eb3fb
      });  
 
 

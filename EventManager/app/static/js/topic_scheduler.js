@@ -146,25 +146,13 @@
         if (modified_list.length>0){
           $('#scheduler_update').click();
         }
-        // else {
         recreate_scheduler();
-        // }
-        // $("#filter_notice").remove();
       });
 
-      // $("#excelExport").jqxButton();
       $("#icalExport").jqxButton();
-
-      // $("#excelExport").click(function () {
-        // $("#scheduler").jqxScheduler('exportData', 'xls');
-      // });
-
       $("#icalExport").click(function () {
         $("#scheduler").jqxScheduler('exportData', 'ics');
       });
-
-     // $("#set_filter").trigger('click');
-      // extractContentColor('DFSD (S/4HANA)');
 
       function remove_schedule_records(){
         var remove_conditions = [];
@@ -210,11 +198,9 @@
         $(".format-checkbox:checked").each(function(){
           format_id += $(this).val() + ',';
         });
-        // console.log(format_id);
         $(".content-checkbox:checked").each(function(){
           content_id += $(this).val() + ',';
         });
-        // console.log(content_id);
         current_content = content_id;
         current_format = format_id;
         current_location = location;
