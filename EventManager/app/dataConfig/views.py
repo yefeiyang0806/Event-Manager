@@ -153,6 +153,28 @@ def delete_menu_ajax():
     else:
         return jsonify({'error': 'No corresponding menu.'})
 
+
+#Return the category names to the autocomplete of menu creation.
+@dataConfig.route('/category_name_ajax')
+@login_required
+def category_name_ajax():
+    q = request.args.get('q')
+    # print (q)
+    q = '%'+q+'%'
+    category_list = db.session.query(Menu.category_name, Menu.category_id).filter(Menu.category_name.ilike(q)).distinct()
+    # print (category_list)
+    category_list = [{'name':c[0], 'id':c[1]} for c in category_list]
+    # print (category_list)
+    result = list()
+    for c in category_list:
+        category = dict()
+        category['label'] = c['name']
+        category['value'] = c['name']
+        category['id'] = c['id']
+        result.append(category)
+    return json.dumps(result)
+
+
 #Given menu object, return the name of related roles.
 def getRoleNames(mo):
     assigned_roles = []

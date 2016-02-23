@@ -218,22 +218,37 @@ def generate_db():
     presenter_role = Role('Presenter', 'PS', 'presenter is presenter', 'i325391')
     demostaff_role = Role('Demo Staff', 'DS', 'Demo Staff is Demo Staff', 'i325391')
 
-    em_menu1 = Menu('Place Topics','PT', 'Event Management', 'EM',  'Menu/Event Management', 'i325390')
-    em_menu2 = Menu('Validate Topics','VT', 'Event Management', 'EM',  'Menu/Event Management', 'i325390')
-    em_menu3 = Menu('Arrange Topics','AT', 'Event Management', 'EM',  'Menu/Event Management', 'i325390')
+    em_menu1 = Menu('Place Topics','PT', 'Event Management', 'EM',  '/topic/place', 'i325390')
+    em_menu2 = Menu('Validate Topics','VT', 'Event Management', 'EM',  '/topic/validate', 'i325390')
+    em_menu3 = Menu('Arrange Topics','AT', 'Event Management', 'EM',  '/topic/arrange', 'i325390')
+
+    mm_menu1 = Menu('Menus and Roles', 'MRI', 'Menu Management', 'MM', '/dataConfig/menus_and_roles', 'i325390')
+    mm_menu2 = Menu('Add Menus', 'AM', 'Menu Management', 'MM', '/dataConfig/create_menu', 'i325390')
+
     # rm_menu = Menu('Role Management', 'RM',  'Menu/Role Management', 'i325390')
     normal_em1 = Role_menu('NM', 'VT', 'i325390')
     normal_em2 = Role_menu('NM', 'PT', 'i325390')
     normal_em3 = Role_menu('NM', 'AT', 'i325390')
+    normal_mm1 = Role_menu('NM', 'MRI', 'i325390')
+    normal_mm2 = Role_menu('NM', 'AM', 'i325390')
+
     admin_em1 = Role_menu('AD', 'PT', 'i325390')
     admin_em2 = Role_menu('AD', 'AT', 'i325390')
     admin_em3 = Role_menu('AD', 'VT', 'i325390')
+    admin_mm1 = Role_menu('AD', 'MRI', 'i325390')
+    admin_mm2 = Role_menu('AD', 'AM', 'i325390')
+
     presenter_em1 = Role_menu('PS', 'VT', 'i325391')
     presenter_em2 = Role_menu('PS', 'PT', 'i325391')
     presenter_em3 = Role_menu('PS', 'AT', 'i325391')
+    presenter_mm1 = Role_menu('PS', 'MRI', 'i325390')
+    presenter_mm2 = Role_menu('PS', 'AM', 'i325390')
+
     demostaff_em1 = Role_menu('DS', 'VT', 'i325391')
     demostaff_em2 = Role_menu('DS', 'PT', 'i325391')
     demostaff_em3 = Role_menu('DS', 'AT', 'i325391')
+    demostaff_mm1 = Role_menu('DS', 'MRI', 'i325390')
+    demostaff_mm2 = Role_menu('DS', 'AM', 'i325390')
 
     c_hana = Content('S/4HANA', 'S4HANA', 'i325391')
     c_ue = Content('User Experience', 'UE', 'i325391')
@@ -265,18 +280,32 @@ def generate_db():
     db.session.add(em_menu1)
     db.session.add(em_menu2)
     db.session.add(em_menu3)
+    db.session.add(mm_menu1)
+    db.session.add(mm_menu2)
+
     db.session.add(normal_em1)
     db.session.add(normal_em2)
     db.session.add(normal_em3)
+    db.session.add(normal_mm1)
+    db.session.add(normal_mm2)
+
     db.session.add(admin_em1)
     db.session.add(admin_em2)
     db.session.add(admin_em3)
+    db.session.add(admin_mm1)
+    db.session.add(admin_mm2)
+
     db.session.add(presenter_em1)
     db.session.add(presenter_em2)
     db.session.add(presenter_em3)
+    db.session.add(presenter_mm1)
+    db.session.add(presenter_mm2)
+
     db.session.add(demostaff_em1)
     db.session.add(demostaff_em2)
     db.session.add(demostaff_em3)
+    db.session.add(demostaff_mm1)
+    db.session.add(demostaff_mm2)
 
     db.session.add(c_hana)
     db.session.add(c_ue)
@@ -305,29 +334,29 @@ def generate_db():
 
     db.session.add(user)
     db.session.commit()
-
+    login_user(user, remember=False)
     
-    return redirect(url_for('basic.index'))
+    return redirect(url_for('basic.generate_real_resource'))
 
 
 #Only used for generating resources.
-@basic.route('/generate_resources')
-@login_required
-def generate_resource():
-    resource1 = Resource('SF_001', 'SF_001', 'Show Floor on the first floor', 20, g.user.user_id, 'Show Floor')
-    resource2 = Resource('SF_002', 'SF_002', 'Show Floor on the second floor', 15, g.user.user_id, 'Show Floor')
-    resource3 = Resource('SF_003', 'SF_003', 'Show Floor on the third floor', 10, g.user.user_id, 'Show Floor')
-    resource4 = Resource('SB_001', 'SB_001', 'Small Ballroom on the first floor', 50, g.user.user_id, 'Small Ballroom')
-    resource5 = Resource('LB_001', 'LB_001', 'large Ballroom on the first floor', 100, g.user.user_id, 'Large Ballroom')
+# @basic.route('/generate_resources')
+# @login_required
+# def generate_resource():
+#     resource1 = Resource('SF_001', 'SF_001', 'Show Floor on the first floor', 20, g.user.user_id, 'Show Floor')
+#     resource2 = Resource('SF_002', 'SF_002', 'Show Floor on the second floor', 15, g.user.user_id, 'Show Floor')
+#     resource3 = Resource('SF_003', 'SF_003', 'Show Floor on the third floor', 10, g.user.user_id, 'Show Floor')
+#     resource4 = Resource('SB_001', 'SB_001', 'Small Ballroom on the first floor', 50, g.user.user_id, 'Small Ballroom')
+#     resource5 = Resource('LB_001', 'LB_001', 'large Ballroom on the first floor', 100, g.user.user_id, 'Large Ballroom')
 
-    db.session.add(resource1)
-    db.session.add(resource2)
-    db.session.add(resource3)
-    db.session.add(resource4)
-    db.session.add(resource5)
-    db.session.commit()
+#     db.session.add(resource1)
+#     db.session.add(resource2)
+#     db.session.add(resource3)
+#     db.session.add(resource4)
+#     db.session.add(resource5)
+#     db.session.commit()
 
-    return redirect(url_for('basic.index'))
+#     return redirect(url_for('basic.index'))
 
 
 #Only used for generating real resources.
@@ -389,7 +418,7 @@ def generate_real_resource():
     db.session.add(resource21)
     db.session.commit()
 
-    return redirect(url_for('basic.index'))
+    return redirect(url_for('basic.generate_events'))
 
 
 #Only used for generating events.
