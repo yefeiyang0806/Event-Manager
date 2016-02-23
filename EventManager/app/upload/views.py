@@ -10,6 +10,7 @@ import xlrd, re,random
 from werkzeug.security import generate_password_hash
 from ..emails import send_email
 from flask.ext.login import login_user, logout_user, current_user, login_required
+import urllib.request
 
 upload = Blueprint('upload', __name__)
 full_name = ''
@@ -64,6 +65,16 @@ def send_emails():
         filename = None
         message=" import failed"
     return render_template('upload/send_emails.html', form=form, filename=filename,message=message,full_name=full_name, menu_categories=menu_categories, status=status)
+
+@upload.route('/template', methods=['GET', 'POST'])
+def download():
+    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+    # resp=urllib.request.urlopen('/uploads/users_template.xlsx')
+    resp=urllib.request.urlopen('http://localhost:5000/users_template.xlsx')
+    html=resp.read()
+    html=resp.read()
+    print(html)
+
 
 def send_email_to_user(path, template, event_id):
     data = open_excel(path)   
@@ -206,9 +217,6 @@ def input_topic_xls(path):
               content, format, location, link, jamlink, memo, status)
             db.session.add(temp)
             db.session.commit()
-        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
-        print(i)
-        print("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^")
 
 
 def ifcomma(data):    
