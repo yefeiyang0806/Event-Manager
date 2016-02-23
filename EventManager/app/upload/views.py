@@ -1,6 +1,6 @@
 import os
 from config import ADMINS
-from flask import Flask, request, render_template, redirect, url_for,Blueprint,g
+from flask import Flask, request, render_template, redirect, url_for,Blueprint,g,current_app,send_from_directory
 from werkzeug.utils import secure_filename
 from pyexcel_xls import XLBook 
 from .forms import UploadForm,SendEmailsForm
@@ -10,7 +10,9 @@ import xlrd, re,random
 from werkzeug.security import generate_password_hash
 from ..emails import send_email
 from flask.ext.login import login_user, logout_user, current_user, login_required
+import urllib
 import urllib.request
+import requests
 
 upload = Blueprint('upload', __name__)
 full_name = ''
@@ -66,14 +68,20 @@ def send_emails():
         message=" import failed"
     return render_template('upload/send_emails.html', form=form, filename=filename,message=message,full_name=full_name, menu_categories=menu_categories, status=status)
 
-@upload.route('/template', methods=['GET', 'POST'])
+@upload.route('/template')
+@login_required
 def download():
-    print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
-    # resp=urllib.request.urlopen('/uploads/users_template.xlsx')
-    resp=urllib.request.urlopen('http://localhost:5000/users_template.xlsx')
-    html=resp.read()
-    html=resp.read()
-    print(html)
+    template_id = request.args.get('id')
+    file_path = os.path.join(current_app.root_path, '../templatexlsx')
+    if template_id == 'users':
+        filename = 'users_template.xlsx'
+    elif template_id == 'topic':
+        filename = 'topic_template.xlsx'
+    else:
+        filename = 'event_template.xlsx'
+    print(filename)
+    return send_from_directory(directory=file_path, filename=filename,as_attachment=True,attachment_filename=filename) 
+
 
 
 def send_email_to_user(path, template, event_id):
@@ -172,12 +180,12 @@ def input_user_xls(path):
 
 
 def input_topic_xls(path):
-    data = open_excel(path)   #打开excel
-    table=data.sheets()[0] #打开excel的第几个sheet
-    nrows=table.nrows   #捕获到有效数据的行数
+    data = open_excel(path)   
+    table=data.sheets()[0]
+    nrows=table.nrows  
     books=[]
     for i in range(nrows):
-        ss=table.row_values(i)   #获取一行的所有值，每一列的值以列表项存在
+        ss=table.row_values(i)  
         if i == 0:
             continue
         topic_id = ss[0]
