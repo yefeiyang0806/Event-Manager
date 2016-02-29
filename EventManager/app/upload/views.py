@@ -39,7 +39,7 @@ def upload_file():
             input_topic_xls(fpath)
         message=" import successfully"
     else:
-        filename = None
+        filename = "wrong"
         message=" import failed"
     return render_template('upload/upload.html', form=form, filename=filename,message=message,full_name=full_name, menu_categories=menu_categories, status=status)
 
@@ -73,8 +73,8 @@ def send_emails():
 def download():
     template_id = request.args.get('id')
     file_path = os.path.join(current_app.root_path, '../templatexlsx')
-    if template_id == 'users':
-        filename = 'users_template.xlsx'
+    if template_id == 'user':
+        filename = 'user_template.xlsx'
     elif template_id == 'topic':
         filename = 'topic_template.xlsx'
     else:
