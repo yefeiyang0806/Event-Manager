@@ -27,11 +27,11 @@
                       <p>{{message}}</p></br>    
                     {% endif%}               
           <button type="button" class="btn btn-primary btn-login" id="upload_submit" style="width:100px; " >Upload</button>
-      
+        </div>
 
       </div>
     </div>
-  </div>
+  
   <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>
   <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
   <script>
@@ -41,17 +41,8 @@
       $("#upload_submit").click(function(){
         $("#upload_form").submit();
       });
-<<<<<<< HEAD
       $("#upload_form").css({ "width": "100px"});
-=======
->>>>>>> 4cc36ff7a3631d93d1e85c195457da95533eb3fb
      });  
 
-
-
-
-  </script>
-  
-    
   </script>
 {% endblock %}
