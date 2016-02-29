@@ -1,0 +1,84 @@
+{% extends "bootstrap/base.html" %}
+{% block title %}{{ first_name }}'s Home Page{% endblock %}
+{% block body %}
+  {{super()}}
+  <link href="{{url_for('static', filename='css/dashboard.css')}}" rel="stylesheet">
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+  {% set active_list = 'manage_role' %}
+  {% include 'public/navbar.html' %}
+  <div class="container-fluid">
+    <div class="row">
+      {% include 'public/side_bar.html' %}
+      <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
+        <h1 class="page-header">Manage Roles</h1>
+        <br />
+        <div class="table-responsive">
+          {% if not roles %}
+            <div class="panel panel-warning">
+              <div class="panel-heading">
+                <h2 class="panel-title">No Roles yet.</h2>
+              </div>
+              <div class="panel-body">
+                You can <a href="/role/create">create new role here</a>.<br />
+                More actions are available on the left-hand side navigator bar.
+              </div>
+            </div>
+         {% else %}
+            {% for role in roles %}
+              <h3 class="event_title text-muted">{{ role.rolename }}</h3>
+              <h4 class="task_title text-success">&nbsp;&nbsp;Created by <strong>{{role.create_by}}</strong></h4>
+              <table class="table role-table">
+                <tbody>
+                  <tr>
+                    <td colspan='2'>Description: {{role.description}}</td>
+                    <td align='center'><a class="btn btn-info" role="button" href="/role/modify/{{ role.uuid }}" style="width:40%;">Modify</a></td>
+                  </tr>
+                  <tr>
+                    <td>Created Date: {{ role.create_date }}</td>
+                    <td>Created Time: {{ role.create_time }}</td>
+                    <td align='center'><button class="btn btn-info delete" role="button" name="{{ role.uuid }}" style="width:40%;">Delete</button></td>
+                  </tr>
+                </tbody>
+              </table>
+              <br />
+                
+            {% endfor %}
+          {% endif %}
+        </div>
+        <div style="display:none" id='confirm' title='Delete the selected event?'>
+          <p>Do you want to delete the selected role?</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{url_for('static', filename='js/jquery-1.11.3.js')}}"></script>
+  <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+  <script>
+    $(document).ready(function() {
+      
+      $(".delete").click(function(){
+        var role_uuid = $(this).attr('name');
+        console.log("hello");
+        $( "#confirm" ).dialog({
+          resizable: false,
+          height:200,
+          modal: true,
+          buttons: {
+            Delete: function() {
+              $( this ).dialog( "close" );
+              console.log("role id is :" + role_uuid);
+              $(window.location).attr('href', '/role/delete?role_uuid='+role_uuid);
+            },
+            Cancel: function() {
+              $( this ).dialog( "close" );
+            }
+          }
+        });
+        console.log("opened");
+      });
+  
+    });
+  </script>
+
+{% endblock %}

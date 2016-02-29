@@ -188,7 +188,7 @@ class Menu(db.Model):
 
 
     def __repr__(self):
-        return '<User %r>' % (self.menu_name)
+        return '<Menu %r>' % (self.menu_name)
 
 
     def __init__(self, menu_name, menu_id, category_name, category_id, url, create_by):

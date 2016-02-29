@@ -7,7 +7,7 @@ from sqlalchemy.exc import IntegrityError
 # from .forms import CreateRoleForm
 from ..models import User, Role, Role_menu, Menu, Resource
 from ..emails import send_email
-from .forms import MenuCreationForm
+from .forms import MenuCreationForm, CreateRoleForm
 from werkzeug.security import generate_password_hash
 import random, json
 
@@ -23,6 +23,75 @@ menu_categories = list()
 # def resource_index():
 # 	resources = db.session.query(Resource).all()
 # 	return render_template("dataConfig/resource/index.html", full_name=full_name, status=status, menus=menus)
+
+
+# Responsible for creating Roles.
+@dataConfig.route('/role_create', methods = ['GET', 'POST'])
+@login_required
+def create_role():
+    create_by = g.user.full_name
+    menus = menus_of_role()
+    form = CreateRoleForm()
+    if form.validate_on_submit():
+        temp = Role(form.rolename.data, form.role_id.data, form.description.data, create_by)
+        db.session.add(temp)
+        db.session.commit()
+        return redirect(url_for('dataConfig.manage_roles'))
+    return render_template("dataConfig/roles/create_role.html", form=form, full_name=full_name, menu_categories=menu_categories, status=status)
+
+#Responsible for deleting existing roles.
+#Called by jquery in role.view_event.html and basic.member.html
+@dataConfig.route('/role_delete')
+@login_required
+def delete_role():
+    role_id = request.args.get('role_id')
+    role = db.session.query(Role).filter(Role.role_id == role_id).first()
+    print ("delete!!!")
+    print ("ready to remove the role!")
+    db.session.delete(role)
+    db.session.commit()
+    return redirect(url_for("dataConfig.manage_roles"))
+
+#Render to the events modification page.
+#If method is GET, show the event info on the form for the user to modify
+#If method is POST, do the validation and update the event 
+#ATTENTION: The validation is not working currently
+@dataConfig.route('/role_modify/<role_id>', methods = ['GET', 'POST'])
+@login_required
+def modify_role(role_id):
+    menus = menus_of_role()
+    form = CreateRoleForm()
+    role = Role.query.filter(Role.role_id == role_id).first()
+    if request.method == 'POST':
+        print("POST received")
+        if form.validate_on_submit():
+            #event_id = request.form.get('event_id')
+            role.rolename = form.rolename.data
+            role.description = form.description.data
+            role.role_id = form.role_id.data
+            db.session.commit()
+            return redirect(url_for("dataConfig.manage_roles"))
+        else:
+            print ("Not validated")
+            return render_template("dataConfig/roles/modify_role.html", form=form, menu_categories=menu_categories, full_name=full_name, status=status, role_uuid=role_uuid)
+
+    # if role.is_created_by(g.user.uuid):
+    else:
+        form.rolename.data = role.rolename
+        form.role_id.data = role.role_id
+        form.description.data = role.description         
+        return render_template("dataConfig/roles/modify_role.html", form=form, menu_categories=menu_categories, full_name=full_name, status=status, role_uuid=role_uuid)
+    return redirect(url_for("dataConfig.manage_roles"))
+
+
+#Show all the available events in the website.
+#Once finished, should only show approved events
+@dataConfig.route('/role_manage')
+@login_required
+def manage_roles():
+    menus = menus_of_role()
+    roles = db.session.query(Role).all()
+    return render_template('dataConfig/roles/manage_roles.html', roles=roles, full_name=full_name, status=status, menu_categories=menu_categories)
 
 
 # Responsible for managing resources. Listing all resources.
@@ -63,8 +132,10 @@ def create_menu():
     if form.validate_on_submit():
         new_menu = Menu(form.menu_name.data, form.menu_id.data, form.category_name.data, \
             form.category_id.data, form.url.data, g.user.user_id)
+        print(new_menu)
         db.session.add(new_menu)
         db.session.commit()
+        return redirect(url_for("dataConfig.m_r_index"))
     return render_template('dataConfig/menu_creation.html', full_name=full_name, \
         status=status, form=form, menu_categories=menu_categories)
 

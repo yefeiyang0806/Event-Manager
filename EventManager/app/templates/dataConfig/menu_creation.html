@@ -43,7 +43,7 @@
     $(document).ready(function() {
       $('.form-submitter').click(function(){
         $('#menu_form').submit();
-        $(window.location).attr('href', '/dataConfig/menus_and_roles');
+        // $(window.location).attr('href', '/dataConfig/menus_and_roles');
       });
       $('#category_name').autocomplete({
         source: function( request, response ){
@@ -62,10 +62,10 @@
         select: function( event, ui ){
           var selected_id = ui.item.id;
           $('#category_id').val(selected_id);
-          $('#category_id').attr('disabled', true);
+          $('#category_id').attr('readonly', true);
         },
         search: function( event, ui ){
-          $('#category_id').removeAttr('disabled');
+          $('#category_id').removeAttr('readonly');
         }
       })
     });

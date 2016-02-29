@@ -25,3 +25,9 @@ class MenuCreationForm(Form):
 	category_name = StringField('Category Name', validators=[InputRequired(), Length(max=40)])
 	category_id = StringField('Category ID', validators=[InputRequired(), Length(max=40)])
 	url = StringField('Assigned URL', validators=[InputRequired(), Length(max=100)])
+
+
+class CreateRoleForm(Form):
+	rolename = StringField('Role name', validators=[InputRequired(), Length(min=4, max=20)])
+	role_id = StringField('Role ID', validators=[InputRequired(), Length(min=2, max=10)])
+	description = StringField('Description', validators=[InputRequired()])
