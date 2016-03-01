@@ -13,7 +13,7 @@
   <div class="container-fluid">
     {% include 'public/side_bar.html' %}
       <div class="col-sm-9 col-sm-offset-3 col-md-10 col-md-offset-2 main">
-        <a href='/upload/template?id=event' style="color:#FF0000">event_template download</a>
+        <a href='/upload/template?id=event'>event_template download</a>
           <div style='margin:40px auto;width:200px;'> 
                  {{ wtf.quick_form(form, id='send_emails') }} 
                     {% if not message%}
