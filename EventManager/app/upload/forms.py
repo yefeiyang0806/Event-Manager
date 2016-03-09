@@ -1,14 +1,17 @@
 from app import db
 from flask_wtf import Form
 from flask_wtf.file import FileField, FileAllowed, FileRequired
-from wtforms import SelectField
+from wtforms import SelectField, RadioField
 from ..models import Event
 
 class UploadForm(Form):
     upload = FileField('', validators=[
         FileRequired(),
-        FileAllowed(['xlsx', 'xls'], 'excel only!')
+        FileAllowed(['xlsx', 'xls'], 'excel only!')    
     ])
+
+    choice_switcher = RadioField('choice', choices=[('user', 'user'), ('topic', 'topic')], default='user'
+    )
 
 class SendEmailsForm(Form):
     upload = FileField('', validators=[

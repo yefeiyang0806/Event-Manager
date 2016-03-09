@@ -33,9 +33,10 @@ def upload_file():
         filename = secure_filename(form.upload.data.filename)
         fpath = UPLOAD_FOLDER + filename
         form.upload.data.save(fpath) 
-        if filename == 'users.xlsx':
+        value = form.choice_switcher.data
+        if value == 'user':
             input_user_xls(fpath)
-        elif filename == 'topic.xlsx':
+        elif filename == 'topic':
             input_topic_xls(fpath)
         message=" import successfully"
     else:
@@ -89,7 +90,6 @@ def send_email_to_user(path, template, event_id):
     table=data.sheets()[0] 
     nrows=table.nrows 
     books=[]
-    basic_url = 'http://localhost:5000'
     accept = "accept"
     reject = "reject"
     for i in range(nrows):
